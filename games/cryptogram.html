@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Icon Cryptogram – Faithful Companion Games</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="../styles.css" />
+
+  <style>
+    :root{
+      --bg: var(--dove-white, #FAF8F6);
+      --ink: var(--scripture-slate, #3C3F4A);
+      --sky: var(--spiritual-sky, #75CFF0);
+      --violet: var(--faithful-violet, #AC94F4);
+      --peach: var(--joyful-peach, #FFD5B7);
+      --gold: var(--golden-promise, #F3B840);
+      --coral: var(--cheerful-coral, #FF8269);
+      --card: #fff;
+      --line: rgba(60,63,74,.12);
+      --shadow: 0 10px 24px rgba(60,63,74,.10);
+    }
+
+    body{
+      margin:0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+
+    .fc-game-screen{
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      padding:16px;
+      padding-bottom: calc(16px + env(safe-area-inset-bottom) + 140px); /* leave room for sticky key */
+      box-sizing:border-box;
+    }
+
+    .fc-game-box{
+      width:100%;
+      max-width:980px;
+      margin-top:12px;
+      border-radius:22px;
+      background: var(--card);
+      border:1px solid var(--line);
+      box-shadow: 0 6px 18px rgba(60,63,74,.10);
+      padding:16px;
+      box-sizing:border-box;
+    }
+
+    .fc-back-link{
+      align-self:flex-start;
+      text-decoration:none;
+      font-weight:900;
+      color: rgba(255,130,105,.85);
+      padding:8px 10px;
+      border-radius:999px;
+      background: rgba(255,213,183,.35);
+      border: 1px solid rgba(60,63,74,.10);
+    }
+
+    .fc-game-heading{
+      margin: 6px 0 4px;
+      font-size: 1.65rem;
+      font-weight: 1000;
+      letter-spacing: .01em;
+      text-align:center;
+    }
+    .fc-game-instructions{
+      margin:0 0 14px;
+      text-align:center;
+      color: rgba(60,63,74,.78);
+      font-weight:650;
+      line-height:1.25;
+    }
+
+    .cg-controls{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      justify-content:center;
+      align-items:center;
+      margin:12px 0 14px;
+      padding:12px;
+      border-radius:18px;
+      background: radial-gradient(circle at left,
+        rgba(117,207,240,.18),
+        rgba(172,148,244,.12),
+        rgba(255,213,183,.22)
+      );
+      border: 1px solid rgba(60,63,74,.08);
+    }
+
+    .cg-btn{
+      padding:10px 16px;
+      border-radius:999px;
+      border:none;
+      cursor:pointer;
+      font-weight:900;
+      font-size:.98rem;
+      box-shadow:0 6px 16px rgba(60,63,74,.14);
+      touch-action:manipulation;
+      user-select:none;
+      -webkit-user-select:none;
+    }
+    .cg-btn:active{ transform: scale(.98); }
+    .cg-btn--primary{ background: var(--coral); color:#fff; }
+    .cg-btn--secondary{ background: rgba(172,148,244,.18); color: var(--ink); }
+    .cg-btn--ghost{ background: rgba(117,207,240,.18); color: var(--ink); }
+
+    .cg-meta{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin: 10px 0 6px;
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: rgba(117,207,240,.10);
+      border: 1px solid rgba(60,63,74,.08);
+    }
+    .cg-meta strong{ font-weight: 1000; }
+    .cg-chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      background: rgba(255,213,183,.40);
+      border: 1px solid rgba(60,63,74,.10);
+      font-weight: 900;
+      color: rgba(60,63,74,.88);
+      font-size:.92rem;
+      white-space:nowrap;
+    }
+    .cg-week{
+      font-weight: 1000;
+      color: rgba(60,63,74,.70);
+      font-size:.92rem;
+      white-space:nowrap;
+    }
+
+    .cg-status{
+      margin: 10px 0 0;
+      text-align:center;
+      font-weight: 900;
+      color: rgba(60,63,74,.78);
+      min-height: 1.2em;
+    }
+
+    /* Secret message card */
+    .cg-card{
+      margin-top: 12px;
+      border-radius: 22px;
+      background: radial-gradient(circle at top left,
+        rgba(117,207,240,.18),
+        rgba(172,148,244,.12)
+      );
+      padding: 14px;
+      border: 1px solid rgba(60,63,74,.08);
+      box-shadow: 0 10px 24px rgba(60,63,74,.08);
+    }
+    .cg-card-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      margin-bottom: 8px;
+    }
+    .cg-card-title{
+      margin:0;
+      font-weight: 1100;
+      font-size: 1.2rem;
+    }
+    .cg-card-sub{
+      margin:2px 0 0;
+      font-weight: 800;
+      color: rgba(60,63,74,.70);
+      font-size: .95rem;
+    }
+    .cg-progress{
+      text-align:right;
+      font-weight: 1000;
+      color: rgba(60,63,74,.70);
+      white-space:nowrap;
+    }
+
+    /* Message grid */
+    .cg-message{
+      background: rgba(255,255,255,.75);
+      border-radius: 18px;
+      padding: 12px;
+      border: 1px solid rgba(60,63,74,.08);
+    }
+
+    .cg-cells{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:center;
+      gap:10px 10px;
+    }
+
+    .cg-cell{
+      width: 74px;
+      border-radius: 18px;
+      padding: 10px 10px 12px;
+      background: #fff;
+      border: 1px solid rgba(60,63,74,.10);
+      box-shadow: 0 8px 18px rgba(60,63,74,.10);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:flex-start;
+      user-select:none;
+      -webkit-user-select:none;
+    }
+
+    .cg-icon{
+      width: 46px;
+      height: 46px;
+      border-radius: 16px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 1.35rem;
+      background: rgba(255,213,183,.40);
+      border: 1px solid rgba(60,63,74,.08);
+      box-shadow: inset 0 0 0 3px rgba(255,255,255,.55);
+      margin-bottom: 8px;
+    }
+
+    .cg-letter-box{
+      width: 46px;
+      height: 56px;
+      border-radius: 16px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight: 1100;
+      font-size: 1.35rem;
+      color: rgba(60,63,74,.90);
+      background: rgba(117,207,240,.12);
+      border: 2px solid rgba(103,197,135,.55);
+      box-shadow: 0 0 0 4px rgba(103,197,135,.10) inset;
+    }
+
+    .cg-letter-box--active{
+      border-color: rgba(117,207,240,.95);
+      box-shadow: 0 0 0 4px rgba(117,207,240,.18) inset, 0 0 0 3px rgba(117,207,240,.20);
+    }
+
+    .cg-letter-box--filled{
+      border-color: rgba(103,197,135,.75);
+      box-shadow: 0 0 0 4px rgba(103,197,135,.12) inset;
+    }
+
+    .cg-solved{
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 16px;
+      display:inline-block;
+      background: rgba(103,197,135,.18);
+      border: 1px solid rgba(60,63,74,.08);
+      font-weight: 1000;
+    }
+
+    /* Completed this week */
+    .cg-completed{
+      margin-top: 12px;
+      border-radius: 20px;
+      padding: 12px;
+      background: rgba(255,255,255,.78);
+      border: 1px solid rgba(60,63,74,.08);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+    }
+    .cg-completed strong{ font-weight: 1100; }
+    .cg-pill{
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(60,63,74,.10);
+      background: rgba(255,255,255,.95);
+      font-weight: 1100;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      white-space:nowrap;
+      box-shadow: 0 8px 16px rgba(60,63,74,.08);
+    }
+
+    /* Sticky bottom key */
+    .cg-sticky{
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 999;
+      padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+      background: rgba(250,248,246,.92);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(60,63,74,.10);
+      box-shadow: 0 -10px 24px rgba(60,63,74,.08);
+    }
+
+    .cg-sticky-inner{
+      max-width: 980px;
+      margin: 0 auto;
+      border-radius: 18px;
+      background: radial-gradient(circle at left,
+        rgba(117,207,240,.18),
+        rgba(172,148,244,.10),
+        rgba(255,213,183,.22)
+      );
+      border: 1px solid rgba(60,63,74,.08);
+      padding: 10px;
+      box-shadow: 0 10px 24px rgba(60,63,74,.08);
+    }
+
+    .cg-key-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom: 8px;
+      padding: 0 4px;
+    }
+
+    .cg-key-title{
+      font-weight: 1100;
+      color: rgba(60,63,74,.88);
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .cg-key-hint{
+      font-weight: 900;
+      color: rgba(60,63,74,.65);
+      white-space:nowrap;
+    }
+
+    /* Horizontal scroll row */
+    .cg-key-row{
+      display:flex;
+      gap:10px;
+      overflow-x:auto;
+      overflow-y:hidden;
+      padding: 6px 6px 10px;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+    .cg-key-row::-webkit-scrollbar{ height: 8px; }
+    .cg-key-row::-webkit-scrollbar-thumb{
+      background: rgba(60,63,74,.18);
+      border-radius: 999px;
+    }
+
+    .cg-key-btn{
+      flex: 0 0 auto;
+      scroll-snap-align: start;
+      width: 140px;
+      border-radius: 18px;
+      border: 1px solid rgba(60,63,74,.10);
+      background: rgba(255,255,255,.85);
+      box-shadow: 0 10px 18px rgba(60,63,74,.08);
+      padding: 10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      cursor:pointer;
+      user-select:none;
+      -webkit-user-select:none;
+      touch-action:manipulation;
+    }
+    .cg-key-btn:active{ transform: scale(.99); }
+
+    .cg-key-emoji{
+      width: 44px;
+      height: 44px;
+      border-radius: 16px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 1.35rem;
+      background: rgba(255,213,183,.42);
+      border: 1px solid rgba(60,63,74,.08);
+    }
+    .cg-key-letter{
+      width: 44px;
+      height: 44px;
+      border-radius: 16px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight: 1100;
+      font-size: 1.2rem;
+      background: rgba(117,207,240,.12);
+      border: 2px solid rgba(60,63,74,.10);
+      color: rgba(60,63,74,.88);
+    }
+
+    .cg-key-btn--disabled{
+      opacity: .55;
+      filter: grayscale(.25);
+    }
+
+    /* Confetti */
+    .cg-confetti{
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 2000;
+    }
+    .cg-confetti-piece{
+      position:absolute;
+      width:10px;
+      height:14px;
+      border-radius:3px;
+      opacity:.95;
+      transform: translateY(-20px) rotate(0deg);
+      animation: cgFall linear forwards;
+    }
+    @keyframes cgFall { to { transform: translateY(calc(100vh + 40px)) rotate(720deg); } }
+  </style>
+</head>
+
+<body>
+  <div class="fc-game-screen">
+    <a class="fc-back-link" href="../index.html">← Back to games</a>
+
+    <div class="fc-game-box">
+      <h1 class="fc-game-heading">Icon Cryptogram</h1>
+      <p class="fc-game-instructions">
+        Look at the icon clues above the blanks. Find the same icon in the key (now sticky at the bottom),
+        then tap it to fill the next blank.
+      </p>
+
+      <div class="cg-controls">
+        <button class="cg-btn cg-btn--primary" id="cgNewBtn" type="button">New Puzzle</button>
+        <button class="cg-btn cg-btn--secondary" id="cgUndoBtn" type="button">Undo</button>
+        <button class="cg-btn cg-btn--ghost" id="cgClearBtn" type="button">Clear</button>
+        <button class="cg-btn cg-btn--secondary" id="cgResetWeekBtn" type="button">Reset Week</button>
+      </div>
+
+      <div class="cg-meta">
+        <div class="cg-chip">🧩 Theme: <strong id="cgTheme">Mix</strong></div>
+        <div class="cg-week" id="cgWeekText">Week</div>
+      </div>
+
+      <div class="cg-card">
+        <div class="cg-card-head">
+          <div>
+            <h2 class="cg-card-title">🧩 The Secret Message</h2>
+            <div class="cg-card-sub">Tap an icon in the key to fill the next blank.</div>
+          </div>
+          <div class="cg-progress"><span id="cgFilled">0</span> / <span id="cgTotal">0</span><br/>letters</div>
+        </div>
+
+        <div class="cg-message">
+          <div class="cg-cells" id="cgCells"></div>
+
+          <div style="text-align:center;">
+            <span class="cg-solved" id="cgSolved" style="display:none;">You solved it! 🎉</span>
+          </div>
+
+          <div class="cg-completed" id="cgCompleted" style="display:none;">
+            <div>
+              <div style="font-weight:1100;"><span style="margin-right:6px;">✅</span>Completed This Week</div>
+              <div style="font-weight:900; color:rgba(60,63,74,.65); font-size:.92rem;" id="cgCompletedWeek"></div>
+            </div>
+            <div class="cg-pill" id="cgCompletedPhrase"></div>
+          </div>
+        </div>
+
+        <div class="cg-status" id="cgStatus"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sticky icon key -->
+  <div class="cg-sticky" role="region" aria-label="Icon key (sticky)">
+    <div class="cg-sticky-inner">
+      <div class="cg-key-head">
+        <div class="cg-key-title">🔑 Icon Key</div>
+        <div class="cg-key-hint">(scroll ↔︎) tap an icon</div>
+      </div>
+      <div class="cg-key-row" id="cgKeyRow" aria-label="Icon key list"></div>
+    </div>
+  </div>
+
+  <div class="cg-confetti" id="cgConfetti"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // ---------- helpers ----------
+      function pad2(n){ return String(n).padStart(2,'0'); }
+      function isoWeekKey(date){
+        // ISO week (Mon-Sun). Returns "YYYY-W##"
+        const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+        const dayNum = d.getUTCDay() || 7;
+        d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+        const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+        const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        return `${d.getUTCFullYear()}-W${pad2(weekNo)}`;
+      }
+      const WEEK_KEY = isoWeekKey(new Date());
+
+      function shuffle(arr){
+        const a = arr.slice();
+        for (let i = a.length - 1; i > 0; i--){
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+      }
+
+      // ---------- UI refs ----------
+      const cellsEl = document.getElementById('cgCells');
+      const keyRowEl = document.getElementById('cgKeyRow');
+      const statusEl = document.getElementById('cgStatus');
+      const filledEl = document.getElementById('cgFilled');
+      const totalEl = document.getElementById('cgTotal');
+      const solvedEl = document.getElementById('cgSolved');
+      const themeEl = document.getElementById('cgTheme');
+      const weekTextEl = document.getElementById('cgWeekText');
+
+      const completedWrap = document.getElementById('cgCompleted');
+      const completedWeekEl = document.getElementById('cgCompletedWeek');
+      const completedPhraseEl = document.getElementById('cgCompletedPhrase');
+
+      const newBtn = document.getElementById('cgNewBtn');
+      const undoBtn = document.getElementById('cgUndoBtn');
+      const clearBtn = document.getElementById('cgClearBtn');
+      const resetWeekBtn = document.getElementById('cgResetWeekBtn');
+
+      const confettiLayer = document.getElementById('cgConfetti');
+
+      // ---------- puzzles ----------
+      // Keep these SUPER simple for kids. Add more anytime.
+      const PUZZLES = [
+        { theme:'Encouragement', phrase:'GOD IS GOOD' },
+        { theme:'Faith', phrase:'TRUST JEHOVAH' },
+        { theme:'Kindness', phrase:'BE KIND' },
+        { theme:'Love', phrase:'LOVE OTHERS' },
+        { theme:'Prayer', phrase:'PRAY OFTEN' },
+        { theme:'Bible', phrase:'READ THE BIBLE' },
+      ];
+
+      // Icons available to map letters.
+      // Use emoji for now (easy). Later you can swap to SVG images.
+      const ICONS = [
+        '🏠','🕯️','🏺','⛵','🛡️','🐑','🌿','👑','📜','🌊','🌟','🐟','🧺','🌳','🪙',
+        '🍇','🍞','🐪','🫓','🪵','🔥','🫒','🧱','🪶','🦁','🕊️','⛰️','🏜️','⚓'
+      ];
+
+      // ---------- weekly storage ----------
+      const STORAGE_PREFIX = 'fc_cryptogram_v2_';
+      const STORAGE_KEY = STORAGE_PREFIX + WEEK_KEY;
+      const COMPLETED_KEY = STORAGE_PREFIX + 'completed_' + WEEK_KEY;
+
+      // state
+      let current = null;                // {theme, phrase, mapping, iconsForCells, lettersForCells}
+      let answer = [];                   // array of letters for each cell ('' for spaces)
+      let input = [];                    // array of typed letters ('' for blank or spaces)
+      let cursor = 0;                    // next fill index (skips spaces)
+      let history = [];                  // stack of {idx, prev}
+      let solved = false;
+
+      function setStatus(t){ statusEl.textContent = t || ''; }
+
+      function confettiBurst(big=false){
+        const pieceCount = big ? 140 : 70;
+        const durationMin = big ? 1200 : 900;
+        const durationMax = big ? 2200 : 1600;
+
+        const colors = ['#75CFF0','#FFD5B7','#F3B840','#AC94F4','#FF8269','#FAF8F6'];
+        for (let i = 0; i < pieceCount; i++){
+          const p = document.createElement('div');
+          p.className = 'cg-confetti-piece';
+          p.style.background = colors[Math.floor(Math.random() * colors.length)];
+
+          const x = Math.random() * window.innerWidth;
+          const delay = Math.random() * 140;
+          const duration = durationMin + Math.random() * (durationMax - durationMin);
+
+          p.style.left = x + 'px';
+          p.style.top = (-20 - Math.random() * 60) + 'px';
+          p.style.animationDuration = duration + 'ms';
+          p.style.animationDelay = delay + 'ms';
+
+          const w = 8 + Math.random() * 8;
+          const h = 10 + Math.random() * 10;
+          p.style.width = w + 'px';
+          p.style.height = h + 'px';
+
+          confettiLayer.appendChild(p);
+          setTimeout(() => p.remove(), duration + delay + 120);
+        }
+      }
+
+      function pickPuzzle(){
+        // try to avoid repeating the exact same phrase back-to-back
+        const last = current?.phrase;
+        const pool = shuffle(PUZZLES);
+        const chosen = pool.find(p => p.phrase !== last) || pool[0];
+        return chosen;
+      }
+
+      function buildMapping(phrase){
+        // Collect unique letters used (A-Z)
+        const letters = Array.from(new Set(
+          phrase.toUpperCase().split('').filter(ch => ch >= 'A' && ch <= 'Z')
+        ));
+
+        const icons = shuffle(ICONS).slice(0, Math.max(letters.length, 8));
+        const map = {};
+        letters.forEach((L, i) => { map[L] = icons[i % icons.length]; });
+        return map;
+      }
+
+      function buildCells(phrase, mapping){
+        // For each char, store icon (for letters) or '' for space
+        const chars = phrase.toUpperCase().split('');
+        const iconsForCells = chars.map(ch => (ch >= 'A' && ch <= 'Z') ? mapping[ch] : '');
+        const lettersForCells = chars.map(ch => (ch >= 'A' && ch <= 'Z') ? ch : '');
+        return { iconsForCells, lettersForCells };
+      }
+
+      function findNextBlank(startIdx){
+        for (let i = startIdx; i < input.length; i++){
+          if (answer[i] === '') continue; // space
+          if (input[i] === '') return i;
+        }
+        return -1;
+      }
+
+      function updateCounters(){
+        const totalLetters = answer.filter(x => x !== '').length;
+        const filledLetters = input.filter((x, i) => answer[i] !== '' && x !== '').length;
+        filledEl.textContent = String(filledLetters);
+        totalEl.textContent = String(totalLetters);
+      }
+
+      function render(){
+        cellsEl.innerHTML = '';
+        keyRowEl.innerHTML = '';
+
+        // week label
+        weekTextEl.textContent = WEEK_KEY;
+
+        // cells
+        for (let i = 0; i < answer.length; i++){
+          const cell = document.createElement('div');
+          cell.className = 'cg-cell';
+
+          // icon
+          const icon = document.createElement('div');
+          icon.className = 'cg-icon';
+          icon.textContent = current.iconsForCells[i] || ' ';
+          if (answer[i] === '') icon.style.opacity = '0'; // space: hide icon
+          cell.appendChild(icon);
+
+          // letter box
+          const lb = document.createElement('div');
+          lb.className = 'cg-letter-box';
+          const val = input[i] || (answer[i] === '' ? '' : '');
+          lb.textContent = val;
+
+          if (answer[i] === '') {
+            lb.style.opacity = '0';
+            lb.style.border = 'none';
+            lb.style.boxShadow = 'none';
+            lb.style.background = 'transparent';
+            lb.style.width = '14px';
+            lb.style.height = '14px';
+          } else {
+            if (i === cursor) lb.classList.add('cg-letter-box--active');
+            if (input[i] !== '') lb.classList.add('cg-letter-box--filled');
+          }
+
+          cell.appendChild(lb);
+          cellsEl.appendChild(cell);
+        }
+
+        // key (sticky, horizontal)
+        const mappingEntries = Object.entries(current.mapping) // [letter, icon]
+          .map(([letter, icon]) => ({ letter, icon }));
+
+        // Order by icon (stable-ish) so kids can scan consistently
+        const ordered = mappingEntries.sort((a,b) => a.icon.localeCompare(b.icon));
+
+        ordered.forEach(({letter, icon}) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'cg-key-btn';
+          btn.setAttribute('aria-label', `Icon ${icon}, letter ${letter}`);
+
+          const e = document.createElement('div');
+          e.className = 'cg-key-emoji';
+          e.textContent = icon;
+
+          const l = document.createElement('div');
+          l.className = 'cg-key-letter';
+          l.textContent = letter;
+
+          btn.appendChild(e);
+          btn.appendChild(l);
+
+          btn.addEventListener('click', () => onKeyTap(letter));
+          keyRowEl.appendChild(btn);
+        });
+
+        updateCounters();
+        updateSolvedUI();
+      }
+
+      function updateSolvedUI(){
+        solvedEl.style.display = solved ? 'inline-block' : 'none';
+
+        if (solved) {
+          const phrase = current.phrase.toUpperCase();
+          completedWrap.style.display = 'flex';
+          completedWeekEl.textContent = WEEK_KEY;
+          completedPhraseEl.textContent = phrase;
+
+          // Save completed phrase for this week
+          try {
+            const done = JSON.parse(localStorage.getItem(COMPLETED_KEY) || '[]');
+            if (!done.includes(phrase)) {
+              done.push(phrase);
+              localStorage.setItem(COMPLETED_KEY, JSON.stringify(done));
+            }
+          } catch (e) {}
+        } else {
+          completedWrap.style.display = 'none';
+        }
+      }
+
+      function saveState(){
+        try {
+          const data = {
+            current,
+            answer,
+            input,
+            cursor,
+            history,
+            solved
+          };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        } catch (e) {}
+      }
+
+      function loadState(){
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return false;
+          const data = JSON.parse(raw);
+          if (!data?.current?.phrase || !Array.isArray(data.answer) || !Array.isArray(data.input)) return false;
+
+          current = data.current;
+          answer = data.answer;
+          input = data.input;
+          cursor = data.cursor || 0;
+          history = Array.isArray(data.history) ? data.history : [];
+          solved = !!data.solved;
+
+          // sanity: cursor should point to next blank if puzzle not solved
+          if (!solved) {
+            const next = findNextBlank(0);
+            cursor = (next === -1) ? 0 : next;
+          }
+          return true;
+        } catch (e) {
+          return false;
+        }
+      }
+
+      function startNewPuzzle(){
+        solved = false;
+        history = [];
+
+        const p = pickPuzzle();
+        themeEl.textContent = p.theme;
+
+        const phrase = p.phrase.toUpperCase();
+        const mapping = buildMapping(phrase);
+        const cellData = buildCells(phrase, mapping);
+
+        current = {
+          theme: p.theme,
+          phrase,
+          mapping,
+          iconsForCells: cellData.iconsForCells,
+          lettersForCells: cellData.lettersForCells
+        };
+
+        answer = current.lettersForCells.slice();
+        input = answer.map(ch => (ch === '' ? '' : '')); // blanks for letters, '' for spaces
+        cursor = findNextBlank(0);
+        if (cursor === -1) cursor = 0;
+
+        setStatus('Pick the matching icon to fill the next blank.');
+        render();
+        saveState();
+      }
+
+      function checkSolved(){
+        for (let i = 0; i < answer.length; i++){
+          if (answer[i] === '') continue;
+          if ((input[i] || '') !== answer[i]) return false;
+        }
+        return true;
+      }
+
+      function onKeyTap(letter){
+        if (solved) {
+          setStatus('Great job! Tap New Puzzle for another one.');
+          return;
+        }
+        // Find next blank
+        if (cursor < 0 || cursor >= input.length || answer[cursor] === '' || input[cursor] !== '') {
+          const next = findNextBlank(0);
+          cursor = next === -1 ? cursor : next;
+        }
+        if (cursor === -1) return;
+
+        // Must match icon at cursor:
+        // letter tap is correct ONLY if it matches answer[cursor]
+        const isCorrect = (answer[cursor] === letter);
+
+        if (!isCorrect) {
+          // gentle feedback: flash status
+          setStatus('Not quite — try a different icon 🙂');
+          // brief "shake" by toggling active class
+          // (simple: re-render to keep it light)
+          return;
+        }
+
+        // record history for undo
+        history.push({ idx: cursor, prev: input[cursor] });
+        input[cursor] = letter;
+
+        // advance cursor to next blank
+        const next = findNextBlank(cursor + 1);
+        cursor = (next === -1) ? findNextBlank(0) : next;
+
+        setStatus('Nice! Keep going 🙂');
+        updateCounters();
+
+        // solved?
+        if (checkSolved()){
+          solved = true;
+          setStatus('You solved it! 🎉');
+          confettiBurst(true);
+        }
+
+        render();
+        saveState();
+
+        // nudge the sticky key to stay useful (optional):
+        // scroll the key row a bit if needed — not required
+      }
+
+      function undo(){
+        if (history.length === 0) { setStatus('Nothing to undo.'); return; }
+        if (solved) solved = false;
+
+        const last = history.pop();
+        input[last.idx] = last.prev || '';
+        cursor = last.idx;
+
+        setStatus('Undid the last letter.');
+        render();
+        saveState();
+      }
+
+      function clearAll(){
+        if (!current) return;
+        solved = false;
+        history = [];
+        input = answer.map(ch => (ch === '' ? '' : ''));
+        cursor = findNextBlank(0);
+        if (cursor === -1) cursor = 0;
+        setStatus('Cleared. Start again 🙂');
+        render();
+        saveState();
+      }
+
+      function resetWeek(){
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+          localStorage.removeItem(COMPLETED_KEY);
+        } catch (e) {}
+        setStatus('Week reset. New puzzle loaded.');
+        startNewPuzzle();
+      }
+
+      // ---------- wire up ----------
+      newBtn.addEventListener('click', startNewPuzzle);
+      undoBtn.addEventListener('click', undo);
+      clearBtn.addEventListener('click', clearAll);
+      resetWeekBtn.addEventListener('click', resetWeek);
+
+      // ---------- init ----------
+      if (!loadState()){
+        startNewPuzzle();
+      } else {
+        themeEl.textContent = current.theme || 'Mix';
+        render();
+        setStatus(solved ? 'You solved it! Tap New Puzzle for another.' : 'Pick the matching icon to fill the next blank.');
+      }
+    });
+  </script>
+</body>
+</html>
