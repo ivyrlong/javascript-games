@@ -18,16 +18,17 @@
       --card: #fff;
       --line: rgba(60,63,74,.12);
 
-      /* small defaults (JS will shrink further if needed) */
+      /* ✅ MAX TIGHT defaults (JS can shrink more) */
       --cellW: 56px;
       --iconW: 32px;
       --letterH: 42px;
-      --iconF: 1.0rem;
-      --letterF: 1.08rem;
-      --wordGap: 7px;
+      --iconF: 1.00rem;
+      --letterF: 1.06rem;
+
+      --wordGap: 4px;
+      --rowGap: 7px;
     }
 
-    *{ box-sizing:border-box; }
     body{
       margin:0;
       background: var(--bg);
@@ -42,7 +43,8 @@
       flex-direction:column;
       align-items:center;
       padding:16px;
-      padding-bottom: calc(16px + env(safe-area-inset-bottom) + 86px);
+      padding-bottom: calc(16px + env(safe-area-inset-bottom) + 84px);
+      box-sizing:border-box;
     }
 
     .fc-back-link{
@@ -65,11 +67,13 @@
       border:1px solid var(--line);
       box-shadow: 0 6px 18px rgba(60,63,74,.10);
       padding:16px;
+      box-sizing:border-box;
+      overflow:hidden; /* ✅ no horizontal bleed */
     }
 
     .fc-game-heading{
       margin: 6px 0 4px;
-      font-size: 1.55rem;
+      font-size: 1.65rem;
       font-weight: 1000;
       text-align:center;
     }
@@ -96,14 +100,15 @@
         rgba(255,213,183,.22)
       );
       border: 1px solid rgba(60,63,74,.08);
+      overflow:hidden;
     }
     .cg-btn{
-      padding:10px 14px;
+      padding:10px 16px;
       border-radius:999px;
       border:none;
       cursor:pointer;
       font-weight:900;
-      font-size:.95rem;
+      font-size:.98rem;
       box-shadow:0 6px 16px rgba(60,63,74,.14);
       touch-action:manipulation;
     }
@@ -122,6 +127,7 @@
       border-radius: 16px;
       background: rgba(117,207,240,.10);
       border: 1px solid rgba(60,63,74,.08);
+      overflow:hidden;
     }
     .cg-chip{
       display:inline-flex;
@@ -133,16 +139,13 @@
       border: 1px solid rgba(60,63,74,.10);
       font-weight: 900;
       color: rgba(60,63,74,.88);
-      font-size:.9rem;
+      font-size:.92rem;
       white-space:nowrap;
-      max-width: 72%;
-      overflow:hidden;
-      text-overflow:ellipsis;
     }
     .cg-week{
       font-weight: 1000;
       color: rgba(60,63,74,.70);
-      font-size:.9rem;
+      font-size:.92rem;
       white-space:nowrap;
     }
 
@@ -156,6 +159,7 @@
       padding: 14px;
       border: 1px solid rgba(60,63,74,.08);
       box-shadow: 0 10px 24px rgba(60,63,74,.08);
+      overflow:hidden; /* ✅ no bleed */
     }
     .cg-card-head{
       display:flex;
@@ -167,83 +171,93 @@
     .cg-card-title{
       margin:0;
       font-weight: 1100;
-      font-size: 1.15rem;
+      font-size: 1.2rem;
     }
     .cg-card-sub{
       margin:2px 0 0;
       font-weight: 800;
       color: rgba(60,63,74,.70);
-      font-size: .92rem;
+      font-size: .95rem;
     }
     .cg-progress{
       text-align:right;
       font-weight: 1000;
       color: rgba(60,63,74,.70);
       white-space:nowrap;
-      font-size:.92rem;
     }
 
     .cg-message{
       background: rgba(255,255,255,.75);
       border-radius: 18px;
-      padding: 12px;
+      padding: 10px; /* ✅ slightly tighter */
       border: 1px solid rgba(60,63,74,.08);
-      overflow:hidden; /* no bleed */
+      overflow:hidden; /* ✅ contain */
     }
 
+    /* ✅ MAX tight rows */
     .cg-words{
       display:flex;
       flex-direction:column;
-      gap: 10px;
+      gap: var(--rowGap);
       align-items:center;
     }
 
+    /* One word per row; keep together; allow row scroll ONLY if forced */
     .cg-word-wrap{
       width:100%;
       display:flex;
       justify-content:center;
-      overflow:hidden;
-      padding: 2px 0 6px;
+      overflow-x:auto;
+      overflow-y:hidden;
+      -webkit-overflow-scrolling: touch;
+      padding: 0 0 2px;
+      box-sizing:border-box;
+    }
+    .cg-word-wrap::-webkit-scrollbar{ height: 6px; }
+    .cg-word-wrap::-webkit-scrollbar-thumb{
+      background: rgba(60,63,74,.18);
+      border-radius: 999px;
     }
 
-    /* ✅ REMOVE “pill” around word: no background/border/padding */
+    /* ✅ remove word pill entirely */
     .cg-word{
       display:inline-flex;
       flex-wrap:nowrap;
       gap: var(--wordGap);
       align-items:flex-start;
-      max-width: 100%;
-      overflow:hidden;
-      flex: 0 0 auto;
       padding: 0;
-      border: none;
+      margin: 0;
       background: transparent;
-      border-radius: 0;
+      border: none;
+      flex: 0 0 auto;
     }
 
-    /* ✅ Tiles themselves, but tighter and no extra surrounding pill */
+    /*
+      ✅ REMOVE white "pill" around icon+blank:
+      keep structure but remove background/padding/border/shadow.
+    */
     .cg-cell{
       width: var(--cellW);
-      border-radius: 14px;
-      padding: 6px 6px 8px;   /* tighter */
-      background: #fff;
-      border: 1px solid rgba(60,63,74,.10);
-      box-shadow: 0 5px 12px rgba(60,63,74,.10);
       display:flex;
       flex-direction:column;
       align-items:center;
       justify-content:flex-start;
       user-select:none;
       -webkit-user-select:none;
+      box-sizing:border-box;
       flex: 0 0 auto;
-      min-width: 0;
+
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      padding: 0;
+      border-radius: 0;
     }
 
-    /* ✅ Icon + blank closer together: smaller margin + tighter inner sizing */
     .cg-icon{
       width: var(--iconW);
       height: var(--iconW);
-      border-radius: 12px;
+      border-radius: 13px;
       display:flex;
       align-items:center;
       justify-content:center;
@@ -251,13 +265,13 @@
       background: rgba(255,213,183,.40);
       border: 1px solid rgba(60,63,74,.08);
       box-shadow: inset 0 0 0 2px rgba(255,255,255,.55);
-      margin-bottom: 4px;     /* tighter */
-      line-height:1;
+      margin-bottom: 3px; /* ✅ tighter */
     }
+
     .cg-letter-box{
       width: var(--iconW);
       height: var(--letterH);
-      border-radius: 12px;
+      border-radius: 13px;
       display:flex;
       align-items:center;
       justify-content:center;
@@ -267,10 +281,11 @@
       background: rgba(117,207,240,.12);
       border: 2px solid rgba(103,197,135,.55);
       box-shadow: 0 0 0 3px rgba(103,197,135,.10) inset;
+      box-sizing:border-box;
     }
     .cg-letter-box--active{
       border-color: rgba(117,207,240,.95);
-      box-shadow: 0 0 0 3px rgba(117,207,240,.18) inset, 0 0 0 3px rgba(117,207,240,.20);
+      box-shadow: 0 0 0 3px rgba(117,207,240,.18) inset, 0 0 0 2px rgba(117,207,240,.20);
     }
     .cg-letter-box--filled{
       border-color: rgba(103,197,135,.75);
@@ -287,6 +302,7 @@
       font-weight: 1000;
     }
 
+    /* ✅ Completed card stacks and never overflows */
     .cg-completed{
       margin-top: 12px;
       border-radius: 20px;
@@ -294,23 +310,30 @@
       background: rgba(255,255,255,.78);
       border: 1px solid rgba(60,63,74,.08);
       display:flex;
-      flex-direction:column;
-      align-items:flex-start;
+      justify-content:space-between;
+      align-items:center;
       gap:10px;
+      flex-wrap:wrap;
+      overflow:hidden;
+    }
+    .cg-completed-left{
+      min-width: 180px;
+      flex: 1 1 180px;
     }
     .cg-pill{
-      width:100%;
       padding: 10px 14px;
-      border-radius: 16px;
+      border-radius: 999px;
       border: 1px solid rgba(60,63,74,.10);
       background: rgba(255,255,255,.95);
       font-weight: 1100;
       letter-spacing: .04em;
       text-transform: uppercase;
+      white-space: normal;
+      word-break: break-word;
       box-shadow: 0 8px 16px rgba(60,63,74,.08);
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
+      flex: 1 1 220px;
+      max-width: 100%;
+      text-align:center;
     }
 
     .cg-status{
@@ -321,92 +344,87 @@
       min-height: 1.2em;
     }
 
-    /* ---------- Icon Key Drawer (grid, no sideways scroll; vertical scroll allowed) ---------- */
+    /* ---------- KEY DRAWER (no sideways scroll; all visible; vertical scroll ok) ---------- */
     .cg-drawer{
       position: fixed;
       left: 0;
       right: 0;
       bottom: 0;
       z-index: 999;
-      padding: 0 12px calc(10px + env(safe-area-inset-bottom));
-      pointer-events: none;
+      padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+      background: rgba(250,248,246,.92);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(60,63,74,.10);
+      box-shadow: 0 -10px 24px rgba(60,63,74,.08);
     }
-
     .cg-drawer-inner{
       max-width: 980px;
       margin: 0 auto;
-      border-radius: 18px 18px 0 0;
-      background: rgba(250,248,246,.92);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(60,63,74,.10);
-      box-shadow: 0 -10px 24px rgba(60,63,74,.10);
-      overflow:hidden;
-      pointer-events: auto;
-    }
-
-    .cg-drawer-head{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      padding: 10px 12px;
+      border-radius: 18px;
       background: radial-gradient(circle at left,
         rgba(117,207,240,.18),
         rgba(172,148,244,.10),
         rgba(255,213,183,.22)
       );
-      border-bottom: 1px solid rgba(60,63,74,.08);
-      user-select:none;
+      border: 1px solid rgba(60,63,74,.08);
+      padding: 10px;
+      box-shadow: 0 10px 24px rgba(60,63,74,.08);
+      overflow:hidden;
     }
-
+    .cg-drawer-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      padding: 0 4px;
+    }
     .cg-drawer-title{
-      font-weight:1100;
+      font-weight: 1100;
       color: rgba(60,63,74,.88);
       display:flex;
       align-items:center;
       gap:8px;
-      white-space:nowrap;
     }
-
-    .cg-drawer-btn{
-      border:none;
-      background: rgba(255,255,255,.75);
+    .cg-drawer-toggle{
       border: 1px solid rgba(60,63,74,.10);
+      background: rgba(255,255,255,.85);
       border-radius: 999px;
-      padding: 6px 10px;
-      font-weight: 1000;
+      width: 40px;
+      height: 34px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 1.1rem;
       cursor:pointer;
-      touch-action:manipulation;
       box-shadow: 0 8px 16px rgba(60,63,74,.08);
-      line-height: 1;
-      min-width: 44px;
+      touch-action: manipulation;
     }
-    .cg-drawer-btn:active{ transform: scale(.98); }
+    .cg-drawer-toggle:active{ transform: scale(.99); }
 
-    .cg-drawer-body{
-      padding: 10px;
-      background: radial-gradient(circle at left,
-        rgba(117,207,240,.10),
-        rgba(172,148,244,.08),
-        rgba(255,213,183,.10)
-      );
-      max-height: 48vh; /* open height */
-      transition: max-height .18s ease, padding .18s ease;
-      overflow: auto;   /* ✅ vertical scroll allowed */
+    .cg-drawer-panel{
+      margin-top: 10px;
+      border-top: 1px solid rgba(60,63,74,.10);
+      padding-top: 10px;
+      display:none;
+    }
+    .cg-drawer-panel.is-open{ display:block; }
+
+    .cg-key-grid-wrap{
+      max-height: min(48vh, 380px);
+      overflow:auto;
       -webkit-overflow-scrolling: touch;
+      padding-right: 2px;
     }
-    .cg-drawer.is-closed .cg-drawer-body{
-      max-height: 0;
-      padding-top: 0;
-      padding-bottom: 0;
-      overflow: hidden;
-    }
-
-    /* ✅ Grid: show ALL keys without sideways scroll */
     .cg-key-grid{
       display:grid;
-      gap:10px;
-      grid-template-columns: repeat(auto-fit, minmax(116px, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+    @media (min-width: 540px){
+      .cg-key-grid{ grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    }
+    @media (min-width: 820px){
+      .cg-key-grid{ grid-template-columns: repeat(8, minmax(0, 1fr)); }
     }
 
     .cg-key-btn{
@@ -415,42 +433,40 @@
       border: 1px solid rgba(60,63,74,.10);
       background: rgba(255,255,255,.85);
       box-shadow: 0 10px 18px rgba(60,63,74,.08);
-      padding: 10px;
+      padding: 8px;
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap:10px;
+      gap:8px;
       cursor:pointer;
       touch-action:manipulation;
+      min-height: 48px;
     }
     .cg-key-btn:active{ transform: scale(.99); }
 
     .cg-key-emoji{
-      width: 38px;
-      height: 38px;
-      border-radius: 12px;
+      width: 32px;
+      height: 32px;
+      border-radius: 13px;
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size: 1.08rem;
+      font-size: 1.0rem;
       background: rgba(255,213,183,.42);
       border: 1px solid rgba(60,63,74,.08);
-      line-height:1;
-      flex: 0 0 auto;
     }
     .cg-key-letter{
-      width: 38px;
-      height: 38px;
-      border-radius: 12px;
+      width: 32px;
+      height: 32px;
+      border-radius: 13px;
       display:flex;
       align-items:center;
       justify-content:center;
       font-weight: 1100;
-      font-size: 1.02rem;
+      font-size: 1.0rem;
       background: rgba(117,207,240,.12);
       border: 2px solid rgba(60,63,74,.10);
       color: rgba(60,63,74,.88);
-      flex: 0 0 auto;
     }
 
     /* Confetti */
@@ -472,28 +488,32 @@
     }
     @keyframes cgFall { to { transform: translateY(calc(100vh + 40px)) rotate(720deg); } }
 
+    /* very small phones: go even tighter */
     @media (max-width: 380px){
       :root{
-        --cellW: 52px;
+        --cellW: 50px;
         --iconW: 30px;
         --letterH: 40px;
-        --iconF: .95rem;
-        --letterF: 1.03rem;
-        --wordGap: 6px;
+        --iconF: 0.95rem;
+        --letterF: 1.02rem;
+        --wordGap: 3px;
+        --rowGap: 6px;
       }
-      .cg-key-grid{ grid-template-columns: repeat(auto-fit, minmax(108px, 1fr)); }
+      .cg-key-grid{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .cg-key-btn{ min-height: 46px; }
     }
   </style>
 </head>
 
 <body>
-  <div class="fc-game-screen">
+  <div class="fc-game-screen" id="cgScreen">
     <a class="fc-back-link" href="../index.html">← Back to games</a>
 
     <div class="fc-game-box">
       <h1 class="fc-game-heading">Icon Cryptogram</h1>
       <p class="fc-game-instructions">
-        Tap an icon in the key (drawer) to fill the next blank.
+        Look at the icon clues above the blanks. Find the same icon in the key drawer,
+        then tap it to fill the next blank.
       </p>
 
       <div class="cg-controls">
@@ -525,9 +545,9 @@
           </div>
 
           <div class="cg-completed" id="cgCompleted" style="display:none;">
-            <div style="font-weight:1100;">
-              <span style="margin-right:6px;">✅</span>Completed This Week
-              <span style="font-weight:900; color:rgba(60,63,74,.65); font-size:.92rem; margin-left:10px;" id="cgCompletedWeek"></span>
+            <div class="cg-completed-left">
+              <div style="font-weight:1100;"><span style="margin-right:6px;">✅</span>Completed This Week</div>
+              <div style="font-weight:900; color:rgba(60,63,74,.65); font-size:.92rem;" id="cgCompletedWeek"></div>
             </div>
             <div class="cg-pill" id="cgCompletedPhrase"></div>
           </div>
@@ -538,15 +558,18 @@
     </div>
   </div>
 
-  <!-- Drawer for Icon Key -->
-  <div class="cg-drawer" aria-label="Icon key drawer">
-    <div class="cg-drawer-inner cg-drawer is-closed" id="cgDrawer">
-      <div class="cg-drawer-head" id="cgDrawerHead">
+  <!-- KEY DRAWER (closed by default) -->
+  <div class="cg-drawer" role="region" aria-label="Icon key drawer">
+    <div class="cg-drawer-inner">
+      <div class="cg-drawer-head">
         <div class="cg-drawer-title">🔑 Icon Key</div>
-        <button class="cg-drawer-btn" id="cgDrawerToggle" type="button" aria-label="Toggle icon key drawer">⬆️</button>
+        <button class="cg-drawer-toggle" id="cgDrawerToggle" type="button" aria-label="Open icon key">⬆️</button>
       </div>
-      <div class="cg-drawer-body" id="cgDrawerBody">
-        <div class="cg-key-grid" id="cgKeyGrid" aria-label="Icon key grid"></div>
+
+      <div class="cg-drawer-panel" id="cgDrawerPanel">
+        <div class="cg-key-grid-wrap" aria-label="Icon key list">
+          <div class="cg-key-grid" id="cgKeyGrid"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -555,7 +578,7 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // helpers
+      // ---------- helpers ----------
       function pad2(n){ return String(n).padStart(2,'0'); }
       function isoWeekKey(date){
         const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -576,7 +599,8 @@
         return a;
       }
 
-      // refs
+      // ---------- UI refs ----------
+      const screenEl = document.getElementById('cgScreen');
       const wordsEl = document.getElementById('cgWords');
       const keyGridEl = document.getElementById('cgKeyGrid');
       const statusEl = document.getElementById('cgStatus');
@@ -597,13 +621,30 @@
 
       const confettiLayer = document.getElementById('cgConfetti');
 
-      // drawer
-      const drawer = document.getElementById('cgDrawer');
-      const drawerHead = document.getElementById('cgDrawerHead');
       const drawerToggle = document.getElementById('cgDrawerToggle');
-      let drawerOpen = false; // closed by default
+      const drawerPanel = document.getElementById('cgDrawerPanel');
 
-      // data
+      // drawer state (closed by default)
+      let drawerOpen = false;
+
+      function setDrawer(open){
+        drawerOpen = !!open;
+        if (drawerOpen){
+          drawerPanel.classList.add('is-open');
+          drawerToggle.textContent = '⬇️';
+          drawerToggle.setAttribute('aria-label', 'Close icon key');
+          screenEl.style.paddingBottom = 'calc(16px + env(safe-area-inset-bottom) + 330px)';
+        } else {
+          drawerPanel.classList.remove('is-open');
+          drawerToggle.textContent = '⬆️';
+          drawerToggle.setAttribute('aria-label', 'Open icon key');
+          screenEl.style.paddingBottom = 'calc(16px + env(safe-area-inset-bottom) + 84px)';
+        }
+      }
+
+      drawerToggle.addEventListener('click', () => setDrawer(!drawerOpen));
+
+      // ---------- puzzles ----------
       const PUZZLES = [
         { theme:'Encouragement', phrase:'GOD IS GOOD' },
         { theme:'Faith', phrase:'TRUST JEHOVAH' },
@@ -619,8 +660,8 @@
         '🍇','🍞','🐪','🫓','🪵','🔥','🫒','🧱','🪶','🦁','🕊️','⛰️','🏜️','⚓'
       ];
 
-      // storage
-      const STORAGE_PREFIX = 'fc_cryptogram_v7_';
+      // ---------- weekly storage ----------
+      const STORAGE_PREFIX = 'fc_cryptogram_tight_';
       const STORAGE_KEY = STORAGE_PREFIX + WEEK_KEY;
       const COMPLETED_KEY = STORAGE_PREFIX + 'completed_' + WEEK_KEY;
 
@@ -634,21 +675,10 @@
 
       function setStatus(t){ statusEl.textContent = t || ''; }
 
-      function setDrawerOpen(open){
-        drawerOpen = !!open;
-        drawer.classList.toggle('is-closed', !drawerOpen);
-        drawerToggle.textContent = drawerOpen ? '⬇️' : '⬆️';
-        drawerToggle.setAttribute('aria-expanded', drawerOpen ? 'true' : 'false');
-      }
-      function toggleDrawer(){ setDrawerOpen(!drawerOpen); }
-
-      drawerToggle.addEventListener('click', (e) => { e.stopPropagation(); toggleDrawer(); saveState(); });
-      drawerHead.addEventListener('click', () => { toggleDrawer(); saveState(); });
-
       function confettiBurst(big=false){
         const pieceCount = big ? 120 : 60;
-        const durationMin = big ? 1200 : 900;
-        const durationMax = big ? 2200 : 1600;
+        const durationMin = big ? 1100 : 850;
+        const durationMax = big ? 2100 : 1500;
 
         const colors = ['#75CFF0','#FFD5B7','#F3B840','#AC94F4','#FF8269','#FAF8F6'];
         for (let i = 0; i < pieceCount; i++){
@@ -742,6 +772,7 @@
         }
       }
 
+      // ✅ Tight responsive sizing
       function applyResponsiveCellSize(){
         if (!current?.tokens?.length) return;
 
@@ -749,21 +780,22 @@
         const msgBox = document.querySelector('.cg-message');
         const rect = msgBox ? msgBox.getBoundingClientRect() : null;
 
-        const available = Math.max(220, (rect ? rect.width : window.innerWidth) - 24);
-        const gap = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--wordGap')) || 7;
+        const available = Math.max(210, (rect ? rect.width : window.innerWidth) - 20);
 
-        const minCell = 42;
+        const gap = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--wordGap')) || 4;
+
+        const minCell = 44;  // smaller than before
         const maxCell = 56;
 
         let target = Math.floor((available - (gap * (longest - 1))) / longest);
         if (!Number.isFinite(target)) target = maxCell;
 
         const cellW = Math.max(minCell, Math.min(maxCell, target));
-        const iconW = Math.max(24, Math.min(32, Math.floor(cellW * 0.58)));
-        const letterH = Math.max(32, Math.min(42, Math.floor(cellW * 0.76)));
+        const iconW = Math.max(26, Math.min(32, Math.floor(cellW * 0.60)));
+        const letterH = Math.max(36, Math.min(42, Math.floor(cellW * 0.76)));
 
-        const iconF = (iconW <= 26) ? '.9rem' : '1.0rem';
-        const letterF = (cellW <= 46) ? '1.0rem' : '1.08rem';
+        const iconF = (iconW <= 28) ? '0.92rem' : '1.00rem';
+        const letterF = (cellW <= 46) ? '1.00rem' : '1.06rem';
 
         document.documentElement.style.setProperty('--cellW', cellW + 'px');
         document.documentElement.style.setProperty('--iconW', iconW + 'px');
@@ -774,10 +806,12 @@
 
       function render(){
         wordsEl.innerHTML = '';
+        keyGridEl.innerHTML = '';
         weekTextEl.textContent = WEEK_KEY;
 
         applyResponsiveCellSize();
 
+        // words
         current.tokens.forEach(tok => {
           const wrap = document.createElement('div');
           wrap.className = 'cg-word-wrap';
@@ -809,8 +843,7 @@
           wordsEl.appendChild(wrap);
         });
 
-        // rebuild key grid (no sideways scrolling now)
-        keyGridEl.innerHTML = '';
+        // key grid (no sideways scroll)
         const mappingEntries = Object.entries(current.mapping).map(([letter, icon]) => ({ letter, icon }));
         const ordered = mappingEntries.sort((a,b) => a.icon.localeCompare(b.icon));
 
@@ -837,6 +870,23 @@
 
         updateCounters();
         updateSolvedUI();
+
+        // keep active visible in its word row
+        requestAnimationFrame(() => {
+          const active = document.querySelector('.cg-letter-box--active');
+          if (!active) return;
+          const wrap = active.closest('.cg-word-wrap');
+          if (!wrap) return;
+
+          const aRect = active.getBoundingClientRect();
+          const wRect = wrap.getBoundingClientRect();
+
+          const leftCut = aRect.left < wRect.left + 10;
+          const rightCut = aRect.right > wRect.right - 10;
+
+          if (leftCut) wrap.scrollLeft -= (wRect.left + 10 - aRect.left);
+          if (rightCut) wrap.scrollLeft += (aRect.right - (wRect.right - 10));
+        });
       }
 
       function saveState(){
@@ -860,7 +910,8 @@
           history = Array.isArray(data.history) ? data.history : [];
           solved = !!data.solved;
 
-          setDrawerOpen(!!data.drawerOpen);
+          drawerOpen = !!data.drawerOpen;
+          setDrawer(drawerOpen);
 
           if (!solved) {
             const next = findNextBlank(0);
@@ -892,7 +943,7 @@
         cursor = findNextBlank(0);
         if (cursor === -1) cursor = 0;
 
-        setStatus('Pick the matching icon to fill the next blank.');
+        setStatus('Pick the matching icon in the drawer to fill the next blank.');
         render();
         saveState();
       }
@@ -981,15 +1032,15 @@
         if (current) render();
       });
 
-      // init
-      setDrawerOpen(false);
+      // init drawer closed
+      setDrawer(false);
 
       if (!loadState()){
         startNewPuzzle();
       } else {
         themeEl.textContent = current.theme || 'Mix';
         render();
-        setStatus(solved ? 'You solved it! Tap New Puzzle for another.' : 'Pick the matching icon to fill the next blank.');
+        setStatus(solved ? 'You solved it! Tap New Puzzle for another.' : 'Pick the matching icon in the drawer to fill the next blank.');
       }
     });
   </script>
