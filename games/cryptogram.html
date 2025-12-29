@@ -18,13 +18,13 @@
       --card: #fff;
       --line: rgba(60,63,74,.12);
 
-      /* ✅ SMALLER defaults (JS will shrink further if needed) */
-      --cellW: 58px;
-      --iconW: 34px;
-      --letterH: 44px;
-      --iconF: 1.05rem;
-      --letterF: 1.15rem;
-      --wordGap: 8px;
+      /* small defaults (JS will shrink further if needed) */
+      --cellW: 56px;
+      --iconW: 32px;
+      --letterH: 42px;
+      --iconF: 1.0rem;
+      --letterF: 1.08rem;
+      --wordGap: 7px;
     }
 
     *{ box-sizing:border-box; }
@@ -42,7 +42,6 @@
       flex-direction:column;
       align-items:center;
       padding:16px;
-      /* drawer height reserved (closed) */
       padding-bottom: calc(16px + env(safe-area-inset-bottom) + 86px);
     }
 
@@ -189,7 +188,7 @@
       border-radius: 18px;
       padding: 12px;
       border: 1px solid rgba(60,63,74,.08);
-      overflow:hidden;
+      overflow:hidden; /* no bleed */
     }
 
     .cg-words{
@@ -199,36 +198,37 @@
       align-items:center;
     }
 
-    /* ✅ keep whole words together; no “blank gaps” between words */
     .cg-word-wrap{
       width:100%;
       display:flex;
       justify-content:center;
-      overflow:hidden; /* ✅ NO horizontal bleed */
+      overflow:hidden;
       padding: 2px 0 6px;
     }
 
+    /* ✅ REMOVE “pill” around word: no background/border/padding */
     .cg-word{
       display:inline-flex;
       flex-wrap:nowrap;
       gap: var(--wordGap);
       align-items:flex-start;
-      padding: 8px 8px;
-      border-radius: 14px;
-      background: rgba(117,207,240,.06);
-      border: 1px solid rgba(60,63,74,.06);
       max-width: 100%;
-      overflow:hidden; /* ✅ no bleed */
+      overflow:hidden;
       flex: 0 0 auto;
+      padding: 0;
+      border: none;
+      background: transparent;
+      border-radius: 0;
     }
 
+    /* ✅ Tiles themselves, but tighter and no extra surrounding pill */
     .cg-cell{
       width: var(--cellW);
-      border-radius: 16px;
-      padding: 8px 8px 10px;
+      border-radius: 14px;
+      padding: 6px 6px 8px;   /* tighter */
       background: #fff;
       border: 1px solid rgba(60,63,74,.10);
-      box-shadow: 0 6px 14px rgba(60,63,74,.10);
+      box-shadow: 0 5px 12px rgba(60,63,74,.10);
       display:flex;
       flex-direction:column;
       align-items:center;
@@ -238,24 +238,26 @@
       flex: 0 0 auto;
       min-width: 0;
     }
+
+    /* ✅ Icon + blank closer together: smaller margin + tighter inner sizing */
     .cg-icon{
       width: var(--iconW);
       height: var(--iconW);
-      border-radius: 14px;
+      border-radius: 12px;
       display:flex;
       align-items:center;
       justify-content:center;
       font-size: var(--iconF);
       background: rgba(255,213,183,.40);
       border: 1px solid rgba(60,63,74,.08);
-      box-shadow: inset 0 0 0 3px rgba(255,255,255,.55);
-      margin-bottom: 6px;
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,.55);
+      margin-bottom: 4px;     /* tighter */
       line-height:1;
     }
     .cg-letter-box{
       width: var(--iconW);
       height: var(--letterH);
-      border-radius: 14px;
+      border-radius: 12px;
       display:flex;
       align-items:center;
       justify-content:center;
@@ -264,15 +266,15 @@
       color: rgba(60,63,74,.90);
       background: rgba(117,207,240,.12);
       border: 2px solid rgba(103,197,135,.55);
-      box-shadow: 0 0 0 4px rgba(103,197,135,.10) inset;
+      box-shadow: 0 0 0 3px rgba(103,197,135,.10) inset;
     }
     .cg-letter-box--active{
       border-color: rgba(117,207,240,.95);
-      box-shadow: 0 0 0 4px rgba(117,207,240,.18) inset, 0 0 0 3px rgba(117,207,240,.20);
+      box-shadow: 0 0 0 3px rgba(117,207,240,.18) inset, 0 0 0 3px rgba(117,207,240,.20);
     }
     .cg-letter-box--filled{
       border-color: rgba(103,197,135,.75);
-      box-shadow: 0 0 0 4px rgba(103,197,135,.12) inset;
+      box-shadow: 0 0 0 3px rgba(103,197,135,.12) inset;
     }
 
     .cg-solved{
@@ -285,7 +287,6 @@
       font-weight: 1000;
     }
 
-    /* ✅ completed card stacks and never runs off screen */
     .cg-completed{
       margin-top: 12px;
       border-radius: 20px;
@@ -320,7 +321,7 @@
       min-height: 1.2em;
     }
 
-    /* ---------- ✅ Icon Key Drawer (like crossword) ---------- */
+    /* ---------- Icon Key Drawer (grid, no sideways scroll; vertical scroll allowed) ---------- */
     .cg-drawer{
       position: fixed;
       left: 0;
@@ -328,7 +329,7 @@
       bottom: 0;
       z-index: 999;
       padding: 0 12px calc(10px + env(safe-area-inset-bottom));
-      pointer-events: none; /* enable only inner */
+      pointer-events: none;
     }
 
     .cg-drawer-inner{
@@ -389,34 +390,27 @@
         rgba(172,148,244,.08),
         rgba(255,213,183,.10)
       );
-      max-height: 44vh; /* open height */
-      transition: max-height .18s ease;
+      max-height: 48vh; /* open height */
+      transition: max-height .18s ease, padding .18s ease;
+      overflow: auto;   /* ✅ vertical scroll allowed */
+      -webkit-overflow-scrolling: touch;
     }
     .cg-drawer.is-closed .cg-drawer-body{
       max-height: 0;
       padding-top: 0;
       padding-bottom: 0;
-      overflow:hidden;
+      overflow: hidden;
     }
 
-    .cg-key-row{
-      display:flex;
+    /* ✅ Grid: show ALL keys without sideways scroll */
+    .cg-key-grid{
+      display:grid;
       gap:10px;
-      overflow-x:auto;
-      overflow-y:hidden;
-      padding: 6px 6px 10px;
-      -webkit-overflow-scrolling: touch;
-      scroll-behavior: auto; /* ✅ do not jump */
-    }
-    .cg-key-row::-webkit-scrollbar{ height: 8px; }
-    .cg-key-row::-webkit-scrollbar-thumb{
-      background: rgba(60,63,74,.18);
-      border-radius: 999px;
+      grid-template-columns: repeat(auto-fit, minmax(116px, 1fr));
     }
 
     .cg-key-btn{
-      flex: 0 0 auto;
-      width: 128px;
+      width: 100%;
       border-radius: 16px;
       border: 1px solid rgba(60,63,74,.10);
       background: rgba(255,255,255,.85);
@@ -432,29 +426,31 @@
     .cg-key-btn:active{ transform: scale(.99); }
 
     .cg-key-emoji{
-      width: 40px;
-      height: 40px;
-      border-radius: 14px;
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size: 1.15rem; /* ✅ smaller */
+      font-size: 1.08rem;
       background: rgba(255,213,183,.42);
       border: 1px solid rgba(60,63,74,.08);
       line-height:1;
+      flex: 0 0 auto;
     }
     .cg-key-letter{
-      width: 40px;
-      height: 40px;
-      border-radius: 14px;
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
       display:flex;
       align-items:center;
       justify-content:center;
       font-weight: 1100;
-      font-size: 1.05rem;
+      font-size: 1.02rem;
       background: rgba(117,207,240,.12);
       border: 2px solid rgba(60,63,74,.10);
       color: rgba(60,63,74,.88);
+      flex: 0 0 auto;
     }
 
     /* Confetti */
@@ -476,17 +472,16 @@
     }
     @keyframes cgFall { to { transform: translateY(calc(100vh + 40px)) rotate(720deg); } }
 
-    /* tiny phones: shrink a hair more */
     @media (max-width: 380px){
       :root{
-        --cellW: 54px;
-        --iconW: 32px;
-        --letterH: 42px;
-        --iconF: 1.0rem;
-        --letterF: 1.1rem;
-        --wordGap: 7px;
+        --cellW: 52px;
+        --iconW: 30px;
+        --letterH: 40px;
+        --iconF: .95rem;
+        --letterF: 1.03rem;
+        --wordGap: 6px;
       }
-      .cg-key-btn{ width: 120px; }
+      .cg-key-grid{ grid-template-columns: repeat(auto-fit, minmax(108px, 1fr)); }
     }
   </style>
 </head>
@@ -498,7 +493,7 @@
     <div class="fc-game-box">
       <h1 class="fc-game-heading">Icon Cryptogram</h1>
       <p class="fc-game-instructions">
-        Tap an icon in the key (drawer) to fill the next blank. The secret message stays fully inside the page.
+        Tap an icon in the key (drawer) to fill the next blank.
       </p>
 
       <div class="cg-controls">
@@ -543,7 +538,7 @@
     </div>
   </div>
 
-  <!-- ✅ Drawer for Icon Key -->
+  <!-- Drawer for Icon Key -->
   <div class="cg-drawer" aria-label="Icon key drawer">
     <div class="cg-drawer-inner cg-drawer is-closed" id="cgDrawer">
       <div class="cg-drawer-head" id="cgDrawerHead">
@@ -551,7 +546,7 @@
         <button class="cg-drawer-btn" id="cgDrawerToggle" type="button" aria-label="Toggle icon key drawer">⬆️</button>
       </div>
       <div class="cg-drawer-body" id="cgDrawerBody">
-        <div class="cg-key-row" id="cgKeyRow" aria-label="Icon key list"></div>
+        <div class="cg-key-grid" id="cgKeyGrid" aria-label="Icon key grid"></div>
       </div>
     </div>
   </div>
@@ -560,7 +555,7 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // ---------- helpers ----------
+      // helpers
       function pad2(n){ return String(n).padStart(2,'0'); }
       function isoWeekKey(date){
         const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -581,9 +576,9 @@
         return a;
       }
 
-      // ---------- UI refs ----------
+      // refs
       const wordsEl = document.getElementById('cgWords');
-      const keyRowEl = document.getElementById('cgKeyRow');
+      const keyGridEl = document.getElementById('cgKeyGrid');
       const statusEl = document.getElementById('cgStatus');
       const filledEl = document.getElementById('cgFilled');
       const totalEl = document.getElementById('cgTotal');
@@ -602,13 +597,13 @@
 
       const confettiLayer = document.getElementById('cgConfetti');
 
-      // Drawer
+      // drawer
       const drawer = document.getElementById('cgDrawer');
       const drawerHead = document.getElementById('cgDrawerHead');
       const drawerToggle = document.getElementById('cgDrawerToggle');
-      let drawerOpen = false; // ✅ closed by default
+      let drawerOpen = false; // closed by default
 
-      // ---------- puzzles ----------
+      // data
       const PUZZLES = [
         { theme:'Encouragement', phrase:'GOD IS GOOD' },
         { theme:'Faith', phrase:'TRUST JEHOVAH' },
@@ -624,8 +619,8 @@
         '🍇','🍞','🐪','🫓','🪵','🔥','🫒','🧱','🪶','🦁','🕊️','⛰️','🏜️','⚓'
       ];
 
-      // ---------- weekly storage ----------
-      const STORAGE_PREFIX = 'fc_cryptogram_v6_';
+      // storage
+      const STORAGE_PREFIX = 'fc_cryptogram_v7_';
       const STORAGE_KEY = STORAGE_PREFIX + WEEK_KEY;
       const COMPLETED_KEY = STORAGE_PREFIX + 'completed_' + WEEK_KEY;
 
@@ -647,8 +642,8 @@
       }
       function toggleDrawer(){ setDrawerOpen(!drawerOpen); }
 
-      drawerToggle.addEventListener('click', (e) => { e.stopPropagation(); toggleDrawer(); });
-      drawerHead.addEventListener('click', () => toggleDrawer());
+      drawerToggle.addEventListener('click', (e) => { e.stopPropagation(); toggleDrawer(); saveState(); });
+      drawerHead.addEventListener('click', () => { toggleDrawer(); saveState(); });
 
       function confettiBurst(big=false){
         const pieceCount = big ? 120 : 60;
@@ -747,7 +742,6 @@
         }
       }
 
-      /* ✅ smaller fit-to-screen sizing (no horizontal scroll / no bleed) */
       function applyResponsiveCellSize(){
         if (!current?.tokens?.length) return;
 
@@ -756,21 +750,20 @@
         const rect = msgBox ? msgBox.getBoundingClientRect() : null;
 
         const available = Math.max(220, (rect ? rect.width : window.innerWidth) - 24);
-        const gap = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--wordGap')) || 8;
+        const gap = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--wordGap')) || 7;
 
-        const minCell = 44;  // ✅ smaller than before
-        const maxCell = 58;
+        const minCell = 42;
+        const maxCell = 56;
 
         let target = Math.floor((available - (gap * (longest - 1))) / longest);
         if (!Number.isFinite(target)) target = maxCell;
 
         const cellW = Math.max(minCell, Math.min(maxCell, target));
+        const iconW = Math.max(24, Math.min(32, Math.floor(cellW * 0.58)));
+        const letterH = Math.max(32, Math.min(42, Math.floor(cellW * 0.76)));
 
-        const iconW = Math.max(26, Math.min(34, Math.floor(cellW * 0.58)));
-        const letterH = Math.max(34, Math.min(44, Math.floor(cellW * 0.75)));
-
-        const iconF = (iconW <= 28) ? '0.92rem' : '1.05rem';
-        const letterF = (cellW <= 48) ? '1.02rem' : '1.15rem';
+        const iconF = (iconW <= 26) ? '.9rem' : '1.0rem';
+        const letterF = (cellW <= 46) ? '1.0rem' : '1.08rem';
 
         document.documentElement.style.setProperty('--cellW', cellW + 'px');
         document.documentElement.style.setProperty('--iconW', iconW + 'px');
@@ -781,11 +774,8 @@
 
       function render(){
         wordsEl.innerHTML = '';
-        // IMPORTANT: don't clear keyRowEl here if we want to preserve scroll position?
-        // We'll rebuild but capture/restore scrollLeft.
-        const savedScroll = keyRowEl.scrollLeft || 0;
-
         weekTextEl.textContent = WEEK_KEY;
+
         applyResponsiveCellSize();
 
         current.tokens.forEach(tok => {
@@ -819,8 +809,8 @@
           wordsEl.appendChild(wrap);
         });
 
-        // rebuild key (but restore scroll)
-        keyRowEl.innerHTML = '';
+        // rebuild key grid (no sideways scrolling now)
+        keyGridEl.innerHTML = '';
         const mappingEntries = Object.entries(current.mapping).map(([letter, icon]) => ({ letter, icon }));
         const ordered = mappingEntries.sort((a,b) => a.icon.localeCompare(b.icon));
 
@@ -842,12 +832,7 @@
           btn.appendChild(l);
 
           btn.addEventListener('click', () => onKeyTap(letter));
-          keyRowEl.appendChild(btn);
-        });
-
-        // ✅ restore key scroll position so it DOESN'T jump back
-        requestAnimationFrame(() => {
-          keyRowEl.scrollLeft = savedScroll;
+          keyGridEl.appendChild(btn);
         });
 
         updateCounters();
@@ -875,7 +860,6 @@
           history = Array.isArray(data.history) ? data.history : [];
           solved = !!data.solved;
 
-          // drawer state
           setDrawerOpen(!!data.drawerOpen);
 
           if (!solved) {
@@ -950,8 +934,6 @@
           confettiBurst(true);
         }
 
-        // ✅ DO NOT change key scroll position on tap
-        // ✅ DO NOT auto-close drawer
         render();
         saveState();
       }
@@ -1009,10 +991,6 @@
         render();
         setStatus(solved ? 'You solved it! Tap New Puzzle for another.' : 'Pick the matching icon to fill the next blank.');
       }
-
-      // persist drawer state whenever it changes
-      drawerToggle.addEventListener('click', () => saveState());
-      drawerHead.addEventListener('click', () => saveState());
     });
   </script>
 </body>
