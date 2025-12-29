@@ -18,17 +18,17 @@
       --card: #fff;
       --line: rgba(60,63,74,.12);
 
-      /* JS will set this so board always fits */
-      --cell: 44px;
-      --gap: 6px;
+      /* fit-to-screen board */
+      --cell: 42px;       /* JS updates */
+      --gap: 6px;         /* JS updates */
 
-      --lockedOutline: rgba(243,184,64,.95);
-      --activeOutline: rgba(117,207,240,.95);
-      --wrongOutline: rgba(255,130,105,.95);
-      --correctGlow: rgba(103,197,135,.35);
+      /* drawer */
+      --drawerPeek: 76px;
+      --drawerMaxH: 56vh;
     }
 
     *{ box-sizing:border-box; }
+    html, body { height:100%; }
     body{
       margin:0;
       background: var(--bg);
@@ -37,29 +37,31 @@
       overflow-x:hidden; /* ✅ no horizontal bleed */
     }
 
-    .fc-game-screen{
+    /* page shell */
+    .cw-screen{
       min-height:100vh;
       display:flex;
       flex-direction:column;
       align-items:center;
       padding:16px;
-      padding-bottom: calc(16px + env(safe-area-inset-bottom) + 170px); /* reserve for keyboard */
+      /* ✅ reserve space for fixed drawer so letters never “fall below” */
+      padding-bottom: calc(16px + env(safe-area-inset-bottom) + var(--drawerPeek));
     }
 
     .fc-back-link{
       align-self:flex-start;
       text-decoration:none;
       font-weight:900;
-      color: rgba(255,130,105,.88);
+      color: rgba(255,130,105,.85);
       padding:8px 10px;
       border-radius:999px;
       background: rgba(255,213,183,.35);
       border: 1px solid rgba(60,63,74,.10);
     }
 
-    .fc-game-box{
+    .cw-box{
       width:100%;
-      max-width:1100px;
+      max-width:980px;
       margin-top:12px;
       border-radius:22px;
       background: var(--card);
@@ -68,27 +70,28 @@
       padding:16px;
     }
 
-    .fc-game-heading{
+    .cw-title{
       margin: 6px 0 4px;
       font-size: 1.65rem;
       font-weight: 1000;
       text-align:center;
     }
-    .fc-game-instructions{
-      margin:0 0 14px;
+    .cw-sub{
+      margin:0 0 12px;
       text-align:center;
       color: rgba(60,63,74,.78);
       font-weight:650;
       line-height:1.25;
     }
 
+    /* controls */
     .cw-controls{
       display:flex;
       flex-wrap:wrap;
       gap:10px;
       justify-content:center;
       align-items:center;
-      margin:12px 0 12px;
+      margin:12px 0 10px;
       padding:12px;
       border-radius:18px;
       background: radial-gradient(circle at left,
@@ -98,17 +101,6 @@
       );
       border: 1px solid rgba(60,63,74,.08);
     }
-
-    .cw-select{
-      padding:8px 12px;
-      border-radius:999px;
-      border:1px solid rgba(60,63,74,.18);
-      background: rgba(250,248,246,.95);
-      color: var(--ink);
-      font-weight:900;
-      font-size:.95rem;
-    }
-
     .cw-btn{
       padding:10px 16px;
       border-radius:999px;
@@ -118,376 +110,365 @@
       font-size:.98rem;
       box-shadow:0 6px 16px rgba(60,63,74,.14);
       touch-action:manipulation;
-      user-select:none;
-      -webkit-user-select:none;
     }
-    .cw-btn:active{ transform: scale(.98); }
+    .cw-btn:active{ transform:scale(.98); }
     .cw-btn--primary{ background: var(--coral); color:#fff; }
     .cw-btn--secondary{ background: rgba(172,148,244,.18); color: var(--ink); }
     .cw-btn--ghost{ background: rgba(117,207,240,.18); color: var(--ink); }
 
-    .cw-toggle{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:8px 12px;
+    .cw-select{
+      padding:10px 14px;
       border-radius:999px;
-      border:1px solid rgba(60,63,74,.18);
+      border:1px solid rgba(60,63,74,.12);
       background: rgba(255,255,255,.85);
-      font-weight:1000;
+      font-weight:900;
       color: rgba(60,63,74,.85);
-      user-select:none;
-      -webkit-user-select:none;
-    }
-    .cw-toggle input{
-      width:18px;
-      height:18px;
-      accent-color: var(--sky);
+      box-shadow:0 6px 16px rgba(60,63,74,.10);
     }
 
-    .cw-hud{
+    .cw-toggle{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 14px;
+      border-radius:16px;
+      border:1px solid rgba(60,63,74,.12);
+      background: rgba(255,255,255,.85);
+      font-weight:900;
+      color: rgba(60,63,74,.85);
+      box-shadow:0 6px 16px rgba(60,63,74,.10);
+    }
+    .cw-toggle input{ width:20px; height:20px; }
+
+    /* chips */
+    .cw-meta{
       display:flex;
       flex-wrap:wrap;
       gap:10px;
       justify-content:center;
       align-items:center;
-      margin:0 0 10px;
-      color:rgba(60,63,74,.85);
-      font-weight:900;
+      margin: 8px 0 12px;
     }
     .cw-chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
       padding:8px 10px;
       border-radius:999px;
       background: rgba(255,213,183,.40);
-      border:1px solid rgba(60,63,74,.10);
+      border: 1px solid rgba(60,63,74,.10);
+      font-weight: 900;
+      color: rgba(60,63,74,.88);
       font-size:.92rem;
       white-space:nowrap;
     }
-    .cw-chip strong{ color: var(--ink); }
 
-    .cw-layout{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:12px;
-      align-items:start;
-    }
-    @media (min-width: 980px){
-      .cw-layout{ grid-template-columns: 1.05fr .95fr; }
-    }
-
-    .cw-panel{
+    /* ✅ Board container fix: no giant background that creates weird “line/shadow” */
+    .cw-board-card{
       border-radius:22px;
       background: radial-gradient(circle at top left,
         rgba(117,207,240,.18),
         rgba(172,148,244,.12)
       );
-      padding:14px;
       border: 1px solid rgba(60,63,74,.08);
       box-shadow: 0 10px 24px rgba(60,63,74,.08);
-      overflow:hidden; /* ✅ no weird lines */
+      padding:14px;
+      overflow:hidden;   /* ✅ prevents any internal bleed */
     }
-
-    .cw-panel-title{
-      margin:0 0 8px;
-      font-weight:1100;
-      font-size:1.1rem;
+    .cw-board-head{
       display:flex;
       justify-content:space-between;
       align-items:center;
-      gap:12px;
+      gap:10px;
+      margin-bottom:10px;
       flex-wrap:wrap;
     }
-    .cw-subtle{
+    .cw-board-title{
+      font-weight:1100;
+      font-size:1.15rem;
+      margin:0;
+    }
+    .cw-board-hint{
       font-weight:900;
       color: rgba(60,63,74,.65);
-      font-size:.92rem;
       white-space:nowrap;
     }
 
-    /* ✅ Board wrapper: guarantees board fits */
-    .cw-board-wrap{
+    /* stage keeps board centered and fully visible */
+    .cw-stage{
       width:100%;
-      border-radius:18px;
-      background: rgba(255,255,255,.72);
-      border:1px solid rgba(60,63,74,.08);
-      padding:10px;
-      overflow:hidden; /* ✅ prevents crop bleed/shadows */
-    }
-    .cw-board-sizer{
-      width:100%;
-      /* JS sets height based on viewport available so board never crops */
-      height: 52vh;
       display:flex;
-      align-items:center;
       justify-content:center;
-      overflow:hidden;
+      align-items:center;
+      overflow:hidden;            /* ✅ stop horizontal bleed */
+      padding: 6px 0 2px;
     }
-
-    .cw-board{
+    .cw-grid{
       display:grid;
       gap: var(--gap);
-      padding: var(--gap);
-      border-radius:18px;
-      background:#fff;
-      border:1px solid rgba(60,63,74,.10);
-      box-shadow: 0 10px 22px rgba(60,63,74,.10);
+      /* JS sets gridTemplateRows/Columns */
+      touch-action: manipulation;
+      user-select:none;
+      -webkit-user-select:none;
       max-width:100%;
       max-height:100%;
-      overflow:hidden;
-      touch-action:manipulation;
     }
 
+    /* cells */
     .cw-cell{
       width: var(--cell);
       height: var(--cell);
-      border-radius: 14px;
-      border: 1px solid rgba(60,63,74,.14);
-      background: rgba(117,207,240,.06);
-      position:relative;
+      border-radius: 12px;
+      background: rgba(255,255,255,.85);
+      border: 2px solid rgba(60,63,74,.12);
+      box-shadow: 0 6px 14px rgba(60,63,74,.10);
       display:flex;
       align-items:center;
       justify-content:center;
       font-weight:1100;
-      font-size: calc(var(--cell) * 0.45);
-      color: rgba(60,63,74,.90);
-      user-select:none;
-      -webkit-user-select:none;
+      color: rgba(60,63,74,.88);
+      font-size: calc(var(--cell) * 0.46);
+      position:relative;
       overflow:hidden;
     }
 
-    /* Invisible unused cells (holes) */
-    .cw-cell--unused{
-      opacity:0;
-      pointer-events:none;
-      border:none;
-      background:transparent;
+    /* invisible unused cells */
+    .cw-cell--off{
+      width: var(--cell);
+      height: var(--cell);
+      border-radius: 12px;
+      background: transparent;
+      border: 2px solid transparent;
+      box-shadow:none;
     }
 
-    /* number in corner */
-    .cw-num{
-      position:absolute;
-      top:4px;
-      left:6px;
-      font-size: calc(var(--cell) * 0.22);
-      font-weight:1000;
-      color: rgba(60,63,74,.55);
-      pointer-events:none;
+    /* selection */
+    .cw-cell--active{
+      outline: 3px solid rgba(117,207,240,.95);
+      outline-offset: 2px;
+      box-shadow:
+        0 0 0 3px rgba(117,207,240,.18) inset,
+        0 10px 18px rgba(60,63,74,.12);
     }
 
-    .cw-cell--selected{
-      outline: 4px solid var(--activeOutline);
-      outline-offset: -2px;
-      box-shadow: 0 0 0 6px rgba(117,207,240,.18);
-      background: rgba(117,207,240,.12);
+    /* word highlight (current word path) */
+    .cw-cell--path{
+      border-color: rgba(172,148,244,.65);
+      box-shadow: 0 0 0 4px rgba(172,148,244,.12) inset, 0 6px 14px rgba(60,63,74,.10);
     }
 
-    .cw-cell--inword{
-      background: rgba(255,213,183,.26);
-      border-color: rgba(60,63,74,.18);
+    /* ✅ locked words get a distinct outline so adjacent cells don’t look shared */
+    .cw-cell--locked{
+      border-color: rgba(243,184,64,.95);
+      box-shadow: 0 0 0 5px rgba(243,184,64,.18) inset, 0 6px 14px rgba(60,63,74,.10);
     }
 
-    /* Crossing cell highlight */
-    .cw-cell--cross{
-      box-shadow: 0 0 0 4px rgba(172,148,244,.18) inset;
+    /* feedback */
+    .cw-cell--good{
+      box-shadow: 0 0 0 6px rgba(103,197,135,.18) inset, 0 6px 14px rgba(60,63,74,.10);
     }
-
-    /* Correct letter feedback */
-    .cw-cell--correct{
-      box-shadow: 0 0 0 6px var(--correctGlow) inset;
-      border-color: rgba(103,197,135,.55);
-      background: rgba(103,197,135,.12);
-    }
-
-    /* Wrong letter feedback (wiggle) */
-    .cw-cell--wrong{
-      outline: 4px solid var(--wrongOutline);
-      outline-offset: -2px;
-      animation: cwWiggle 220ms ease-in-out 0s 1;
+    .cw-cell--bad{
+      animation: cwWiggle 160ms ease-in-out 0s 2;
+      outline: 3px solid rgba(255,130,105,.95);
+      outline-offset: 2px;
     }
     @keyframes cwWiggle{
-      0%{ transform: translateX(0); }
-      25%{ transform: translateX(-4px); }
-      50%{ transform: translateX(4px); }
-      75%{ transform: translateX(-3px); }
-      100%{ transform: translateX(0); }
+      0%{ transform:translateX(0); }
+      25%{ transform:translateX(-2px); }
+      50%{ transform:translateX(2px); }
+      75%{ transform:translateX(-2px); }
+      100%{ transform:translateX(0); }
     }
 
-    /* Locked word outline (applied to cells in that word) */
-    .cw-cell--locked{
-      outline: 3px solid var(--lockedOutline);
-      outline-offset: -2px;
-      background: rgba(243,184,64,.14);
-      border-color: rgba(243,184,64,.35);
+    /* clues */
+    .cw-clues-card{
+      margin-top:12px;
+      border-radius:22px;
+      background: radial-gradient(circle at top left,
+        rgba(117,207,240,.14),
+        rgba(255,213,183,.14)
+      );
+      border: 1px solid rgba(60,63,74,.08);
+      box-shadow: 0 10px 24px rgba(60,63,74,.06);
+      padding:14px;
     }
-
-    /* Clues list */
-    .cw-clues{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
-    .cw-clue-block{
-      border-radius:18px;
-      background: rgba(255,255,255,.78);
-      border:1px solid rgba(60,63,74,.08);
-      padding:12px;
-      box-shadow: 0 8px 16px rgba(60,63,74,.06);
-    }
-    .cw-clue-title{
-      margin:0 0 8px;
-      font-weight:1100;
-      font-size:1rem;
+    .cw-clues-head{
       display:flex;
       justify-content:space-between;
       align-items:center;
       gap:10px;
+      margin-bottom:8px;
     }
-    .cw-clue-list{
-      display:flex;
-      flex-direction:column;
-      gap:8px;
+    .cw-clues-title{
+      font-weight:1100;
       margin:0;
-      padding:0;
-      list-style:none;
+      font-size:1.05rem;
+      display:flex;
+      align-items:center;
+      gap:8px;
     }
+    .cw-clues-hint{
+      font-weight:900;
+      color: rgba(60,63,74,.65);
+      white-space:nowrap;
+    }
+
     .cw-clue{
       width:100%;
       text-align:left;
-      border-radius:14px;
+      border-radius:18px;
       border:1px solid rgba(60,63,74,.10);
-      background:#fff;
-      padding:10px 10px;
-      cursor:pointer;
-      font-weight:900;
-      color: rgba(60,63,74,.90);
-      box-shadow: 0 6px 14px rgba(60,63,74,.08);
+      background: rgba(255,255,255,.85);
+      box-shadow: 0 10px 18px rgba(60,63,74,.06);
+      padding:10px 12px;
       display:flex;
-      justify-content:space-between;
-      align-items:center;
       gap:10px;
-      touch-action:manipulation;
+      align-items:center;
+      cursor:pointer;
+      touch-action: manipulation;
+      margin:10px 0 0;
     }
-    .cw-clue:active{ transform: scale(.99); }
-    .cw-clue small{
-      font-weight:1000;
-      color: rgba(60,63,74,.60);
-      white-space:nowrap;
+    .cw-clue:active{ transform:scale(.995); }
+    .cw-clue-ico{
+      width:40px; height:40px;
+      border-radius:14px;
+      background: rgba(117,207,240,.12);
+      border:1px solid rgba(60,63,74,.10);
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.25rem;
+      flex:0 0 auto;
+    }
+    .cw-clue-main{ flex:1; min-width:0; }
+    .cw-clue-top{
+      font-weight:1100;
+      font-size:1.02rem;
+      line-height:1.1;
+    }
+    .cw-clue-sub{
+      margin-top:2px;
+      font-weight:900;
+      color: rgba(60,63,74,.70);
+      font-size:.9rem;
     }
     .cw-clue--active{
-      border-color: rgba(117,207,240,.75);
-      box-shadow: 0 0 0 4px rgba(117,207,240,.18) inset, 0 6px 14px rgba(60,63,74,.08);
-      background: rgba(117,207,240,.10);
-    }
-    .cw-clue--done{
-      border-color: rgba(243,184,64,.55);
-      background: rgba(243,184,64,.12);
+      border-color: rgba(255,130,105,.65);
+      box-shadow: 0 0 0 5px rgba(255,130,105,.12) inset, 0 10px 18px rgba(60,63,74,.08);
     }
 
     .cw-status{
       margin-top:10px;
       text-align:center;
       font-weight:900;
-      color: rgba(60,63,74,.75);
-      min-height:1.2em;
+      color: rgba(60,63,74,.78);
+      min-height: 1.25em;
     }
 
-    /* Sticky keyboard drawer */
-    .cw-kb{
+    /* ✅ Fixed bottom drawer (NOT in normal page flow) */
+    .cw-drawer{
       position:fixed;
-      left:0;
-      right:0;
-      bottom:0;
-      z-index:999;
-      padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+      left:0; right:0; bottom:0;
+      z-index: 1200;
+      padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+      pointer-events:none; /* inner becomes clickable */
+    }
+    .cw-drawer-sheet{
+      pointer-events:auto;
+      max-width: 980px;
+      margin: 0 auto;
+      border-radius: 22px;
       background: rgba(250,248,246,.92);
       backdrop-filter: blur(10px);
-      border-top: 1px solid rgba(60,63,74,.10);
-      box-shadow: 0 -10px 24px rgba(60,63,74,.08);
+      border: 1px solid rgba(60,63,74,.10);
+      box-shadow: 0 -12px 28px rgba(60,63,74,.14);
+      overflow:hidden;
+
+      /* drawer behavior */
+      transform: translateY(calc(100% - var(--drawerPeek)));
+      transition: transform 180ms ease;
     }
-    .cw-kb-inner{
-      max-width:1100px;
-      margin:0 auto;
-      border-radius:18px;
+    .cw-drawer-sheet.open{
+      transform: translateY(0);
+    }
+
+    .cw-drawer-head{
+      padding: 10px 12px;
       background: radial-gradient(circle at left,
         rgba(117,207,240,.18),
         rgba(172,148,244,.10),
         rgba(255,213,183,.22)
       );
-      border: 1px solid rgba(60,63,74,.08);
-      padding:10px;
-      box-shadow: 0 10px 24px rgba(60,63,74,.08);
-    }
-    .cw-kb-head{
+      border-bottom: 1px solid rgba(60,63,74,.10);
       display:flex;
       justify-content:space-between;
       align-items:center;
       gap:10px;
-      margin-bottom:8px;
-      padding:0 4px;
-      flex-wrap:wrap;
     }
-    .cw-kb-title{
+    .cw-drawer-title{
       font-weight:1100;
-      color: rgba(60,63,74,.88);
-    }
-    .cw-kb-meta{
-      font-weight:900;
-      color: rgba(60,63,74,.62);
-      white-space:nowrap;
-    }
-    .cw-kb-row{
-      display:flex;
-      gap:8px;
-      overflow-x:auto;
-      overflow-y:hidden;
-      -webkit-overflow-scrolling: touch;
-      padding:6px 6px 10px;
-      scroll-snap-type: x mandatory;
-      overscroll-behavior-x: contain;
-    }
-    .cw-kb-row::-webkit-scrollbar{ height: 8px; }
-    .cw-kb-row::-webkit-scrollbar-thumb{
-      background: rgba(60,63,74,.18);
-      border-radius: 999px;
-    }
-
-    .cw-key{
-      flex: 0 0 auto;
-      scroll-snap-align:start;
-      width: 52px;
-      height: 52px;
-      border-radius: 18px;
-      border: 1px solid rgba(60,63,74,.10);
-      background: rgba(255,255,255,.88);
-      box-shadow: 0 10px 18px rgba(60,63,74,.08);
-      font-weight:1100;
-      font-size: 1.2rem;
-      color: rgba(60,63,74,.92);
       display:flex;
       align-items:center;
-      justify-content:center;
+      gap:8px;
+      color: rgba(60,63,74,.88);
+    }
+    .cw-drawer-mini{
+      font-weight:900;
+      color: rgba(60,63,74,.65);
+      white-space:nowrap;
+    }
+    .cw-drawer-toggle{
+      border:none;
+      border-radius:999px;
+      background: rgba(255,255,255,.85);
+      border: 1px solid rgba(60,63,74,.10);
+      padding:8px 12px;
+      font-weight:1000;
       cursor:pointer;
-      touch-action:manipulation;
-      user-select:none;
-      -webkit-user-select:none;
+      box-shadow: 0 8px 16px rgba(60,63,74,.10);
+      touch-action: manipulation;
     }
-    .cw-key:active{ transform: scale(.99); }
+    .cw-drawer-toggle:active{ transform:scale(.99); }
 
-    .cw-key--action{
-      width: 86px;
-      font-size: .95rem;
-      font-weight: 1000;
-      color: rgba(60,63,74,.85);
-      background: rgba(255,255,255,.92);
+    .cw-letters{
+      max-height: var(--drawerMaxH);
+      overflow:auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 12px;
+      background: rgba(255,255,255,.75);
     }
 
-    /* Confetti */
+    .cw-letter-grid{
+      display:grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap:10px;
+    }
+    @media (min-width:520px){
+      .cw-letter-grid{ grid-template-columns: repeat(9, minmax(0, 1fr)); }
+    }
+
+    .cw-letter{
+      border:none;
+      border-radius: 16px;
+      padding: 14px 0;
+      font-weight:1100;
+      font-size: 1.05rem;
+      cursor:pointer;
+      background: rgba(255,213,183,.55);
+      border: 1px solid rgba(60,63,74,.10);
+      box-shadow: 0 10px 18px rgba(60,63,74,.08);
+      touch-action: manipulation;
+    }
+    .cw-letter:active{ transform:scale(.99); }
+    .cw-letter--util{
+      background: rgba(172,148,244,.18);
+    }
+
+    /* confetti */
     .cw-confetti{
       position: fixed;
       inset: 0;
-      pointer-events: none;
-      overflow: hidden;
+      pointer-events:none;
       z-index: 2000;
+      overflow:hidden;
     }
     .cw-confetti-piece{
       position:absolute;
@@ -503,106 +484,898 @@
 </head>
 
 <body>
-  <div class="fc-game-screen">
+  <div class="cw-screen">
     <a class="fc-back-link" href="../index.html">← Back to games</a>
 
-    <div class="fc-game-box">
-      <h1 class="fc-game-heading">Crossword</h1>
-      <p class="fc-game-instructions">
-        Tap a clue to jump to its word. Tap the same square again to switch direction (Across/Down).
-        Correct letters glow. Wrong letters wiggle (and won’t advance).
+    <div class="cw-box">
+      <h1 class="cw-title">Tap-to-Type Crossword</h1>
+      <p class="cw-sub">
+        Tap a clue to jump to its word. Or tap a square to select it.
+        If a square is shared, tap it again to switch Across ↔ Down.
       </p>
 
       <div class="cw-controls">
-        <label style="font-weight:1000;">Puzzle:</label>
-        <select class="cw-select" id="cwPuzzleSelect" aria-label="Choose crossword">
-          <option value="creation" selected>Creation Crossword</option>
-          <option value="character">Character Crossword</option>
+        <select id="themeSel" class="cw-select" aria-label="Theme">
+          <option value="mix">Mix (random)</option>
+          <option value="creation">Creation</option>
+          <option value="characters">Bible Characters</option>
         </select>
 
-        <label class="cw-toggle" for="cwGuided">
-          <input id="cwGuided" type="checkbox" />
-          Guided Mode
+        <select id="sizeSel" class="cw-select" aria-label="Size">
+          <option value="small">Small (5 words)</option>
+          <option value="medium" selected>Medium (7 words)</option>
+          <option value="large">Large (9 words)</option>
+        </select>
+
+        <button class="cw-btn cw-btn--primary" id="newBtn" type="button">New Crossword</button>
+        <button class="cw-btn cw-btn--ghost" id="hintBtn" type="button">Hint (1 letter)</button>
+
+        <label class="cw-toggle">
+          <input id="guidedChk" type="checkbox" />
+          Guided mode (no wrong letters)
         </label>
-
-        <button class="cw-btn cw-btn--primary" id="cwRestartBtn" type="button">Start / Restart</button>
-        <button class="cw-btn cw-btn--secondary" id="cwHintBtn" type="button">Hint (1 letter)</button>
-        <button class="cw-btn cw-btn--ghost" id="cwClearBtn" type="button">Clear Word</button>
       </div>
 
-      <div class="cw-hud">
-        <div class="cw-chip">✅ Words done: <strong id="cwDone">0</strong>/<strong id="cwTotalWords">0</strong></div>
-        <div class="cw-chip">⌁ Direction: <strong id="cwDir">Across</strong></div>
+      <div class="cw-meta">
+        <div class="cw-chip">🧩 Theme: <strong id="themeText">Mix</strong></div>
+        <div class="cw-chip">🔒 Words locked: <strong id="lockedText">0</strong>/<strong id="totalWordsText">0</strong></div>
+        <div class="cw-chip">➡️ Direction: <strong id="dirText">ACROSS</strong></div>
       </div>
 
-      <div class="cw-layout">
-        <div class="cw-panel">
-          <div class="cw-panel-title">
-            <span>🗺️ Board</span>
-            <span class="cw-subtle">Everything stays visible</span>
-          </div>
-
-          <div class="cw-board-wrap">
-            <div class="cw-board-sizer" id="cwSizer">
-              <div class="cw-board" id="cwBoard" aria-label="Crossword board"></div>
-            </div>
-          </div>
-
-          <div class="cw-status" id="cwStatus"></div>
+      <div class="cw-board-card">
+        <div class="cw-board-head">
+          <h2 class="cw-board-title">🧩 Crossword</h2>
+          <div class="cw-board-hint">Tap a square or a clue</div>
         </div>
 
-        <div class="cw-panel">
-          <div class="cw-panel-title">
-            <span>🧩 Clues</span>
-            <span class="cw-subtle">Tap to jump</span>
-          </div>
-
-          <div class="cw-clues">
-            <div class="cw-clue-block">
-              <div class="cw-clue-title">
-                <span>➡️ Across</span>
-                <span class="cw-subtle" id="cwAcrossCount"></span>
-              </div>
-              <ul class="cw-clue-list" id="cwAcross"></ul>
-            </div>
-
-            <div class="cw-clue-block">
-              <div class="cw-clue-title">
-                <span>⬇️ Down</span>
-                <span class="cw-subtle" id="cwDownCount"></span>
-              </div>
-              <ul class="cw-clue-list" id="cwDown"></ul>
-            </div>
-          </div>
+        <div class="cw-stage">
+          <div id="grid" class="cw-grid" aria-label="Crossword grid"></div>
         </div>
+
+        <div class="cw-status" id="status">Tap a clue (or a square) to begin!</div>
+      </div>
+
+      <div class="cw-clues-card">
+        <div class="cw-clues-head">
+          <h3 class="cw-clues-title">📝 Clues</h3>
+          <div class="cw-clues-hint">Tap to go there</div>
+        </div>
+        <div id="clues"></div>
       </div>
     </div>
   </div>
 
-  <!-- Sticky keyboard -->
-  <div class="cw-kb" role="region" aria-label="Letter keyboard (sticky)">
-    <div class="cw-kb-inner">
-      <div class="cw-kb-head">
-        <div class="cw-kb-title">🔤 Tap letters (or use your keyboard)</div>
-        <div class="cw-kb-meta" id="cwKbMeta">Word</div>
+  <!-- ✅ Fixed Drawer -->
+  <div class="cw-drawer" aria-label="Letter drawer">
+    <div class="cw-drawer-sheet" id="drawerSheet">
+      <div class="cw-drawer-head">
+        <div class="cw-drawer-title">⌨️ Tap letters</div>
+        <div class="cw-drawer-mini" id="drawerMini">Select a square</div>
+        <button class="cw-drawer-toggle" id="drawerToggle" type="button">Open</button>
       </div>
-      <div class="cw-kb-row" id="cwKbRow" aria-label="Letter keys"></div>
+
+      <div class="cw-letters">
+        <div class="cw-letter-grid" id="letters"></div>
+      </div>
     </div>
   </div>
 
-  <div class="cw-confetti" id="cwConfetti"></div>
+  <div class="cw-confetti" id="confetti"></div>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // ----------------------------
-      // Puzzle data (2 test puzzles)
-      // ----------------------------
-      const PUZZLES = {
-        creation: {
-          title: 'Creation Crossword',
-          wordBank: [
-            { answer: 'LIGHT', clue: '💡 First thing God said to exist' },
-            { answer: 'EARTH', clue: '🌍 Our home planet' },
-            { answer: 'ADAM', clue: '👨 First man' },
-            { answer: 'EVE', clue: '👩 First woman' },
-            { answer: 'GARD
+      // -------------------------------
+      // Word banks (simple starters)
+      // -------------------------------
+      const BANKS = {
+        creation: [
+          { answer:"LIGHT", clue:"Made the day bright", icon:"💡" },
+          { answer:"TREE",  clue:"Tall plant",        icon:"🌳" },
+          { answer:"FISH",  clue:"Swims in water",    icon:"🐟" },
+          { answer:"BIRD",  clue:"Flies in sky",      icon:"🕊️" },
+          { answer:"LAND",  clue:"Dry ground",        icon:"🌍" },
+          { answer:"STAR",  clue:"Shines at night",   icon:"⭐" },
+          { answer:"SEA",   clue:"Big water",         icon:"🌊" },
+          { answer:"SUN",   clue:"Warms the day",     icon:"☀️" },
+          { answer:"MOON",  clue:"Night light",       icon:"🌙" },
+          { answer:"SEED",  clue:"Starts a plant",    icon:"🌱" },
+        ],
+        characters: [
+          { answer:"PAUL",  clue:"Helped many congregations", icon:"🧳" },
+          { answer:"NOAH",  clue:"Built a big boat",          icon:"⛵" },
+          { answer:"RUTH",  clue:"Loyal friend",              icon:"🤝" },
+          { answer:"PETER", clue:"Fisherman apostle",         icon:"🎣" },
+          { answer:"MARY",  clue:"Jesus’ mother",             icon:"👶" },
+          { answer:"JOHN",  clue:"Wrote a Gospel",            icon:"✍️" },
+          { answer:"ESTHER",clue:"Brave queen",               icon:"👑" },
+          { answer:"DAVID", clue:"Shepherd king",             icon:"🐑" },
+          { answer:"MOSES", clue:"Led Israel",                icon:"🪵" },
+          { answer:"ANNA",  clue:"Loved the temple",          icon:"🏛️" },
+        ]
+      };
+
+      function pickBank(theme){
+        if (theme === 'creation') return BANKS.creation.slice();
+        if (theme === 'characters') return BANKS.characters.slice();
+        // mix
+        return BANKS.creation.concat(BANKS.characters);
+      }
+
+      // -------------------------------
+      // Generator (greedy crossings)
+      // -------------------------------
+      const SIZE_MAP = { small:5, medium:7, large:9 };
+
+      function makeEmptyGrid(R,C){
+        const g = new Array(R);
+        for (let r=0;r<R;r++){
+          g[r] = new Array(C).fill(null); // null = empty
+        }
+        return g;
+      }
+
+      function canPlace(grid, word, r0, c0, dir){
+        const R = grid.length, C = grid[0].length;
+        if (dir === 'across'){
+          if (c0 < 0 || c0 + word.length > C) return false;
+          for (let i=0;i<word.length;i++){
+            const ch = word[i];
+            const cur = grid[r0][c0+i];
+            if (cur && cur !== ch) return false;
+          }
+          return true;
+        } else {
+          if (r0 < 0 || r0 + word.length > R) return false;
+          for (let i=0;i<word.length;i++){
+            const ch = word[i];
+            const cur = grid[r0+i][c0];
+            if (cur && cur !== ch) return false;
+          }
+          return true;
+        }
+      }
+
+      function place(grid, word, r0, c0, dir){
+        if (dir === 'across'){
+          for (let i=0;i<word.length;i++){
+            grid[r0][c0+i] = word[i];
+          }
+        } else {
+          for (let i=0;i<word.length;i++){
+            grid[r0+i][c0] = word[i];
+          }
+        }
+      }
+
+      function scorePlacement(grid, word, r0, c0, dir){
+        // score = number of crossings
+        let s = 0;
+        if (dir === 'across'){
+          for (let i=0;i<word.length;i++){
+            if (grid[r0][c0+i] === word[i]) s++;
+          }
+        } else {
+          for (let i=0;i<word.length;i++){
+            if (grid[r0+i][c0] === word[i]) s++;
+          }
+        }
+        return s;
+      }
+
+      function generatePuzzle(entries, wantCount){
+        // bigger temp grid then we trim
+        const R = 21, C = 21;
+        const grid = makeEmptyGrid(R,C);
+
+        // pick words (prefer longer first)
+        const pool = entries
+          .map(e => ({...e, answer:e.answer.toUpperCase().replace(/[^A-Z]/g,'') }))
+          .filter(e => e.answer.length >= 3)
+          .sort((a,b)=> b.answer.length - a.answer.length);
+
+        const chosen = pool.slice(0, Math.min(wantCount, pool.length));
+
+        const placed = []; // {id, entry, r,c,dir}
+        let idCounter = 1;
+
+        // place first word center across
+        if (chosen.length){
+          const w0 = chosen[0].answer;
+          const r0 = Math.floor(R/2);
+          const c0 = Math.floor(C/2) - Math.floor(w0.length/2);
+          place(grid, w0, r0, c0, 'across');
+          placed.push({ id:idCounter++, entry:chosen[0], r:r0, c:c0, dir:'across' });
+        }
+
+        // place rest with best crossing
+        for (let k=1;k<chosen.length;k++){
+          const w = chosen[k].answer;
+          let best = null;
+
+          for (let r=0;r<R;r++){
+            for (let c=0;c<C;c++){
+              if (!grid[r][c]) continue;
+              const ch = grid[r][c];
+              for (let i=0;i<w.length;i++){
+                if (w[i] !== ch) continue;
+
+                // try across with this letter crossing vertically grid[r][c]
+                const rA = r;
+                const cA = c - i;
+                if (canPlace(grid, w, rA, cA, 'across')){
+                  const s = scorePlacement(grid, w, rA, cA, 'across');
+                  if (!best || s > best.s) best = { r:rA, c:cA, dir:'across', s };
+                }
+
+                // try down
+                const rD = r - i;
+                const cD = c;
+                if (canPlace(grid, w, rD, cD, 'down')){
+                  const s = scorePlacement(grid, w, rD, cD, 'down');
+                  if (!best || s > best.s) best = { r:rD, c:cD, dir:'down', s };
+                }
+              }
+            }
+          }
+
+          // if no crossing found, try near center
+          if (!best){
+            const rTry = Math.floor(R/2) - Math.floor(w.length/2);
+            const cTry = Math.floor(C/2) - Math.floor(w.length/2);
+            const tries = [
+              {r:Math.floor(R/2)-2, c:Math.floor(C/2)-Math.floor(w.length/2), dir:'across'},
+              {r:Math.floor(R/2)-Math.floor(w.length/2), c:Math.floor(C/2)+2, dir:'down'},
+              {r:Math.floor(R/2)+3, c:Math.floor(C/2)-Math.floor(w.length/2), dir:'across'},
+              {r:Math.floor(R/2)-Math.floor(w.length/2), c:Math.floor(C/2)-3, dir:'down'},
+              {r:rTry, c:cTry, dir:'across'},
+            ];
+            for (const t of tries){
+              if (canPlace(grid, w, t.r, t.c, t.dir)){
+                best = { ...t, s:0 };
+                break;
+              }
+            }
+          }
+
+          if (best){
+            place(grid, w, best.r, best.c, best.dir);
+            placed.push({ id:idCounter++, entry:chosen[k], r:best.r, c:best.c, dir:best.dir });
+          }
+        }
+
+        // trim to used area (Option B)
+        const trimmed = trimGrid(grid);
+
+        // ✅ keep all clues forever:
+        // convert placed coordinates into trimmed coordinates for display ONLY
+        const placedDisplay = placed.map(p => ({
+          ...p,
+          dr: p.r - trimmed.r0,
+          dc: p.c - trimmed.c0,
+        }));
+
+        return { grid: trimmed.grid, placed: placedDisplay, originalPlaced: placed, trim: trimmed };
+      }
+
+      // trimGrid: remove empty rows/cols around used letters
+      function trimGrid(grid){
+        const R = grid.length, C = grid[0].length;
+        let rMin=R, rMax=-1, cMin=C, cMax=-1;
+        for (let r=0;r<R;r++){
+          for (let c=0;c<C;c++){
+            if (grid[r][c]){
+              rMin = Math.min(rMin, r);
+              rMax = Math.max(rMax, r);
+              cMin = Math.min(cMin, c);
+              cMax = Math.max(cMax, c);
+            }
+          }
+        }
+        // safety
+        if (rMax < 0) return { grid:[[null]], r0:0, c0:0 };
+
+        const out = [];
+        for (let r=rMin; r<=rMax; r++){
+          out.push(grid[r].slice(cMin, cMax+1));
+        }
+        return { grid: out, r0:rMin, c0:cMin };
+      }
+
+      // -------------------------------
+      // UI / State
+      // -------------------------------
+      const gridEl = document.getElementById('grid');
+      const cluesEl = document.getElementById('clues');
+      const statusEl = document.getElementById('status');
+
+      const themeSel = document.getElementById('themeSel');
+      const sizeSel  = document.getElementById('sizeSel');
+      const newBtn   = document.getElementById('newBtn');
+      const hintBtn  = document.getElementById('hintBtn');
+      const guidedChk= document.getElementById('guidedChk');
+
+      const themeText = document.getElementById('themeText');
+      const lockedText= document.getElementById('lockedText');
+      const totalWordsText = document.getElementById('totalWordsText');
+      const dirText   = document.getElementById('dirText');
+
+      const drawerSheet = document.getElementById('drawerSheet');
+      const drawerToggle= document.getElementById('drawerToggle');
+      const drawerMini  = document.getElementById('drawerMini');
+      const lettersEl   = document.getElementById('letters');
+
+      const confettiLayer = document.getElementById('confetti');
+
+      function setStatus(t){ statusEl.textContent = t || ''; }
+
+      // puzzle state
+      let puzzle = null; // {grid, placed[]}
+      let user = [];     // same dims as grid; '' for used cells; null for unused
+      let active = null; // {r,c}
+      let direction = 'across'; // across/down
+      let lockedWordIds = new Set(); // placed.id that are solved/locked
+      let cellToWords = null; // map [r][c] -> {acrossId?, downId?}
+      let activeWord = null; // placed entry object
+      let activeClueId = null;
+
+      // tiny correct/wrong animation timers
+      const flashTimers = new Map();
+
+      function confettiBurst(big=false){
+        const pieceCount = big ? 140 : 70;
+        const durationMin = big ? 1200 : 900;
+        const durationMax = big ? 2200 : 1600;
+        const colors = ['#75CFF0','#FFD5B7','#F3B840','#AC94F4','#FF8269','#FAF8F6'];
+        for (let i = 0; i < pieceCount; i++){
+          const p = document.createElement('div');
+          p.className = 'cw-confetti-piece';
+          p.style.background = colors[Math.floor(Math.random() * colors.length)];
+          const x = Math.random() * window.innerWidth;
+          const delay = Math.random() * 140;
+          const duration = durationMin + Math.random() * (durationMax - durationMin);
+          p.style.left = x + 'px';
+          p.style.top = (-20 - Math.random() * 60) + 'px';
+          p.style.animationDuration = duration + 'ms';
+          p.style.animationDelay = delay + 'ms';
+          const w = 8 + Math.random() * 8;
+          const h = 10 + Math.random() * 10;
+          p.style.width = w + 'px';
+          p.style.height = h + 'px';
+          confettiLayer.appendChild(p);
+          setTimeout(() => p.remove(), duration + delay + 120);
+        }
+      }
+
+      // -------------------------------
+      // Build cell->words map (Across/Down ids for shared cells)
+      // -------------------------------
+      function buildCellToWords(){
+        const R = puzzle.grid.length, C = puzzle.grid[0].length;
+        const map = Array.from({length:R}, () => Array.from({length:C}, () => ({ across:null, down:null })));
+        for (const w of puzzle.placed){
+          const len = w.entry.answer.length;
+          for (let i=0;i<len;i++){
+            const rr = w.dr + (w.dir==='down' ? i : 0);
+            const cc = w.dc + (w.dir==='across' ? i : 0);
+            if (rr<0||cc<0||rr>=R||cc>=C) continue;
+            if (w.dir==='across') map[rr][cc].across = w.id;
+            else map[rr][cc].down = w.id;
+          }
+        }
+        return map;
+      }
+
+      // -------------------------------
+      // Fit-to-screen sizing (keeps whole board visible)
+      // -------------------------------
+      function fitBoardToScreen(){
+        if (!puzzle) return;
+
+        const R = puzzle.grid.length, C = puzzle.grid[0].length;
+
+        // available width inside board card
+        const stage = document.querySelector('.cw-stage');
+        const boardCard = document.querySelector('.cw-board-card');
+        if (!stage || !boardCard) return;
+
+        const stageRect = stage.getBoundingClientRect();
+        // height: we want the board fully visible without cropping,
+        // and we also need room for the clue list above the drawer.
+        // We'll size by width primarily, then cap by a reasonable height.
+        const availableW = Math.max(240, stageRect.width - 4);
+
+        // Height cap based on viewport (leave room for header/controls/clues + drawer peek)
+        const vh = window.innerHeight;
+        const safeBottom = (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--drawerPeek')) || 76);
+        const availableH = Math.max(220, vh - safeBottom - 320); // rough: keeps board from becoming enormous
+
+        // try a gap that scales down slightly on very small screens
+        let gap = 6;
+        if (availableW < 360) gap = 5;
+        if (availableW < 320) gap = 4;
+
+        // compute cell size to fit both width and height
+        const cellByW = Math.floor((availableW - gap*(C-1)) / C);
+        const cellByH = Math.floor((availableH - gap*(R-1)) / R);
+        let cell = Math.max(22, Math.min(56, Math.min(cellByW, cellByH)));
+
+        // slightly reduce if we’re on tiny screens
+        if (window.innerWidth < 360) cell = Math.max(20, Math.min(cell, 44));
+
+        document.documentElement.style.setProperty('--cell', cell + 'px');
+        document.documentElement.style.setProperty('--gap', gap + 'px');
+
+        // Set grid templates directly
+        gridEl.style.gridTemplateColumns = `repeat(${C}, var(--cell))`;
+        gridEl.style.gridTemplateRows = `repeat(${R}, var(--cell))`;
+      }
+
+      // -------------------------------
+      // Render
+      // -------------------------------
+      function render(){
+        if (!puzzle) return;
+
+        fitBoardToScreen();
+
+        const R = puzzle.grid.length, C = puzzle.grid[0].length;
+        gridEl.innerHTML = '';
+
+        // highlight path for active word
+        const pathSet = new Set();
+        if (activeWord){
+          const len = activeWord.entry.answer.length;
+          for (let i=0;i<len;i++){
+            const rr = activeWord.dr + (activeWord.dir==='down' ? i : 0);
+            const cc = activeWord.dc + (activeWord.dir==='across' ? i : 0);
+            pathSet.add(rr + ',' + cc);
+          }
+        }
+
+        // which cells are locked
+        const lockedCells = new Set();
+        for (const w of puzzle.placed){
+          if (!lockedWordIds.has(w.id)) continue;
+          const len = w.entry.answer.length;
+          for (let i=0;i<len;i++){
+            const rr = w.dr + (w.dir==='down' ? i : 0);
+            const cc = w.dc + (w.dir==='across' ? i : 0);
+            lockedCells.add(rr + ',' + cc);
+          }
+        }
+
+        for (let r=0;r<R;r++){
+          for (let c=0;c<C;c++){
+            const used = !!puzzle.grid[r][c];
+            const div = document.createElement('div');
+
+            if (!used){
+              div.className = 'cw-cell cw-cell--off';
+              gridEl.appendChild(div);
+              continue;
+            }
+
+            div.className = 'cw-cell';
+            div.dataset.r = r;
+            div.dataset.c = c;
+
+            const v = user[r][c] || '';
+            div.textContent = v;
+
+            // styles
+            if (active && active.r===r && active.c===c) div.classList.add('cw-cell--active');
+            if (pathSet.has(r+','+c)) div.classList.add('cw-cell--path');
+            if (lockedCells.has(r+','+c)) div.classList.add('cw-cell--locked');
+
+            // transient feedback classes
+            const key = r+','+c;
+            if (flashTimers.has(key)){
+              const cls = flashTimers.get(key);
+              if (cls) div.classList.add(cls);
+            }
+
+            div.addEventListener('click', () => onCellTap(r,c));
+            gridEl.appendChild(div);
+          }
+        }
+
+        // update chips
+        lockedText.textContent = String(lockedWordIds.size);
+        totalWordsText.textContent = String(puzzle.placed.length);
+        dirText.textContent = (direction === 'across') ? 'ACROSS' : 'DOWN';
+
+        // render clues (never filtered)
+        renderClues();
+
+        // drawer mini text
+        if (!activeWord){
+          drawerMini.textContent = 'Select a square';
+        } else {
+          drawerMini.textContent = `${activeWord.entry.icon || '🔤'} ${activeWord.entry.clue} • ${activeWord.dir.toUpperCase()} • ${activeWord.entry.answer.length} letters`;
+        }
+      }
+
+      function renderClues(){
+        cluesEl.innerHTML = '';
+
+        // stable numbering in placed order
+        puzzle.placed.forEach((w, idx) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'cw-clue';
+          if (activeClueId === w.id) btn.classList.add('cw-clue--active');
+
+          const ico = document.createElement('div');
+          ico.className = 'cw-clue-ico';
+          ico.textContent = w.entry.icon || '🧩';
+
+          const main = document.createElement('div');
+          main.className = 'cw-clue-main';
+
+          const top = document.createElement('div');
+          top.className = 'cw-clue-top';
+          top.textContent = `${idx+1}. ${w.entry.clue}`;
+
+          const sub = document.createElement('div');
+          sub.className = 'cw-clue-sub';
+          sub.textContent = `${w.dir.toUpperCase()} • ${w.entry.answer.length} letters`;
+
+          main.appendChild(top);
+          main.appendChild(sub);
+
+          btn.appendChild(ico);
+          btn.appendChild(main);
+
+          btn.addEventListener('click', () => {
+            selectWordById(w.id);
+            // open drawer automatically when they pick a clue
+            openDrawer(true);
+          });
+
+          cluesEl.appendChild(btn);
+        });
+      }
+
+      // -------------------------------
+      // Selection logic (selectCell + direction toggle + highlightClueForCell)
+      // -------------------------------
+      function onCellTap(r,c){
+        const links = cellToWords[r][c]; // {across, down}
+        if (!links.across && !links.down){
+          setStatus('That square is not part of a word.');
+          return;
+        }
+
+        // if tapping same cell and it’s shared, toggle direction
+        if (active && active.r===r && active.c===c && links.across && links.down){
+          direction = (direction === 'across') ? 'down' : 'across';
+        } else {
+          // choose direction that exists, prefer current direction if possible
+          if (direction === 'across' && links.across) direction = 'across';
+          else if (direction === 'down' && links.down) direction = 'down';
+          else direction = links.across ? 'across' : 'down';
+        }
+
+        active = {r,c};
+        selectWordForCell(r,c);
+        highlightClueForCell(r,c);
+
+        setStatus('Tap letters in the drawer.');
+        // open drawer on first interaction
+        openDrawer(true);
+        render();
+        scrollActiveClueIntoView();
+      }
+
+      function selectWordForCell(r,c){
+        const links = cellToWords[r][c];
+        const id = (direction === 'across') ? links.across : links.down;
+        if (!id) return;
+        activeWord = puzzle.placed.find(w => w.id === id) || null;
+      }
+
+      function selectWordById(id){
+        const w = puzzle.placed.find(x => x.id === id);
+        if (!w) return;
+
+        direction = w.dir;
+        activeWord = w;
+
+        // select first empty cell in word, else start
+        const len = w.entry.answer.length;
+        let pick = {r:w.dr, c:w.dc};
+        for (let i=0;i<len;i++){
+          const rr = w.dr + (w.dir==='down' ? i : 0);
+          const cc = w.dc + (w.dir==='across' ? i : 0);
+          if ((user[rr][cc] || '') === ''){
+            pick = {r:rr, c:cc};
+            break;
+          }
+        }
+        active = pick;
+        activeClueId = id;
+        setStatus('Tap letters in the drawer.');
+        render();
+        scrollActiveCellIntoView();
+        scrollActiveClueIntoView();
+      }
+
+      function highlightClueForCell(r,c){
+        const links = cellToWords[r][c];
+        const id = (direction === 'across') ? links.across : links.down;
+        activeClueId = id || null;
+      }
+
+      function scrollActiveCellIntoView(){
+        const el = gridEl.querySelector(`.cw-cell[data-r="${active.r}"][data-c="${active.c}"]`);
+        if (!el) return;
+        el.scrollIntoView({ block:'nearest', inline:'nearest' });
+      }
+
+      function scrollActiveClueIntoView(){
+        // keep it simple: find active clue and nudge if offscreen
+        const clueBtns = Array.from(cluesEl.querySelectorAll('.cw-clue'));
+        const idx = puzzle.placed.findIndex(w => w.id === activeClueId);
+        if (idx < 0 || !clueBtns[idx]) return;
+        clueBtns[idx].scrollIntoView({ block:'nearest', inline:'nearest' });
+      }
+
+      // -------------------------------
+      // Input rules
+      // - Guided mode blocks wrong letters.
+      // - If wrong letter, DO NOT advance.
+      // - Auto-advance only on correct entry.
+      // -------------------------------
+      function flashCell(r,c, cls, ms=260){
+        const key = r+','+c;
+        flashTimers.set(key, cls);
+        render();
+        setTimeout(() => {
+          flashTimers.delete(key);
+          render();
+        }, ms);
+      }
+
+      function nextInWord(){
+        if (!activeWord || !active) return null;
+        const w = activeWord;
+        const len = w.entry.answer.length;
+
+        // find current index inside word
+        let idx = 0;
+        for (let i=0;i<len;i++){
+          const rr = w.dr + (w.dir==='down' ? i : 0);
+          const cc = w.dc + (w.dir==='across' ? i : 0);
+          if (rr===active.r && cc===active.c){ idx = i; break; }
+        }
+        // move to next empty after idx
+        for (let j=idx+1;j<len;j++){
+          const rr = w.dr + (w.dir==='down' ? j : 0);
+          const cc = w.dc + (w.dir==='across' ? j : 0);
+          if ((user[rr][cc] || '') === '') return {r:rr, c:cc};
+        }
+        // else wrap within word
+        for (let j=0;j<=idx;j++){
+          const rr = w.dr + (w.dir==='down' ? j : 0);
+          const cc = w.dc + (w.dir==='across' ? j : 0);
+          if ((user[rr][cc] || '') === '') return {r:rr, c:cc};
+        }
+        return null;
+      }
+
+      function checkWordSolved(wordObj){
+        const w = wordObj;
+        const ans = w.entry.answer;
+        for (let i=0;i<ans.length;i++){
+          const rr = w.dr + (w.dir==='down' ? i : 0);
+          const cc = w.dc + (w.dir==='across' ? i : 0);
+          if ((user[rr][cc] || '') !== ans[i]) return false;
+        }
+        return true;
+      }
+
+      function lockWord(wordObj){
+        if (lockedWordIds.has(wordObj.id)) return;
+        lockedWordIds.add(wordObj.id);
+        confettiBurst(false);
+        setStatus('Word locked! 🎉');
+
+        if (lockedWordIds.size === puzzle.placed.length){
+          setStatus('All words complete! 🎉✨');
+          confettiBurst(true);
+        }
+      }
+
+      function onLetter(letter){
+        if (!active || !activeWord) { setStatus('Tap a clue (or square) first.'); return; }
+
+        const r = active.r, c = active.c;
+        const correct = puzzle.grid[r][c]; // answer letter
+        const guided = guidedChk.checked;
+
+        if (letter === '⌫'){
+          user[r][c] = '';
+          setStatus('Cleared.');
+          render();
+          return;
+        }
+
+        // only A-Z
+        const L = String(letter).toUpperCase().replace(/[^A-Z]/g,'');
+        if (!L) return;
+
+        if (guided && L !== correct){
+          // guided mode: refuse wrong letter
+          flashCell(r,c,'cw-cell--bad', 260);
+          setStatus('Try a different letter 🙂');
+          return; // ✅ no advance
+        }
+
+        // allow typing but only advance if correct
+        user[r][c] = L;
+
+        if (L === correct){
+          flashCell(r,c,'cw-cell--good', 220);
+          setStatus('Nice!');
+          // check lock word after each correct letter
+          if (checkWordSolved(activeWord)){
+            lockWord(activeWord);
+          }
+          // ✅ advance only if correct
+          const nxt = nextInWord();
+          if (nxt){
+            active = nxt;
+            highlightClueForCell(active.r, active.c);
+          } else {
+            // no blanks left in this word, just keep selection
+          }
+        } else {
+          flashCell(r,c,'cw-cell--bad', 260);
+          setStatus('Not quite 🙂');
+          // ✅ do NOT advance
+        }
+
+        render();
+      }
+
+      function hintOneLetter(){
+        if (!active || !activeWord) { setStatus('Tap a clue (or square) first.'); return; }
+        const r = active.r, c = active.c;
+        if ((user[r][c] || '') !== '') { setStatus('Pick an empty square for a hint.'); return; }
+        user[r][c] = puzzle.grid[r][c];
+        flashCell(r,c,'cw-cell--good', 240);
+        setStatus('Hint filled one letter ✨');
+
+        if (checkWordSolved(activeWord)) lockWord(activeWord);
+
+        const nxt = nextInWord();
+        if (nxt){
+          active = nxt;
+          highlightClueForCell(active.r, active.c);
+        }
+
+        render();
+      }
+
+      // -------------------------------
+      // Drawer letters
+      // -------------------------------
+      function buildLetterButtons(){
+        lettersEl.innerHTML = '';
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+        for (const ch of letters){
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'cw-letter';
+          b.textContent = ch;
+          b.addEventListener('click', () => onLetter(ch));
+          lettersEl.appendChild(b);
+        }
+
+        // backspace + clear
+        const back = document.createElement('button');
+        back.type = 'button';
+        back.className = 'cw-letter cw-letter--util';
+        back.textContent = '⌫';
+        back.addEventListener('click', () => onLetter('⌫'));
+        lettersEl.appendChild(back);
+
+        const clear = document.createElement('button');
+        clear.type = 'button';
+        clear.className = 'cw-letter cw-letter--util';
+        clear.textContent = 'Clear';
+        clear.addEventListener('click', () => {
+          if (!active) return;
+          user[active.r][active.c] = '';
+          setStatus('Cleared.');
+          render();
+        });
+        lettersEl.appendChild(clear);
+      }
+
+      function openDrawer(open){
+        if (open){
+          drawerSheet.classList.add('open');
+          drawerToggle.textContent = 'Close';
+          // also reserve more space when open (so page never hides behind it)
+          document.documentElement.style.setProperty('--drawerPeek', '76px');
+        } else {
+          drawerSheet.classList.remove('open');
+          drawerToggle.textContent = 'Open';
+        }
+      }
+
+      drawerToggle.addEventListener('click', () => {
+        const isOpen = drawerSheet.classList.contains('open');
+        openDrawer(!isOpen);
+      });
+
+      // -------------------------------
+      // Start / New crossword
+      // -------------------------------
+      function startNew(){
+        const theme = themeSel.value;
+        const size = sizeSel.value;
+        themeText.textContent = (theme === 'mix') ? 'Mix' : (theme === 'creation' ? 'Creation' : 'Characters');
+
+        const want = SIZE_MAP[size] || 7;
+
+        const entries = shuffle(pickBank(theme));
+        puzzle = generatePuzzle(entries, want);
+
+        // init user grid
+        const R = puzzle.grid.length, C = puzzle.grid[0].length;
+        user = Array.from({length:R}, (_,r) => Array.from({length:C}, (_,c) => puzzle.grid[r][c] ? '' : null));
+
+        lockedWordIds = new Set();
+        cellToWords = buildCellToWords();
+
+        active = null;
+        activeWord = null;
+        activeClueId = null;
+        direction = 'across';
+
+        setStatus('Tap a clue (or a square) to begin!');
+        buildLetterButtons();
+        openDrawer(false);
+
+        // fit now
+        render();
+      }
+
+      function shuffle(arr){
+        const a = arr.slice();
+        for (let i=a.length-1;i>0;i--){
+          const j = Math.floor(Math.random()*(i+1));
+          [a[i],a[j]] = [a[j],a[i]];
+        }
+        return a;
+      }
+
+      // -------------------------------
+      // Events
+      // -------------------------------
+      newBtn.addEventListener('click', startNew);
+      hintBtn.addEventListener('click', hintOneLetter);
+
+      window.addEventListener('resize', () => {
+        // just re-fit; avoids cropping/line artifacts
+        if (puzzle) render();
+      });
+
+      // ✅ if user taps anywhere on board card and drawer is closed, give a nudge
+      document.querySelector('.cw-board-card').addEventListener('click', () => {
+        if (!drawerSheet.classList.contains('open') && active){
+          openDrawer(true);
+        }
+      });
+
+      // -------------------------------
+      // Init
+      // -------------------------------
+      startNew();
+    });
+  </script>
+</body>
+</html>
+```0
