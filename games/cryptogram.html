@@ -17,6 +17,16 @@
       --coral: var(--cheerful-coral, #FF8269);
       --card: #fff;
       --line: rgba(60,63,74,.12);
+
+      /* cell sizing defaults (JS updates these) */
+      --cellW: 74px;
+      --iconW: 46px;
+      --letterH: 56px;
+      --iconF: 1.35rem;
+      --letterF: 1.35rem;
+
+      /* word row gap */
+      --wordGap: 10px;
     }
 
     body{
@@ -24,7 +34,7 @@
       background: var(--bg);
       color: var(--ink);
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      overflow-x:hidden; /* ✅ prevent sideways scroll */
+      overflow-x:hidden;
     }
 
     .fc-game-screen{
@@ -33,8 +43,7 @@
       flex-direction:column;
       align-items:center;
       padding:16px;
-      /* sticky key space */
-      padding-bottom: calc(16px + env(safe-area-inset-bottom) + 140px);
+      padding-bottom: calc(16px + env(safe-area-inset-bottom) + 150px);
       box-sizing:border-box;
     }
 
@@ -178,36 +187,55 @@
       border-radius: 18px;
       padding: 12px;
       border: 1px solid rgba(60,63,74,.08);
-      overflow:hidden; /* ✅ stop inner shadows/overflow lines */
-    }
-
-    /* ✅ Word blocks that wrap as units */
-    .cg-words{
-      display:flex;
-      flex-wrap:wrap;
-      justify-content:center;
-      align-items:flex-start;
-      gap: 12px 14px;
-      max-width:100%;
-    }
-    .cg-word{
-      display:inline-flex;
-      flex-wrap:nowrap;
-      gap:10px;
-      align-items:flex-start;
-      padding: 6px 4px;
-      border-radius: 14px;
-      background: rgba(117,207,240,.06);
-      border: 1px solid rgba(60,63,74,.06);
-      max-width:100%;
+      overflow:hidden;
     }
 
     /*
-      ✅ FIX: responsive cell sizing so a word never blows past the screen.
-      We compute cell width based on viewport. No horizontal overflow.
+      ✅ FIX #1: allow a very long word to scroll HORIZONTALLY (only the word row),
+      while still keeping normal words centered/wrapped.
+      - Each word is a "chip"
+      - Each chip NEVER shrinks (so letters stay visible)
+      - If a chip is wider than the message box, it becomes horizontally scrollable.
     */
+    .cg-words{
+      display:flex;
+      flex-direction:column;
+      gap: 12px;
+      align-items:center;
+    }
+
+    .cg-word-wrap{
+      width:100%;
+      display:flex;
+      justify-content:center;
+      overflow-x:auto;              /* ✅ if too wide, scroll */
+      overflow-y:hidden;
+      -webkit-overflow-scrolling: touch;
+      padding: 2px 0 6px;
+      box-sizing:border-box;
+    }
+    .cg-word-wrap::-webkit-scrollbar{ height: 8px; }
+    .cg-word-wrap::-webkit-scrollbar-thumb{
+      background: rgba(60,63,74,.18);
+      border-radius: 999px;
+    }
+
+    .cg-word{
+      display:inline-flex;
+      flex-wrap:nowrap;
+      gap: var(--wordGap);
+      align-items:flex-start;
+      padding: 8px 8px;
+      border-radius: 14px;
+      background: rgba(117,207,240,.06);
+      border: 1px solid rgba(60,63,74,.06);
+
+      /* ✅ do NOT shrink letters away */
+      flex: 0 0 auto;
+    }
+
     .cg-cell{
-      width: var(--cellW, 74px);
+      width: var(--cellW);
       border-radius: 18px;
       padding: 10px 10px 12px;
       background: #fff;
@@ -220,29 +248,30 @@
       user-select:none;
       -webkit-user-select:none;
       box-sizing:border-box;
+      flex: 0 0 auto; /* ✅ critical: keep box visible */
     }
     .cg-icon{
-      width: var(--iconW, 46px);
-      height: var(--iconW, 46px);
+      width: var(--iconW);
+      height: var(--iconW);
       border-radius: 16px;
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size: var(--iconF, 1.35rem);
+      font-size: var(--iconF);
       background: rgba(255,213,183,.40);
       border: 1px solid rgba(60,63,74,.08);
       box-shadow: inset 0 0 0 3px rgba(255,255,255,.55);
       margin-bottom: 8px;
     }
     .cg-letter-box{
-      width: var(--iconW, 46px);
-      height: var(--letterH, 56px);
+      width: var(--iconW);
+      height: var(--letterH);
       border-radius: 16px;
       display:flex;
       align-items:center;
       justify-content:center;
       font-weight: 1100;
-      font-size: var(--letterF, 1.35rem);
+      font-size: var(--letterF);
       color: rgba(60,63,74,.90);
       background: rgba(117,207,240,.12);
       border: 2px solid rgba(103,197,135,.55);
@@ -541,6 +570,7 @@
         { theme:'Love', phrase:'LOVE OTHERS' },
         { theme:'Prayer', phrase:'PRAY OFTEN' },
         { theme:'Bible', phrase:'READ THE BIBLE' },
+        { theme:'Hope', phrase:'DO NOT GIVE UP' },
       ];
 
       const ICONS = [
@@ -549,7 +579,7 @@
       ];
 
       // ---------- weekly storage ----------
-      const STORAGE_PREFIX = 'fc_cryptogram_v4_';
+      const STORAGE_PREFIX = 'fc_cryptogram_v5_';
       const STORAGE_KEY = STORAGE_PREFIX + WEEK_KEY;
       const COMPLETED_KEY = STORAGE_PREFIX + 'completed_' + WEEK_KEY;
 
@@ -660,28 +690,38 @@
         }
       }
 
-      // ✅ compute responsive sizes so the longest word fits the viewport
+      /*
+        ✅ FIX #2: If a word is too long to fit even at minimum size,
+        we keep it visible by allowing that *word row* to scroll horizontally.
+        But we still try to shrink cells FIRST.
+      */
       function applyResponsiveCellSize(){
         if (!current?.tokens?.length) return;
 
         const longest = Math.max(...current.tokens.map(t => t.letters.length));
-        // available width inside message area (approx):
-        const vw = Math.min(window.innerWidth, 980);
-        const paddingAndGaps = 32; // safe-ish: card padding, borders, etc.
-        const available = Math.max(240, vw - paddingAndGaps);
 
-        // per-letter slot (includes gap inside word)
-        const gap = 10; // must match .cg-word gap
-        const target = Math.floor((available - (gap * (longest - 1))) / longest);
+        const msgBox = document.querySelector('.cg-message');
+        const rect = msgBox ? msgBox.getBoundingClientRect() : null;
 
-        // clamp widths so they still look nice on desktop
-        const cellW = Math.max(56, Math.min(74, target));
+        // available width inside message box
+        const available = Math.max(240, Math.min(rect ? rect.width : window.innerWidth, window.innerWidth) - 24);
 
-        // derive inner sizes
-        const iconW = Math.max(36, Math.min(46, Math.floor(cellW * 0.62)));
-        const letterH = Math.max(44, Math.min(56, Math.floor(cellW * 0.75)));
-        const iconF = (iconW <= 38) ? '1.1rem' : '1.35rem';
-        const letterF = (cellW <= 58) ? '1.15rem' : '1.35rem';
+        // gaps inside a word
+        const gap = 10; // matches --wordGap
+        const minCell = 56;
+        const maxCell = 74;
+
+        // compute a target size that would fit the LONGEST word on screen (best effort)
+        let target = Math.floor((available - (gap * (longest - 1))) / longest);
+        if (!Number.isFinite(target)) target = maxCell;
+
+        const cellW = Math.max(minCell, Math.min(maxCell, target));
+
+        // inner
+        const iconW = Math.max(34, Math.min(46, Math.floor(cellW * 0.62)));
+        const letterH = Math.max(42, Math.min(56, Math.floor(cellW * 0.75)));
+        const iconF = (iconW <= 36) ? '1.05rem' : '1.35rem';
+        const letterF = (cellW <= 58) ? '1.12rem' : '1.35rem';
 
         document.documentElement.style.setProperty('--cellW', cellW + 'px');
         document.documentElement.style.setProperty('--iconW', iconW + 'px');
@@ -693,13 +733,15 @@
       function render(){
         wordsEl.innerHTML = '';
         keyRowEl.innerHTML = '';
-
         weekTextEl.textContent = WEEK_KEY;
 
-        // ✅ apply sizing before creating DOM so it fits
         applyResponsiveCellSize();
 
         current.tokens.forEach(tok => {
+          // ✅ each word gets its own horizontally-scrollable wrap row
+          const wrap = document.createElement('div');
+          wrap.className = 'cg-word-wrap';
+
           const wEl = document.createElement('div');
           wEl.className = 'cg-word';
 
@@ -723,7 +765,8 @@
             wEl.appendChild(box);
           });
 
-          wordsEl.appendChild(wEl);
+          wrap.appendChild(wEl);
+          wordsEl.appendChild(wrap);
         });
 
         const mappingEntries = Object.entries(current.mapping).map(([letter, icon]) => ({ letter, icon }));
@@ -752,6 +795,24 @@
 
         updateCounters();
         updateSolvedUI();
+
+        // ✅ If current cursor is inside a long word, auto-scroll that word row so the active cell is visible
+        requestAnimationFrame(() => {
+          const active = document.querySelector('.cg-letter-box--active');
+          if (!active) return;
+          const wrap = active.closest('.cg-word-wrap');
+          if (!wrap) return;
+
+          const aRect = active.getBoundingClientRect();
+          const wRect = wrap.getBoundingClientRect();
+
+          // if active is off-screen within that wrap, nudge scroll
+          const leftCut = aRect.left < wRect.left + 12;
+          const rightCut = aRect.right > wRect.right - 12;
+
+          if (leftCut) wrap.scrollLeft -= (wRect.left + 12 - aRect.left);
+          if (rightCut) wrap.scrollLeft += (aRect.right - (wRect.right - 12));
+        });
       }
 
       function saveState(){
@@ -890,11 +951,8 @@
       clearBtn.addEventListener('click', clearAll);
       resetWeekBtn.addEventListener('click', resetWeek);
 
-      // ✅ re-fit on resize/orientation change
       window.addEventListener('resize', () => {
-        if (current) {
-          applyResponsiveCellSize();
-        }
+        if (current) render();
       });
 
       if (!loadState()){
