@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Faithful Companion Games</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- ✅ Patch: ensures every icon tile always has a gradient (even if a variant class is missing/overridden) -->
+  <style>
+    /* Base gradient (fallback) */
+    .fc-game-icon{
+      background: linear-gradient(
+        135deg,
+        rgba(117,207,240,.85),
+        rgba(172,148,244,.85)
+      ) !important;
+    }
+
+    /* Palette variants */
+    .fc-game-icon--gold{
+      background: linear-gradient(135deg, #F3B840, #FFD67A) !important;
+    }
+    .fc-game-icon--peach{
+      background: linear-gradient(135deg, #FFB39C, #FFD5B7) !important;
+    }
+    .fc-game-icon--violet{
+      background: linear-gradient(135deg, #AC94F4, #D7C9FF) !important;
+    }
+    .fc-game-icon--sky{
+      background: linear-gradient(135deg, #75CFF0, #B7E8F8) !important;
+    }
+  </style>
+</head>
+
+<body class="fc-body">
+  <div class="fc-app-shell">
+
+    <!-- Header -->
+    <header class="fc-header">
+      <div class="fc-header-top">
+        <div class="fc-logo-circle">FC</div>
+        <div>
+          <h1 class="fc-title">Faithful Companion Games</h1>
+          <p class="fc-subtitle">Tap a game to start!</p>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main -->
+    <main class="fc-main">
+      <section class="fc-game-grid" aria-label="Game list">
+
+        <!-- Quiet Listeners -->
+        <a class="fc-game-card" href="games/quiet_listeners.html">
+          <div class="fc-game-icon fc-game-icon--gold">
+            <span class="fc-number-badge">👂</span>
+            <span class="fc-number-badge">✨</span>
+          </div>
+          <h2 class="fc-game-title">Quiet Listeners</h2>
+          <p class="fc-game-tagline">Tap to count special words you hear.</p>
+        </a>
+
+        <!-- Gratitude Jump -->
+        <a class="fc-game-card" href="games/gratitude_jump.html">
+          <div class="fc-game-icon fc-game-icon--peach">
+            <span class="fc-number-badge">🙏</span>
+            <span class="fc-number-badge">💛</span>
+          </div>
+          <h2 class="fc-game-title">Gratitude Jump</h2>
+          <p class="fc-game-tagline">Jump and discover gratitude phrases.</p>
+        </a>
+
+        <!-- Image Puzzle -->
+        <a class="fc-game-card" href="games/image_puzzle.html">
+          <div class="fc-game-icon fc-game-icon--violet">
+            <span class="fc-number-badge">🧩</span>
+            <span class="fc-number-badge">🖼️</span>
+          </div>
+          <h2 class="fc-game-title">Image Puzzle</h2>
+          <p class="fc-game-tagline">Drag pieces to finish the picture.</p>
+        </a>
+
+        <!-- Hangman -->
+        <a class="fc-game-card" href="games/hangman.html">
+          <div class="fc-game-icon fc-game-icon--sky">
+            <span class="fc-number-badge">🧍</span>
+            <span class="fc-number-badge">🔤</span>
+          </div>
+          <h2 class="fc-game-title">Hangman</h2>
+          <p class="fc-game-tagline">Guess the word before time runs out.</p>
+        </a>
+
+        <!-- Bible Books Match -->
+        <a class="fc-game-card" href="games/bible_books_match.html">
+          <div class="fc-game-icon fc-game-icon--gold">
+            <span class="fc-number-badge">📖</span>
+            <span class="fc-number-badge">🔗</span>
+          </div>
+          <h2 class="fc-game-title">Bible Books Match</h2>
+          <p class="fc-game-tagline">Match Bible book names to abbreviations.</p>
+        </a>
+
+        <!-- Weekly Scripture Saver -->
+        <a class="fc-game-card" href="games/weekly_scripture_saver.html">
+          <div class="fc-game-icon fc-game-icon--peach">
+            <span class="fc-number-badge">🗓️</span>
+            <span class="fc-number-badge">📌</span>
+          </div>
+          <h2 class="fc-game-title">Weekly Scripture Saver</h2>
+          <p class="fc-game-tagline">Pick a verse and save it for the week.</p>
+        </a>
+
+        <!-- Cryptogram -->
+        <a class="fc-game-card" href="games/cryptogram.html">
+          <div class="fc-game-icon fc-game-icon--violet">
+            <span class="fc-number-badge">🔎</span>
+            <span class="fc-number-badge">🧩</span>
+          </div>
+          <h2 class="fc-game-title">Cryptogram</h2>
+          <p class="fc-game-tagline">Match icons to letters to reveal a message.</p>
+        </a>
+
+        <!-- Crossword -->
+        <a class="fc-game-card" href="games/crossword.html">
+          <div class="fc-game-icon fc-game-icon--sky">
+            <span class="fc-number-badge">✍️</span>
+            <span class="fc-number-badge">🗺️</span>
+          </div>
+          <h2 class="fc-game-title">Crossword</h2>
+          <p class="fc-game-tagline">Tap clues, fill words, and celebrate!</p>
+        </a>
+
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="fc-footer">
+      <button class="fc-footer-btn" type="button">
+        <span class="fc-footer-dot fc-footer-dot--active"></span>
+        <span>Games</span>
+      </button>
+      <button class="fc-footer-btn fc-footer-btn--disabled" type="button" aria-disabled="true">
+        <span class="fc-footer-dot"></span>
+        <span>Coming Soon</span>
+      </button>
+    </footer>
+
+  </div>
+</body>
+</html>
