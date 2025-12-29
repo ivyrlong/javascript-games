@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Image Puzzle – Kingdom Companion</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="../styles.css" />
+
+  <style>
+    .fc-game-screen{
+      min-height:100vh;
+      background:var(--dove-white);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      padding:16px;
+    }
+    .fc-game-box{
+      margin-top:12px;
+      width:100%;
+      max-width:980px;
+      border-radius:20px;
+      background:#fff;
+      box-shadow:0 4px 10px rgba(60,63,74,.15);
+      padding:16px;
+    }
+    .fc-game-heading{
+      margin:0 0 6px;
+      font-size:1.4rem;
+      color:var(--scripture-slate);
+      text-align:center;
+    }
+    .fc-game-instructions{
+      margin:0 0 10px;
+      font-size:.95rem;
+      color:rgba(60,63,74,.85);
+      text-align:center;
+    }
+
+    .pz-controls{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      justify-content:center;
+      align-items:center;
+      margin:10px 0 12px;
+    }
+
+    .pz-select{
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(60,63,74,.18);
+      background:var(--dove-white);
+      color:var(--scripture-slate);
+      font-weight:600;
+      font-size:.9rem;
+    }
+
+    .pz-btn{
+      padding:8px 14px;
+      border-radius:999px;
+      border:none;
+      cursor:pointer;
+      font-weight:700;
+      font-size:.9rem;
+      box-shadow:0 3px 8px rgba(60,63,74,.2);
+      touch-action:manipulation;
+    }
+    .pz-btn:active{ transform:scale(.97); }
+    .pz-btn--primary{ background:var(--cheerful-coral); color:#fff; }
+    .pz-btn--secondary{ background:rgba(172,148,244,.15); color:var(--scripture-slate); }
+
+    .pz-toggle{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(60,63,74,.18);
+      background:rgba(250,248,246,.9);
+      color:var(--scripture-slate);
+      font-weight:700;
+      font-size:.9rem;
+      user-select:none;
+      -webkit-user-select:none;
+    }
+    .pz-toggle input{
+      width:18px;
+      height:18px;
+      accent-color: var(--spiritual-sky);
+    }
+
+    .pz-layout{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:12px;
+      align-items:start;
+    }
+    @media (min-width:860px){
+      .pz-layout{ grid-template-columns: 1fr 1fr; }
+    }
+
+    .pz-panel{
+      border-radius:18px;
+      padding:12px;
+      background:radial-gradient(circle at top left,
+        rgba(117,207,240,.18),
+        rgba(172,148,244,.10)
+      );
+      box-shadow:0 3px 8px rgba(60,63,74,.12);
+    }
+
+    .pz-panel-title{
+      margin:0 0 8px;
+      font-weight:800;
+      color:var(--scripture-slate);
+      font-size:1rem;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+    }
+
+    .pz-hint{
+      font-size:.85rem;
+      color:rgba(60,63,74,.8);
+      margin:0 0 8px;
+    }
+
+    /* Board */
+    .pz-board-wrap{
+      position:relative;
+      width:100%;
+      max-width:520px;
+      margin:0 auto;
+    }
+
+    .pz-board{
+      width:100%;
+      aspect-ratio:1/1;
+      border-radius:16px;
+      background:#fff;
+      box-shadow:0 4px 12px rgba(60,63,74,.16);
+      overflow:hidden;
+      display:grid;
+      gap:2px;
+      padding:2px;
+      position:relative;
+      z-index:1;
+    }
+
+    /* Ghost preview sits behind the grid */
+    .pz-board::before{
+      content:"";
+      position:absolute;
+      inset:2px;
+      border-radius:14px;
+      background-image: var(--ghost-url, none);
+      background-size: cover;
+      background-position: center;
+      opacity: 0;
+      transition: opacity 160ms ease;
+      z-index:0;
+      pointer-events:none;
+      filter: saturate(0.9) contrast(0.95);
+    }
+    .pz-board--ghost::before{
+      opacity: 0.18;
+    }
+
+    .pz-slot{
+      background:rgba(250,248,246,.95);
+      border-radius:10px;
+      border:1px dashed rgba(60,63,74,.18);
+      position:relative;
+      overflow:hidden;
+      z-index:2; /* above ghost */
+    }
+
+    .pz-slot--hover{
+      border-color:var(--spiritual-sky);
+      box-shadow:0 0 0 2px rgba(117,207,240,.35) inset;
+    }
+
+    /* Pieces tray */
+    .pz-tray{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      justify-content:center;
+      align-items:flex-start;
+      min-height:120px;
+      background:rgba(255,255,255,.65);
+      border-radius:14px;
+      padding:10px;
+      box-shadow:0 3px 8px rgba(60,63,74,.12) inset;
+    }
+
+    /* Each piece */
+    .pz-piece{
+      border-radius:12px;
+      background-color:#fff;
+      box-shadow:0 3px 8px rgba(60,63,74,.25);
+      border:1px solid rgba(60,63,74,.12);
+      cursor:grab;
+      touch-action:none; /* ✅ key for touch dragging */
+      user-select:none;
+      -webkit-user-select:none;
+      position:relative;
+      overflow:hidden;
+      display:block;
+    }
+
+    .pz-piece:active{ cursor:grabbing; }
+
+    .pz-piece--dragging{
+      position:fixed;
+      z-index:9999;
+      pointer-events:none; /* ✅ prevents drag glitches */
+      transform:scale(1.04);
+    }
+
+    .pz-piece--locked{
+      cursor:default;
+      box-shadow:none;
+      border:none;
+      border-radius:10px;
+      width:100% !important;
+      height:100% !important;
+    }
+
+    .pz-footer{
+      margin-top:10px;
+      text-align:center;
+      font-size:.9rem;
+      color:rgba(60,63,74,.85);
+      min-height:1.3em;
+    }
+
+    .pz-win{
+      padding:8px 10px;
+      border-radius:12px;
+      background:rgba(103,197,135,.22);
+      color:var(--scripture-slate);
+      font-weight:800;
+      display:inline-block;
+    }
+
+    .pz-prompt{
+      display:none;
+      margin-top:8px;
+      padding:8px 10px;
+      border-radius:12px;
+      background:rgba(255,213,183,.45);
+      color:var(--scripture-slate);
+      text-align:center;
+      font-size:.9rem;
+    }
+
+    .pz-prompt-actions{
+      margin-top:8px;
+      display:flex;
+      gap:8px;
+      justify-content:center;
+      flex-wrap:wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="fc-game-screen">
+    <a class="fc-back-link" href="../index.html">Back to games</a>
+
+    <div class="fc-game-box">
+      <h1 class="fc-game-heading">Image Puzzle</h1>
+      <p class="fc-game-instructions">
+        Choose an image and difficulty, then press <b>Start</b>. Drag pieces into the matching spots.
+      </p>
+
+      <div class="pz-controls">
+        <select class="pz-select" id="pzImageSelect" aria-label="Choose image"></select>
+
+        <select class="pz-select" id="pzSizeSelect" aria-label="Choose difficulty">
+          <option value="2">Easy (2×2)</option>
+          <option value="3" selected>Medium (3×3)</option>
+          <option value="4">Hard (4×4)</option>
+        </select>
+
+        <label class="pz-toggle" for="pzGhostToggle">
+          <input id="pzGhostToggle" type="checkbox" checked />
+          Show picture
+        </label>
+
+        <button class="pz-btn pz-btn--primary" id="pzStartBtn" type="button">Start</button>
+        <button class="pz-btn pz-btn--secondary" id="pzResetBtn" type="button">Reset</button>
+      </div>
+
+      <div class="pz-prompt" id="pzPrompt">
+        Restart the puzzle? (This will clear the board.)
+        <div class="pz-prompt-actions">
+          <button class="pz-btn pz-btn--primary" id="pzConfirmResetBtn" type="button">Yes, restart</button>
+          <button class="pz-btn pz-btn--secondary" id="pzCancelResetBtn" type="button">Cancel</button>
+        </div>
+      </div>
+
+      <div class="pz-layout">
+        <div class="pz-panel">
+          <div class="pz-panel-title">
+            <span>🧩 Board</span>
+            <span id="pzProgressText" style="font-size:.9rem; font-weight:700; color:rgba(60,63,74,.75);"></span>
+          </div>
+          <p class="pz-hint">Tip: start with corners! (Snap Assist is ON.)</p>
+
+          <div class="pz-board-wrap">
+            <div class="pz-board" id="pzBoard" aria-label="Puzzle board"></div>
+          </div>
+        </div>
+
+        <div class="pz-panel">
+          <div class="pz-panel-title">
+            <span>🎒 Pieces</span>
+            <span style="font-size:.85rem; font-weight:700; color:rgba(60,63,74,.7);">Drag from here</span>
+          </div>
+          <div class="pz-tray" id="pzTray" aria-label="Pieces tray"></div>
+          <div class="pz-footer" id="pzStatus"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const boardEl = document.getElementById('pzBoard');
+      const trayEl = document.getElementById('pzTray');
+      const statusEl = document.getElementById('pzStatus');
+      const progressEl = document.getElementById('pzProgressText');
+
+      const imageSelect = document.getElementById('pzImageSelect');
+      const sizeSelect = document.getElementById('pzSizeSelect');
+      const ghostToggle = document.getElementById('pzGhostToggle');
+
+      const startBtn = document.getElementById('pzStartBtn');
+      const resetBtn = document.getElementById('pzResetBtn');
+
+      const promptEl = document.getElementById('pzPrompt');
+      const confirmResetBtn = document.getElementById('pzConfirmResetBtn');
+      const cancelResetBtn = document.getElementById('pzCancelResetBtn');
+
+      // ✅ Put your images in: /assets/puzzles/
+      const images = [
+        { label: 'Puzzle 1', src: '../assets/puzzles/puzzle1.jpg' },
+        { label: 'Puzzle 2', src: '../assets/puzzles/puzzle2.jpg' },
+        { label: 'Puzzle 3', src: '../assets/puzzles/puzzle3.jpg' }
+      ];
+
+      let gridSize = Number(sizeSelect.value || '3');
+      let currentImage = images[0].src;
+
+      let draggingPiece = null;
+      let dragOffsetX = 0;
+      let dragOffsetY = 0;
+      let placedCount = 0;
+      let totalPieces = 0;
+      let gameStarted = false;
+
+      function showPrompt(show){
+        promptEl.style.display = show ? 'block' : 'none';
+      }
+
+      function setStatus(text, isWin=false){
+        if (isWin) {
+          statusEl.innerHTML = `<span class="pz-win">${text}</span>`;
+        } else {
+          statusEl.textContent = text || '';
+        }
+      }
+
+      // ✅ Preload so ghost updates instantly
+      function preloadImage(src){
+        const img = new Image();
+        img.src = src;
+      }
+
+      function shuffleArray(arr){
+        const copy = arr.slice();
+        for (let i = copy.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [copy[i], copy[j]] = [copy[j], copy[i]];
+        }
+        return copy;
+      }
+
+      function applyGhostState(){
+        boardEl.style.setProperty('--ghost-url', `url("${currentImage}")`);
+        if (ghostToggle.checked) boardEl.classList.add('pz-board--ghost');
+        else boardEl.classList.remove('pz-board--ghost');
+      }
+
+      function clearBoardAndTray(){
+        boardEl.innerHTML = '';
+        trayEl.innerHTML = '';
+        placedCount = 0;
+        totalPieces = 0;
+        updateProgress();
+      }
+
+      function updateProgress(){
+        progressEl.textContent = `${placedCount} / ${totalPieces} placed`;
+        if (gameStarted && placedCount === totalPieces && totalPieces > 0) {
+          setStatus('You finished the puzzle! 🎉', true);
+        }
+      }
+
+      function buildBoard(size){
+        boardEl.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+        boardEl.style.gridTemplateRows = `repeat(${size}, 1fr)`;
+
+        for (let r = 0; r < size; r++){
+          for (let c = 0; c < size; c++){
+            const slot = document.createElement('div');
+            slot.className = 'pz-slot';
+            slot.dataset.row = String(r);
+            slot.dataset.col = String(c);
+            slot.dataset.filled = 'false';
+            boardEl.appendChild(slot);
+          }
+        }
+      }
+
+      function pieceDimensionPx(){
+        const trayWidth = trayEl.getBoundingClientRect().width || 320;
+        const approx = Math.floor((trayWidth - 40) / Math.min(gridSize, 4));
+        return Math.max(64, Math.min(120, approx));
+      }
+
+      function createPiece(row, col, imgSrc){
+        const piece = document.createElement('div');
+        piece.className = 'pz-piece';
+        piece.dataset.row = String(row);
+        piece.dataset.col = String(col);
+        piece.dataset.home = 'tray';
+
+        const dim = pieceDimensionPx();
+        piece.style.width = dim + 'px';
+        piece.style.height = dim + 'px';
+
+        piece.style.backgroundImage = `url("${imgSrc}")`;
+        piece.style.backgroundSize = `${gridSize * 100}% ${gridSize * 100}%`;
+        piece.style.backgroundPosition =
+          `${(col * 100) / (gridSize - 1)}% ${(row * 100) / (gridSize - 1)}%`;
+
+        piece.addEventListener('pointerdown', (e) => {
+          if (!gameStarted) { setStatus('Press Start first 🙂'); return; }
+          if (piece.classList.contains('pz-piece--locked')) return;
+
+          e.preventDefault();
+
+          draggingPiece = piece;
+          piece.setPointerCapture(e.pointerId);
+
+          const rect = piece.getBoundingClientRect();
+          dragOffsetX = e.clientX - rect.left;
+          dragOffsetY = e.clientY - rect.top;
+
+          piece.classList.add('pz-piece--dragging');
+          piece.style.left = rect.left + 'px';
+          piece.style.top = rect.top + 'px';
+        });
+
+        piece.addEventListener('pointermove', (e) => {
+          if (!draggingPiece || draggingPiece !== piece) return;
+          e.preventDefault();
+
+          piece.style.left = (e.clientX - dragOffsetX) + 'px';
+          piece.style.top = (e.clientY - dragOffsetY) + 'px';
+
+          highlightSlotUnderPointer(e.clientX, e.clientY);
+        });
+
+        piece.addEventListener('pointerup', (e) => {
+          if (!draggingPiece || draggingPiece !== piece) return;
+          e.preventDefault();
+          piece.releasePointerCapture(e.pointerId);
+          dropPieceAt(e.clientX, e.clientY);
+        });
+
+        piece.addEventListener('pointercancel', (e) => {
+          if (!draggingPiece || draggingPiece !== piece) return;
+          e.preventDefault();
+          piece.releasePointerCapture(e.pointerId);
+          returnPieceToTray(piece);
+          clearSlotHighlights();
+          draggingPiece = null;
+        });
+
+        return piece;
+      }
+
+      function clearSlotHighlights(){
+        boardEl.querySelectorAll('.pz-slot').forEach(s => s.classList.remove('pz-slot--hover'));
+      }
+
+      function highlightSlotUnderPointer(x, y){
+        clearSlotHighlights();
+        const el = document.elementFromPoint(x, y);
+        if (!el) return;
+        const slot = el.classList?.contains('pz-slot') ? el : el.closest?.('.pz-slot');
+        if (slot) slot.classList.add('pz-slot--hover');
+      }
+
+      function findSlotUnderPointer(x, y){
+        const el = document.elementFromPoint(x, y);
+        if (!el) return null;
+        const slot = el.classList?.contains('pz-slot') ? el : el.closest?.('.pz-slot');
+        return slot || null;
+      }
+
+      function getCorrectSlotForPiece(piece){
+        const r = piece.dataset.row;
+        const c = piece.dataset.col;
+        return boardEl.querySelector(`.pz-slot[data-row="${r}"][data-col="${c}"]`);
+      }
+
+      function getSnapThresholdPx(){
+        const slot = boardEl.querySelector('.pz-slot');
+        if (!slot) return 60;
+        const rect = slot.getBoundingClientRect();
+        return Math.max(45, Math.min(95, Math.floor(Math.min(rect.width, rect.height) * 0.6)));
+      }
+
+      function centerOfRect(rect){
+        return { x: rect.left + rect.width/2, y: rect.top + rect.height/2 };
+      }
+
+      function lockPieceIntoSlot(piece, slot){
+        piece.classList.remove('pz-piece--dragging');
+        piece.style.left = '';
+        piece.style.top = '';
+        piece.style.width = '';
+        piece.style.height = '';
+
+        piece.classList.add('pz-piece--locked');
+        piece.dataset.home = 'board';
+
+        slot.innerHTML = '';
+        slot.appendChild(piece);
+        slot.dataset.filled = 'true';
+      }
+
+      function returnPieceToTray(piece){
+        piece.classList.remove('pz-piece--dragging');
+        piece.style.left = '';
+        piece.style.top = '';
+
+        const dim = pieceDimensionPx();
+        piece.style.width = dim + 'px';
+        piece.style.height = dim + 'px';
+
+        piece.dataset.home = 'tray';
+        trayEl.appendChild(piece);
+      }
+
+      function dropPieceAt(x, y){
+        const piece = draggingPiece;
+        const hoveredSlot = findSlotUnderPointer(x, y);
+        clearSlotHighlights();
+
+        const correctSlot = getCorrectSlotForPiece(piece);
+        const threshold = getSnapThresholdPx();
+
+        let targetSlot = null;
+
+        if (correctSlot && correctSlot.dataset.filled !== 'true') {
+          const correctCenter = centerOfRect(correctSlot.getBoundingClientRect());
+          const dx = x - correctCenter.x;
+          const dy = y - correctCenter.y;
+          const dist = Math.sqrt(dx*dx + dy*dy);
+
+          if (dist <= threshold) {
+            targetSlot = correctSlot;
+          }
+        }
+
+        if (!targetSlot) targetSlot = hoveredSlot;
+
+        if (!targetSlot) {
+          returnPieceToTray(piece);
+          draggingPiece = null;
+          return;
+        }
+
+        if (targetSlot.dataset.filled === 'true') {
+          setStatus('That spot already has a piece.');
+          returnPieceToTray(piece);
+          draggingPiece = null;
+          return;
+        }
+
+        const targetRow = targetSlot.dataset.row;
+        const targetCol = targetSlot.dataset.col;
+
+        if (piece.dataset.row === targetRow && piece.dataset.col === targetCol) {
+          lockPieceIntoSlot(piece, targetSlot);
+          placedCount++;
+          setStatus('Nice! That piece fits.');
+          updateProgress();
+        } else {
+          setStatus('Not quite — try a different spot.');
+          returnPieceToTray(piece);
+        }
+
+        draggingPiece = null;
+      }
+
+      function buildPieces(){
+        const coords = [];
+        for (let r = 0; r < gridSize; r++){
+          for (let c = 0; c < gridSize; c++){
+            coords.push({ r, c });
+          }
+        }
+
+        totalPieces = coords.length;
+        const shuffled = shuffleArray(coords);
+
+        shuffled.forEach(({r, c}) => {
+          const piece = createPiece(r, c, currentImage);
+          trayEl.appendChild(piece);
+        });
+
+        updateProgress();
+      }
+
+      function populateImageSelect(){
+        imageSelect.innerHTML = '';
+        images.forEach((img, idx) => {
+          const opt = document.createElement('option');
+          opt.value = String(idx);
+          opt.textContent = img.label;
+          imageSelect.appendChild(opt);
+        });
+      }
+
+      function startGame(){
+        showPrompt(false);
+        gameStarted = true;
+
+        gridSize = Number(sizeSelect.value || '3');
+        currentImage = images[Number(imageSelect.value || '0')]?.src || images[0].src;
+
+        clearBoardAndTray();
+        buildBoard(gridSize);
+        applyGhostState();
+        buildPieces();
+        setStatus('Drag pieces from the tray into the board.');
+      }
+
+      // UI events
+      startBtn.addEventListener('click', () => startGame());
+
+      resetBtn.addEventListener('click', () => {
+        if (!gameStarted) { setStatus('Choose an image and difficulty, then press Start.'); return; }
+        showPrompt(true);
+      });
+
+      confirmResetBtn.addEventListener('click', () => startGame());
+      cancelResetBtn.addEventListener('click', () => showPrompt(false));
+
+      ghostToggle.addEventListener('change', () => applyGhostState());
+
+      // ✅ UPDATED: change the ghost preview immediately on dropdown change
+      imageSelect.addEventListener('change', () => {
+        currentImage = images[Number(imageSelect.value || '0')]?.src || images[0].src;
+        preloadImage(currentImage);
+        applyGhostState();
+
+        if (gameStarted) {
+          setStatus('Image changed. Press Reset → Yes, restart to use this image in the puzzle.');
+        } else {
+          setStatus('Image selected. Press Start when you’re ready!');
+        }
+      });
+
+      sizeSelect.addEventListener('change', () => {
+        if (gameStarted) {
+          setStatus('Difficulty changed. Press Reset → Yes, restart to apply it.');
+        } else {
+          setStatus('Difficulty selected. Press Start when you’re ready!');
+        }
+      });
+
+      // Init
+      populateImageSelect();
+
+      // Preload all images (nice UX)
+      images.forEach(img => preloadImage(img.src));
+
+      currentImage = images[0].src;
+      applyGhostState();
+
+      setStatus('Choose an image and difficulty, then press Start.');
+      clearBoardAndTray();
+
+      // Resize: suggest restart for best sizes
+      let resizeTimer = null;
+      window.addEventListener('resize', () => {
+        if (!gameStarted) return;
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          setStatus('Screen size changed. Press Reset → Yes, restart for best fit.');
+        }, 250);
+      });
+    });
+  </script>
+</body>
+</html>

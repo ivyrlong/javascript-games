@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Weekly Scripture Saver – Faithful Companion Games</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="../styles.css" />
+
+  <style>
+    .fc-game-screen{
+      min-height:100vh;
+      background:var(--dove-white);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      padding:16px;
+    }
+    .fc-game-box{
+      margin-top:12px;
+      width:100%;
+      max-width:980px;
+      border-radius:20px;
+      background:#fff;
+      box-shadow:0 4px 10px rgba(60,63,74,.15);
+      padding:16px;
+    }
+    .fc-game-heading{
+      margin:0 0 6px;
+      font-size:1.4rem;
+      color:var(--scripture-slate);
+      text-align:center;
+    }
+    .fc-game-instructions{
+      margin:0 0 12px;
+      font-size:.95rem;
+      color:rgba(60,63,74,.85);
+      text-align:center;
+    }
+
+    .ws-panel{
+      border-radius:18px;
+      padding:12px;
+      background:radial-gradient(circle at top left,
+        rgba(117,207,240,.16),
+        rgba(172,148,244,.10)
+      );
+      box-shadow:0 3px 8px rgba(60,63,74,.12);
+    }
+
+    .ws-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      justify-content:center;
+      align-items:center;
+      padding:10px;
+      border-radius:16px;
+      background:rgba(250,248,246,.75);
+      border:1px solid rgba(60,63,74,.10);
+    }
+
+    .ws-wheel{
+      padding:12px;
+      border-radius:16px;
+      border:1px solid rgba(60,63,74,.18);
+      background:var(--dove-white);
+      color:var(--scripture-slate);
+      font-weight:900;
+      font-size:1rem;
+      min-width:220px;
+    }
+    .ws-wheel--small{
+      min-width:140px;
+      text-align:center;
+    }
+
+    .ws-btn{
+      padding:10px 14px;
+      border-radius:999px;
+      border:none;
+      cursor:pointer;
+      font-weight:900;
+      font-size:.95rem;
+      box-shadow:0 3px 8px rgba(60,63,74,.2);
+    }
+    .ws-btn:active{ transform:scale(.98); }
+    .ws-btn--primary{ background:var(--cheerful-coral); color:#fff; }
+    .ws-btn--secondary{ background:rgba(172,148,244,.16); color:var(--scripture-slate); }
+    .ws-btn--danger{ background:rgba(255,130,105,.14); color:var(--scripture-slate); }
+
+    .ws-preview{
+      margin-top:10px;
+      text-align:center;
+      font-weight:900;
+      color:rgba(60,63,74,.9);
+    }
+
+    .ws-status{
+      margin-top:8px;
+      text-align:center;
+      font-weight:900;
+      color:rgba(60,63,74,.85);
+      min-height:1.3em;
+    }
+
+    .ws-list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-top:10px;
+    }
+
+    .ws-item{
+      background:#fff;
+      border-radius:16px;
+      border:1px solid rgba(60,63,74,.12);
+      box-shadow:0 3px 10px rgba(60,63,74,.10);
+      padding:12px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .ws-item-title{
+      font-weight:1000;
+      color:var(--scripture-slate);
+    }
+  </style>
+</head>
+<body>
+<div class="fc-game-screen">
+  <a class="fc-back-link" href="../index.html">Back to games</a>
+
+  <div class="fc-game-box">
+    <h1 class="fc-game-heading">Weekly Scripture Saver</h1>
+    <p class="fc-game-instructions">
+      Spin the wheels to choose a scripture.  
+      Tap <b>Save for this week</b> or <b>Show verse</b>.
+    </p>
+
+    <div class="ws-panel">
+      <div class="ws-row">
+        <select class="ws-wheel" id="wsBook"></select>
+        <select class="ws-wheel ws-wheel--small" id="wsChapter"></select>
+        <select class="ws-wheel ws-wheel--small" id="wsVerse"></select>
+
+        <button class="ws-btn ws-btn--primary" id="wsSave">Save for this week</button>
+        <button class="ws-btn ws-btn--secondary" id="wsOpen">Show verse</button>
+      </div>
+
+      <div class="ws-preview" id="wsPreview"></div>
+      <div class="ws-status" id="wsStatus"></div>
+    </div>
+
+    <div class="ws-panel" style="margin-top:12px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+        <strong>📌 Saved this week</strong>
+        <button class="ws-btn ws-btn--danger" id="wsClear">Clear</button>
+      </div>
+      <div class="ws-list" id="wsList"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const bookSel = document.getElementById('wsBook');
+  const chSel = document.getElementById('wsChapter');
+  const vSel = document.getElementById('wsVerse');
+  const preview = document.getElementById('wsPreview');
+  const status = document.getElementById('wsStatus');
+  const list = document.getElementById('wsList');
+
+  const saveBtn = document.getElementById('wsSave');
+  const openBtn = document.getElementById('wsOpen');
+  const clearBtn = document.getElementById('wsClear');
+
+  const JW_BASE = 'https://www.jw.org/en/library/bible/nwt/books';
+  const WEEK_KEY = () => 'weeklyScriptures-' + new Date().toISOString().slice(0,10);
+
+  const BOOKS = [
+    { abbr:'Gen.', name:'Genesis', slug:'genesis', num:1 },
+    { abbr:'Ex.', name:'Exodus', slug:'exodus', num:2 },
+    { abbr:'Ps.', name:'Psalms', slug:'psalms', num:19 },
+    { abbr:'Prov.', name:'Proverbs', slug:'proverbs', num:20 },
+    { abbr:'Matt.', name:'Matthew', slug:'matthew', num:40 },
+    { abbr:'John', name:'John', slug:'john', num:43 },
+    { abbr:'Acts', name:'Acts', slug:'acts', num:44 },
+    { abbr:'Rom.', name:'Romans', slug:'romans', num:45 },
+    { abbr:'Rev.', name:'Revelation', slug:'revelation', num:66 }
+  ];
+
+  function pad3(n){ return String(n).padStart(3,'0'); }
+
+  function buildUrl(b,c,v){
+    return `${JW_BASE}/${b.slug}/${c}/#v${b.num}${pad3(c)}${pad3(v)}`;
+  }
+
+  function populate(){
+    BOOKS.forEach((b,i)=>{
+      bookSel.add(new Option(`${b.abbr} — ${b.name}`, i));
+    });
+    for(let i=1;i<=50;i++) chSel.add(new Option(i,i));
+    for(let i=1;i<=60;i++) vSel.add(new Option(i,i));
+  }
+
+  function selection(){
+    const b = BOOKS[bookSel.value];
+    const c = Number(chSel.value);
+    const v = Number(vSel.value);
+    return { b,c,v,url:buildUrl(b,c,v) };
+  }
+
+  function updatePreview(){
+    const { b,c,v } = selection();
+    preview.textContent = `${b.abbr} ${c}:${v}`;
+    status.textContent = '';
+  }
+
+  function load(){ return JSON.parse(localStorage.getItem(WEEK_KEY())||'[]'); }
+  function save(data){ localStorage.setItem(WEEK_KEY(), JSON.stringify(data)); }
+
+  function renderList(){
+  const data = load();
+  list.innerHTML = data.length
+    ? data.map((d, i)=>`
+      <div class="ws-item">
+        <span class="ws-item-title">${d.label}</span>
+        <div style="display:flex; gap:8px;">
+          <button class="ws-btn ws-btn--secondary"
+            onclick="window.open('${d.url}','_blank')">
+            Open
+          </button>
+          <button class="ws-btn ws-btn--danger"
+            onclick="deleteItem(${i})"
+            aria-label="Delete ${d.label}">
+            🗑️
+          </button>
+        </div>
+      </div>
+    `).join('')
+    : '<div style="text-align:center;opacity:.7;">Nothing saved yet</div>';
+}
+
+  saveBtn.onclick = ()=>{
+    const { b,c,v,url } = selection();
+    const data = load();
+    if(data.some(x=>x.url===url)){
+      status.textContent = 'Already saved 🙂';
+      return;
+    }
+    data.unshift({ label:`${b.abbr} ${c}:${v}`, url });
+    save(data);
+    renderList();
+    status.textContent = 'Saved for this week ✅';
+  };
+
+  openBtn.onclick = ()=>{
+    window.open(selection().url,'_blank','noopener');
+  };
+
+  clearBtn.onclick = ()=>{
+    localStorage.removeItem(WEEK_KEY());
+    renderList();
+    status.textContent = 'Cleared.';
+  };
+
+  [bookSel,chSel,vSel].forEach(el=>el.onchange=updatePreview);
+
+  populate();
+  updatePreview();
+  renderList();
+});
+</script>
+</body>
+</html>
