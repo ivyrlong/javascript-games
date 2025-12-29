@@ -178,11 +178,12 @@
       line-height:1.2;
     }
 
+    /* ✅ move board left inside its card (no horizontal overflow) */
     .cw-board-viewport{
       width:100%;
       display:flex;
-      justify-content:center;
-      overflow:hidden; /* prevents bleed */
+      justify-content:flex-start; /* left align */
+      overflow:hidden;            /* prevents bleed */
       padding: 6px 0 2px;
     }
 
@@ -331,28 +332,15 @@
       border-color: rgba(255,130,105,.55);
     }
 
-    /* Drawer */
-    .cw-drawer-scrim{
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,.25);
-      opacity:0;
-      pointer-events:none;
-      transition: opacity .15s ease;
-      z-index: 999;
-    }
-    .cw-drawer-scrim.open{
-      opacity:1;
-      pointer-events:auto;
-    }
-
+    /* Drawer (closed by default) */
     .cw-drawer{
       position: fixed;
       left:0; right:0; bottom:0;
       z-index: 1000;
       padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
-      transform: translateY(105%);
+      transform: translateY(calc(100% - 54px)); /* ✅ peek handle when closed */
       transition: transform .18s ease;
+      pointer-events:auto;
     }
     .cw-drawer.open{ transform: translateY(0); }
 
@@ -367,16 +355,18 @@
       overflow:hidden;
     }
 
+    /* ✅ compact header with toggle only */
     .cw-drawer-head{
       position:relative;
-      padding: 12px 44px 12px 14px;
+      padding: 10px 50px 10px 14px;
       background: rgba(255,255,255,.72);
       border-bottom: 1px solid rgba(60,63,74,.10);
       display:flex;
       align-items:center;
       justify-content:center;
       text-align:center;
-      min-height: 52px;
+      min-height: 54px;
+      cursor:pointer; /* tap header toggles */
     }
     .cw-drawer-title{
       font-weight:1100;
@@ -388,27 +378,30 @@
       overflow:hidden;
       text-overflow:ellipsis;
       white-space:nowrap;
+      pointer-events:none;
     }
-    .cw-drawer-close{
+
+    /* ✅ toggle button: ⬆️ / ⬇️ */
+    .cw-drawer-toggle{
       position:absolute;
       right: 8px;
       top: 50%;
       transform: translateY(-50%);
-      width: 34px;
-      height: 34px;
-      border-radius: 12px;
+      width: 38px;
+      height: 38px;
+      border-radius: 14px;
       border: 1px solid rgba(60,63,74,.12);
       background: rgba(172,148,244,.16);
       color: rgba(60,63,74,.85);
       font-weight: 1100;
-      font-size: 1.05rem;
+      font-size: 1.1rem;
       cursor:pointer;
       display:flex;
       align-items:center;
       justify-content:center;
       touch-action: manipulation;
     }
-    .cw-drawer-close:active{ transform: translateY(-50%) scale(.98); }
+    .cw-drawer-toggle:active{ transform: translateY(-50%) scale(.98); }
 
     .cw-letters{
       padding: 12px;
@@ -501,13 +494,12 @@
     </div>
   </div>
 
-  <!-- Drawer -->
-  <div class="cw-drawer-scrim" id="scrim" aria-hidden="true"></div>
+  <!-- Drawer (closed by default, toggle header) -->
   <div class="cw-drawer" id="drawer" aria-hidden="true">
     <div class="cw-drawer-inner">
-      <div class="cw-drawer-head">
+      <div class="cw-drawer-head" id="drawerHead" role="button" aria-label="Toggle letter drawer" tabindex="0">
         <div class="cw-drawer-title" id="drawerTitle"></div>
-        <button class="cw-drawer-close" id="drawerClose" type="button" aria-label="Close">✕</button>
+        <button class="cw-drawer-toggle" id="drawerToggle" type="button" aria-label="Toggle">⬆️</button>
       </div>
       <div class="cw-letters" id="lettersGrid"></div>
     </div>
@@ -565,9 +557,9 @@
       const guidedBtn = document.getElementById('guidedBtn');
 
       const drawer = document.getElementById('drawer');
-      const scrim = document.getElementById('scrim');
+      const drawerHead = document.getElementById('drawerHead');
       const drawerTitle = document.getElementById('drawerTitle');
-      const drawerClose = document.getElementById('drawerClose');
+      const drawerToggle = document.getElementById('drawerToggle');
       const lettersGrid = document.getElementById('lettersGrid');
 
       // ---------------------------
@@ -578,6 +570,7 @@
       let placed = [];          // placed words (and skipped shown as unused)
       let display = { r0:0, c0:0, r1:0, c1:0, rows:1, cols:1 };
       let active = { r:null, c:null, dir:'across', wordId:null };
+      let drawerOpen = false;   // ✅ closed by default
 
       // ---------------------------
       // Helpers
@@ -598,6 +591,31 @@
         }
         return a;
       }
+
+      // ---------------------------
+      // Drawer toggle (⬆️ / ⬇️)
+      // ---------------------------
+      function setDrawerOpen(open){
+        drawerOpen = !!open;
+        drawer.classList.toggle('open', drawerOpen);
+        drawer.setAttribute('aria-hidden', drawerOpen ? 'false' : 'true');
+        drawerToggle.textContent = drawerOpen ? '⬇️' : '⬆️';
+      }
+      function toggleDrawer(){
+        setDrawerOpen(!drawerOpen);
+      }
+
+      drawerToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleDrawer();
+      });
+      drawerHead.addEventListener('click', toggleDrawer);
+      drawerHead.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggleDrawer();
+        }
+      });
 
       // ---------------------------
       // Spacing rules (prevents accidental groupings)
@@ -738,9 +756,6 @@
 
       // ---------------------------
       // CONNECTED GENERATOR (no islands)
-      // Rule: every word after the first MUST CROSS an existing letter.
-      // If it can’t, it is marked "unused in this puzzle".
-      // Also: we retry multiple times and keep the best (most words placed).
       // ---------------------------
       function tryGenerateConnected(entries){
         grid = new Map();
@@ -754,31 +769,25 @@
           }))
           .filter(e => e.answer.length >= 3);
 
-        // shuffle + bias to longer first
         const shuffled = shuffle(items).sort((a,b)=> b.answer.length - a.answer.length);
-
         let idCounter = 1;
 
-        // place first word near center
         const first = shuffled[0];
         const firstDir = first.dir || 'across';
         const startR = 0;
         const startC = Math.floor(-first.answer.length/2);
         placeWord(first, firstDir, startR, startC, idCounter++);
 
-        // place remaining: MUST cross
         for (let idx=1; idx<shuffled.length; idx++){
           const w = shuffled[idx];
           const answer = w.answer;
 
           let placedOk = false;
 
-          // try both directions (preferred first)
           const pref = (w.dir || 'across');
           const dirOrder = pref === 'across' ? ['across','down'] : ['down','across'];
 
           for (const dir of dirOrder){
-            // find any crossing opportunity
             for (let i=0; i<answer.length && !placedOk; i++){
               const ch = answer[i];
 
@@ -788,10 +797,6 @@
 
                 const r0 = dir === 'across' ? rr : rr - i;
                 const c0 = dir === 'across' ? cc - i : cc;
-
-                // IMPORTANT: ensure we are actually crossing at least one EXISTING cell
-                // (placing purely in empty space is forbidden)
-                if (!getCell(rr,cc)) continue;
 
                 if (canPlaceWord(answer, dir, r0, c0)){
                   placeWord(w, dir, r0, c0, idCounter++);
@@ -803,7 +808,6 @@
           }
 
           if (!placedOk){
-            // mark as unused (still show clue forever)
             placed.push({
               id: idCounter++,
               answer,
@@ -820,8 +824,6 @@
 
         computeBounds();
         assignNumbers();
-
-        // count real placed words
         const usedCount = placed.filter(w => w.r != null).length;
         return { usedCount };
       }
@@ -830,7 +832,6 @@
         const entries = puzzle.entries;
         let best = null;
 
-        // try multiple times, keep layout with most placed words
         for (let attempt=0; attempt<14; attempt++){
           const snap = snapshotState();
           const res = tryGenerateConnected(entries);
@@ -839,12 +840,9 @@
           if (!best || score > best.score){
             best = { score, state: snapshotState() };
           }
-
-          // restore snapshot so attempts don't accumulate
           restoreState(snap);
         }
 
-        // apply best state
         if (best){
           restoreState(best.state);
           computeBounds();
@@ -937,7 +935,7 @@
               dirTextEl.textContent = active.dir.toUpperCase();
 
               renderAll();
-              openDrawerForActive();
+              // drawer stays closed unless user opens it
             });
 
             boardEl.appendChild(tile);
@@ -1007,8 +1005,12 @@
             active.dir = w.dir;
             active.wordId = w.id;
             dirTextEl.textContent = active.dir.toUpperCase();
+
+            // update drawer title even if closed
+            updateDrawerTitle();
+
             renderAll();
-            openDrawerForActive();
+            // drawer stays closed unless user opens it
           });
 
           cluesListEl.appendChild(row);
@@ -1105,21 +1107,25 @@
         return false;
       }
 
-      function openDrawerForActive(){
-        if (active.r == null || active.c == null) return;
-        const cell = getCell(active.r, active.c);
-        if (!cell) return;
-
+      function updateDrawerTitle(){
+        if (!active.wordId){
+          drawerTitle.textContent = 'Tap a clue to start';
+          return;
+        }
         const word = getWordById(active.wordId);
         if (word){
           drawerTitle.textContent = `${word.emoji || '🧩'} ${word.clue} • ${active.dir.toUpperCase()} • ${word.len} letters`;
         } else {
           drawerTitle.textContent = `${active.dir.toUpperCase()}`;
         }
-        openDrawer();
       }
 
       function setLetter(letter){
+        if (active.r == null || active.c == null){
+          setStatus('Tap a clue (or a square) first.');
+          return;
+        }
+
         const cell = getCell(active.r, active.c);
         if (!cell || cell.locked) return;
 
@@ -1139,6 +1145,7 @@
       }
 
       function backspace(){
+        if (active.r == null || active.c == null) return;
         const cell = getCell(active.r, active.c);
         if (!cell || cell.locked) return;
         cell.user = '';
@@ -1156,6 +1163,10 @@
       }
 
       function hint(){
+        if (active.r == null || active.c == null){
+          setStatus('Tap a clue first.');
+          return;
+        }
         const cell = getCell(active.r, active.c);
         if (!cell || cell.locked) return;
         cell.user = cell.sol;
@@ -1167,7 +1178,7 @@
       }
 
       // ---------------------------
-      // Drawer
+      // Letters grid
       // ---------------------------
       function buildLetters(){
         lettersGrid.innerHTML = '';
@@ -1196,35 +1207,17 @@
         lettersGrid.appendChild(clr);
       }
 
-      function openDrawer(){
-        scrim.classList.add('open');
-        drawer.classList.add('open');
-        scrim.setAttribute('aria-hidden','false');
-        drawer.setAttribute('aria-hidden','false');
-      }
-      function closeDrawer(){
-        scrim.classList.remove('open');
-        drawer.classList.remove('open');
-        scrim.setAttribute('aria-hidden','true');
-        drawer.setAttribute('aria-hidden','true');
-      }
-      drawerClose.addEventListener('click', closeDrawer);
-      scrim.addEventListener('click', closeDrawer);
-
       // ---------------------------
       // Buttons
       // ---------------------------
       newBtn.addEventListener('click', startNew);
 
       hintBtn.addEventListener('click', () => {
-        if (active.r == null) { setStatus('Tap a clue first.'); return; }
         hint();
-        openDrawerForActive();
       });
 
       clearBtn.addEventListener('click', () => {
         clearActiveWord();
-        openDrawerForActive();
       });
 
       guidedBtn.addEventListener('click', () => {
@@ -1243,7 +1236,6 @@
         const p = randPick(PUZZLES);
         themeTextEl.textContent = p.theme || 'Mix';
 
-        // Build a connected crossword (no islands)
         generateBestConnected(p);
 
         buildLetters();
@@ -1251,7 +1243,10 @@
         boardSubEl.textContent = 'Tap a clue (or a square) to begin!';
         setStatus('');
 
-        // auto-select first placed word
+        // drawer closed by default
+        setDrawerOpen(false);
+
+        // auto-select first placed word (but keep drawer closed)
         const firstPlaced = placed.find(w => w.r != null);
         if (firstPlaced){
           active.r = firstPlaced.r;
@@ -1259,17 +1254,21 @@
           active.dir = firstPlaced.dir;
           active.wordId = firstPlaced.id;
           dirTextEl.textContent = active.dir.toUpperCase();
-          openDrawerForActive();
         } else {
-          closeDrawer();
+          active = { r:null, c:null, dir:'across', wordId:null };
         }
+        updateDrawerTitle();
 
         renderAll();
         fitBoardToScreen();
       }
 
+      // init
+      updateDrawerTitle();
+      setDrawerOpen(false);
       startNew();
     });
   </script>
 </body>
 </html>
+```0
