@@ -18,13 +18,14 @@
       --card: #fff;
       --line: rgba(60,63,74,.12);
 
-      /* JS will set these per screen width */
-      --cellW: 68px;
-      --iconW: 42px;
-      --letterH: 52px;
-      --iconF: 1.2rem;
+      /* responsive cell sizing defaults (JS updates these) */
+      --cellW: 64px;
+      --iconW: 40px;
+      --letterH: 48px;
+      --iconF: 1.15rem;
       --letterF: 1.2rem;
-      --wordGap: 10px;
+
+      --wordGap: 8px;
     }
 
     *{ box-sizing:border-box; }
@@ -34,7 +35,7 @@
       background: var(--bg);
       color: var(--ink);
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      overflow-x:hidden; /* ✅ no horizontal bleed */
+      overflow-x:hidden; /* ✅ prevent horizontal bleed */
     }
 
     .fc-game-screen{
@@ -43,15 +44,15 @@
       flex-direction:column;
       align-items:center;
       padding:16px;
-      /* room for sticky key */
-      padding-bottom: calc(16px + env(safe-area-inset-bottom) + 150px);
+      /* reserve space for sticky key */
+      padding-bottom: calc(16px + env(safe-area-inset-bottom) + 170px);
     }
 
     .fc-back-link{
       align-self:flex-start;
       text-decoration:none;
       font-weight:900;
-      color: rgba(255,130,105,.85);
+      color: rgba(255,130,105,.88);
       padding:8px 10px;
       border-radius:999px;
       background: rgba(255,213,183,.35);
@@ -75,7 +76,6 @@
       font-weight: 1000;
       text-align:center;
     }
-
     .fc-game-instructions{
       margin:0 0 14px;
       text-align:center;
@@ -100,7 +100,6 @@
       );
       border: 1px solid rgba(60,63,74,.08);
     }
-
     .cg-btn{
       padding:10px 16px;
       border-radius:999px;
@@ -126,8 +125,8 @@
       border-radius: 16px;
       background: rgba(117,207,240,.10);
       border: 1px solid rgba(60,63,74,.08);
+      flex-wrap:wrap; /* ✅ no overflow on small screens */
     }
-
     .cg-chip{
       display:inline-flex;
       align-items:center;
@@ -140,11 +139,7 @@
       color: rgba(60,63,74,.88);
       font-size:.92rem;
       white-space:nowrap;
-      max-width: 100%;
-      overflow:hidden;
-      text-overflow:ellipsis;
     }
-
     .cg-week{
       font-weight: 1000;
       color: rgba(60,63,74,.70);
@@ -162,30 +157,27 @@
       padding: 14px;
       border: 1px solid rgba(60,63,74,.08);
       box-shadow: 0 10px 24px rgba(60,63,74,.08);
-      overflow:hidden; /* ✅ prevents internal shadows/bleed */
+      overflow:hidden; /* ✅ no bleed */
     }
-
     .cg-card-head{
       display:flex;
       justify-content:space-between;
       align-items:flex-start;
       gap:12px;
       margin-bottom: 8px;
+      flex-wrap:wrap; /* ✅ stacks on mobile */
     }
-
     .cg-card-title{
       margin:0;
       font-weight: 1100;
       font-size: 1.2rem;
     }
-
     .cg-card-sub{
       margin:2px 0 0;
       font-weight: 800;
       color: rgba(60,63,74,.70);
       font-size: .95rem;
     }
-
     .cg-progress{
       text-align:right;
       font-weight: 1000;
@@ -194,28 +186,35 @@
     }
 
     .cg-message{
-      background: rgba(255,255,255,.78);
+      background: rgba(255,255,255,.75);
       border-radius: 18px;
       padding: 12px;
       border: 1px solid rgba(60,63,74,.08);
       overflow:hidden; /* ✅ no horizontal bleed */
     }
 
-    /* ✅ Whole words kept together */
+    /* Words stay together (each word is its own row block) */
     .cg-words{
       display:flex;
       flex-direction:column;
       gap: 12px;
       align-items:center;
-      width:100%;
     }
 
+    /* Each word gets its own scroll if needed */
     .cg-word-wrap{
       width:100%;
       display:flex;
       justify-content:center;
-      overflow:hidden; /* ✅ no horizontal scrolling */
+      overflow-x:auto;
+      overflow-y:hidden;
+      -webkit-overflow-scrolling: touch;
       padding: 2px 0 6px;
+    }
+    .cg-word-wrap::-webkit-scrollbar{ height: 8px; }
+    .cg-word-wrap::-webkit-scrollbar-thumb{
+      background: rgba(60,63,74,.18);
+      border-radius: 999px;
     }
 
     .cg-word{
@@ -228,15 +227,13 @@
       background: rgba(117,207,240,.06);
       border: 1px solid rgba(60,63,74,.06);
       flex: 0 0 auto;
-      transform-origin: center center; /* used by fit-to-width */
-      will-change: transform;
       max-width: 100%;
     }
 
     .cg-cell{
       width: var(--cellW);
       border-radius: 18px;
-      padding: 10px 10px 12px;
+      padding: 9px 9px 10px;
       background: #fff;
       border: 1px solid rgba(60,63,74,.10);
       box-shadow: 0 8px 18px rgba(60,63,74,.10);
@@ -247,9 +244,7 @@
       user-select:none;
       -webkit-user-select:none;
       flex: 0 0 auto;
-      min-width: 0;
     }
-
     .cg-icon{
       width: var(--iconW);
       height: var(--iconW);
@@ -263,7 +258,6 @@
       box-shadow: inset 0 0 0 3px rgba(255,255,255,.55);
       margin-bottom: 8px;
     }
-
     .cg-letter-box{
       width: var(--iconW);
       height: var(--letterH);
@@ -278,12 +272,10 @@
       border: 2px solid rgba(103,197,135,.55);
       box-shadow: 0 0 0 4px rgba(103,197,135,.10) inset;
     }
-
     .cg-letter-box--active{
       border-color: rgba(117,207,240,.95);
       box-shadow: 0 0 0 4px rgba(117,207,240,.18) inset, 0 0 0 3px rgba(117,207,240,.20);
     }
-
     .cg-letter-box--filled{
       border-color: rgba(103,197,135,.75);
       box-shadow: 0 0 0 4px rgba(103,197,135,.12) inset;
@@ -299,7 +291,7 @@
       font-weight: 1000;
     }
 
-    /* ✅ Completed card stacks/wraps (no overflow) */
+    /* ✅ Completed card stacks on mobile so it never runs off screen */
     .cg-completed{
       margin-top: 12px;
       border-radius: 20px;
@@ -307,20 +299,15 @@
       background: rgba(255,255,255,.78);
       border: 1px solid rgba(60,63,74,.08);
       display:flex;
-      flex-wrap:wrap;
-      justify-content:space-between;
-      align-items:center;
       gap:12px;
-      width:100%;
-      max-width:100%;
-      overflow:hidden;
+      align-items:flex-start;
+      justify-content:space-between;
+      flex-wrap:wrap;
     }
-
     .cg-completed-left{
-      flex: 1 1 180px;
       min-width: 180px;
+      flex: 1 1 180px;
     }
-
     .cg-pill{
       padding: 10px 14px;
       border-radius: 999px;
@@ -329,12 +316,13 @@
       font-weight: 1100;
       letter-spacing: .04em;
       text-transform: uppercase;
-      white-space: normal;
-      overflow-wrap: anywhere;
-      max-width: 100%;
       box-shadow: 0 8px 16px rgba(60,63,74,.08);
+      width: 100%;
+      max-width: 100%;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
       flex: 1 1 220px;
-      text-align:center;
     }
 
     .cg-status{
@@ -345,7 +333,7 @@
       min-height: 1.2em;
     }
 
-    /* ✅ Sticky bottom key + horizontal scroll preserved */
+    /* Sticky bottom key */
     .cg-sticky{
       position: fixed;
       left: 0;
@@ -358,7 +346,6 @@
       border-top: 1px solid rgba(60,63,74,.10);
       box-shadow: 0 -10px 24px rgba(60,63,74,.08);
     }
-
     .cg-sticky-inner{
       max-width: 980px;
       margin: 0 auto;
@@ -371,8 +358,8 @@
       border: 1px solid rgba(60,63,74,.08);
       padding: 10px;
       box-shadow: 0 10px 24px rgba(60,63,74,.08);
+      overflow:hidden;
     }
-
     .cg-key-head{
       display:flex;
       justify-content:space-between;
@@ -381,7 +368,6 @@
       margin-bottom: 8px;
       padding: 0 4px;
     }
-
     .cg-key-title{
       font-weight: 1100;
       color: rgba(60,63,74,.88);
@@ -389,21 +375,20 @@
       align-items:center;
       gap:8px;
     }
-
     .cg-key-hint{
       font-weight: 900;
       color: rgba(60,63,74,.65);
       white-space:nowrap;
     }
-
     .cg-key-row{
       display:flex;
       gap:10px;
       overflow-x:auto;
       overflow-y:hidden;
       padding: 6px 6px 10px;
-      scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch;
+      scroll-snap-type: x mandatory;
+      overscroll-behavior-x: contain;
     }
     .cg-key-row::-webkit-scrollbar{ height: 8px; }
     .cg-key-row::-webkit-scrollbar-thumb{
@@ -414,7 +399,7 @@
     .cg-key-btn{
       flex: 0 0 auto;
       scroll-snap-align: start;
-      width: 140px;
+      width: 132px;
       border-radius: 18px;
       border: 1px solid rgba(60,63,74,.10);
       background: rgba(255,255,255,.85);
@@ -430,26 +415,25 @@
     .cg-key-btn:active{ transform: scale(.99); }
 
     .cg-key-emoji{
-      width: 44px;
-      height: 44px;
+      width: 42px;
+      height: 42px;
       border-radius: 16px;
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size: 1.35rem;
+      font-size: 1.25rem;
       background: rgba(255,213,183,.42);
       border: 1px solid rgba(60,63,74,.08);
     }
-
     .cg-key-letter{
-      width: 44px;
-      height: 44px;
+      width: 42px;
+      height: 42px;
       border-radius: 16px;
       display:flex;
       align-items:center;
       justify-content:center;
       font-weight: 1100;
-      font-size: 1.2rem;
+      font-size: 1.15rem;
       background: rgba(117,207,240,.12);
       border: 2px solid rgba(60,63,74,.10);
       color: rgba(60,63,74,.88);
@@ -473,6 +457,19 @@
       animation: cgFall linear forwards;
     }
     @keyframes cgFall { to { transform: translateY(calc(100vh + 40px)) rotate(720deg); } }
+
+    /* Small screens: slightly tighter by default */
+    @media (max-width: 420px){
+      :root{
+        --cellW: 58px;
+        --iconW: 36px;
+        --letterH: 44px;
+        --iconF: 1.05rem;
+        --letterF: 1.1rem;
+        --wordGap: 7px;
+      }
+      .cg-key-btn{ width: 124px; }
+    }
   </style>
 </head>
 
@@ -517,7 +514,9 @@
 
           <div class="cg-completed" id="cgCompleted" style="display:none;">
             <div class="cg-completed-left">
-              <div style="font-weight:1100;"><span style="margin-right:6px;">✅</span>Completed This Week</div>
+              <div style="font-weight:1100;">
+                <span style="margin-right:6px;">✅</span>Completed This Week
+              </div>
               <div style="font-weight:900; color:rgba(60,63,74,.65); font-size:.92rem;" id="cgCompletedWeek"></div>
             </div>
             <div class="cg-pill" id="cgCompletedPhrase"></div>
@@ -602,7 +601,7 @@
       ];
 
       // ---------- weekly storage ----------
-      const STORAGE_PREFIX = 'fc_cryptogram_v7_';
+      const STORAGE_PREFIX = 'fc_cryptogram_v6_';
       const STORAGE_KEY = STORAGE_PREFIX + WEEK_KEY;
       const COMPLETED_KEY = STORAGE_PREFIX + 'completed_' + WEEK_KEY;
 
@@ -615,6 +614,14 @@
       let solved = false;
 
       function setStatus(t){ statusEl.textContent = t || ''; }
+
+      // ✅ preserve key scroll between renders
+      function saveKeyScroll(){
+        return keyRowEl ? keyRowEl.scrollLeft : 0;
+      }
+      function restoreKeyScroll(x){
+        if (keyRowEl) keyRowEl.scrollLeft = x;
+      }
 
       function confettiBurst(big=false){
         const pieceCount = big ? 140 : 70;
@@ -686,8 +693,10 @@
       }
 
       function updateCounters(){
-        filledEl.textContent = String(input.filter(x => x !== '').length);
-        totalEl.textContent = String(answer.length);
+        const totalLetters = answer.length;
+        const filledLetters = input.filter(x => x !== '').length;
+        filledEl.textContent = String(filledLetters);
+        totalEl.textContent = String(totalLetters);
       }
 
       function updateSolvedUI(){
@@ -711,7 +720,7 @@
         }
       }
 
-      // ✅ Smaller responsive tile sizing
+      // ✅ responsive sizing to fit longest word (best effort), without horizontal bleed
       function applyResponsiveCellSize(){
         if (!current?.tokens?.length) return;
 
@@ -720,19 +729,20 @@
         const rect = msgBox ? msgBox.getBoundingClientRect() : null;
 
         const available = Math.max(240, (rect ? rect.width : window.innerWidth) - 24);
-        const gap = 10; // --wordGap
-        const minCell = 46; // smaller
-        const maxCell = 74;
+        const gap = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--wordGap')) || 8;
 
-        let target = Math.floor((available - (gap * (longest - 1))) / Math.max(1, longest));
+        const minCell = 50;
+        const maxCell = 66;
+
+        let target = Math.floor((available - (gap * (longest - 1))) / longest);
         if (!Number.isFinite(target)) target = maxCell;
 
         const cellW = Math.max(minCell, Math.min(maxCell, target));
-        const iconW = Math.max(28, Math.min(46, Math.floor(cellW * 0.62)));
-        const letterH = Math.max(36, Math.min(56, Math.floor(cellW * 0.75)));
 
-        const iconF = (cellW <= 52) ? '0.98rem' : (cellW <= 60 ? '1.08rem' : '1.20rem');
-        const letterF = (cellW <= 52) ? '1.02rem' : (cellW <= 60 ? '1.12rem' : '1.20rem');
+        const iconW = Math.max(32, Math.min(42, Math.floor(cellW * 0.62)));
+        const letterH = Math.max(40, Math.min(50, Math.floor(cellW * 0.78)));
+        const iconF = (iconW <= 34) ? '1.0rem' : '1.15rem';
+        const letterF = (cellW <= 54) ? '1.05rem' : '1.2rem';
 
         document.documentElement.style.setProperty('--cellW', cellW + 'px');
         document.documentElement.style.setProperty('--iconW', iconW + 'px');
@@ -741,41 +751,20 @@
         document.documentElement.style.setProperty('--letterF', letterF);
       }
 
-      // ✅ Fit each whole word into the message area WITHOUT horizontal scroll
-      function fitWordsToWidth(){
-        const msg = document.querySelector('.cg-message');
-        if (!msg) return;
-
-        const safeW = Math.max(220, msg.getBoundingClientRect().width - 18);
-
-        document.querySelectorAll('.cg-word-wrap').forEach(wrap => {
-          const word = wrap.querySelector('.cg-word');
-          if (!word) return;
-
-          // reset
-          word.style.transform = 'scale(1)';
-          wrap.style.height = '';
-
-          const w = word.getBoundingClientRect().width;
-
-          if (w > safeW) {
-            const scale = Math.max(0.68, Math.min(1, safeW / w));
-            word.style.transform = `scale(${scale})`;
-
-            // keep wrapper tall enough after scaling (prevents overlap)
-            const h = word.getBoundingClientRect().height;
-            wrap.style.height = (h + 10) + 'px';
-          }
-        });
-      }
+      // optional hook for future tweaks; keep as no-op for now
+      function fitWordsToWidth(){}
 
       function render(){
+        // ✅ preserve key scroll so it doesn't snap back to start after each selection
+        const keyScrollX = saveKeyScroll();
+
         wordsEl.innerHTML = '';
         keyRowEl.innerHTML = '';
         weekTextEl.textContent = WEEK_KEY;
 
         applyResponsiveCellSize();
 
+        // render message (word chips)
         current.tokens.forEach(tok => {
           const wrap = document.createElement('div');
           wrap.className = 'cg-word-wrap';
@@ -807,10 +796,12 @@
           wordsEl.appendChild(wrap);
         });
 
-        const mappingEntries = Object.entries(current.mapping).map(([letter, icon]) => ({ letter, icon }));
-        const ordered = mappingEntries.sort((a,b) => a.icon.localeCompare(b.icon));
+        // render key buttons
+        const mappingEntries = Object.entries(current.mapping)
+          .map(([letter, icon]) => ({ letter, icon }))
+          .sort((a,b) => a.icon.localeCompare(b.icon));
 
-        ordered.forEach(({letter, icon}) => {
+        mappingEntries.forEach(({letter, icon}) => {
           const btn = document.createElement('button');
           btn.type = 'button';
           btn.className = 'cg-key-btn';
@@ -834,12 +825,31 @@
         updateCounters();
         updateSolvedUI();
 
-        requestAnimationFrame(() => fitWordsToWidth());
+        // restore key scroll + keep active cell visible within its word wrap
+        requestAnimationFrame(() => {
+          restoreKeyScroll(keyScrollX);
+          fitWordsToWidth();
+
+          const active = document.querySelector('.cg-letter-box--active');
+          if (!active) return;
+          const wrap = active.closest('.cg-word-wrap');
+          if (!wrap) return;
+
+          const aRect = active.getBoundingClientRect();
+          const wRect = wrap.getBoundingClientRect();
+
+          const leftCut = aRect.left < wRect.left + 12;
+          const rightCut = aRect.right > wRect.right - 12;
+
+          if (leftCut) wrap.scrollLeft -= (wRect.left + 12 - aRect.left);
+          if (rightCut) wrap.scrollLeft += (aRect.right - (wRect.right - 12));
+        });
       }
 
       function saveState(){
         try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify({ current, answer, input, cursor, history, solved }));
+          const data = { current, answer, input, cursor, history, solved };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
         } catch (e) {}
       }
 
@@ -908,7 +918,8 @@
         }
         if (cursor === -1) return;
 
-        if (answer[cursor] !== letter){
+        const isCorrect = (answer[cursor] === letter);
+        if (!isCorrect){
           setStatus('Not quite — try a different icon 🙂');
           return;
         }
@@ -916,9 +927,9 @@
         history.push({ idx: cursor, prev: input[cursor] });
         input[cursor] = letter;
 
-        let next = findNextBlank(cursor + 1);
-        if (next === -1) next = findNextBlank(0);
-        cursor = (next === -1) ? 0 : next;
+        const next = findNextBlank(cursor + 1);
+        cursor = (next === -1) ? findNextBlank(0) : next;
+        if (cursor === -1) cursor = 0;
 
         setStatus('Nice! Keep going 🙂');
 
@@ -966,15 +977,13 @@
         startNewPuzzle();
       }
 
-      document.getElementById('cgNewBtn').addEventListener('click', startNewPuzzle);
-      document.getElementById('cgUndoBtn').addEventListener('click', undo);
-      document.getElementById('cgClearBtn').addEventListener('click', clearAll);
-      document.getElementById('cgResetWeekBtn').addEventListener('click', resetWeek);
+      newBtn.addEventListener('click', startNewPuzzle);
+      undoBtn.addEventListener('click', undo);
+      clearBtn.addEventListener('click', clearAll);
+      resetWeekBtn.addEventListener('click', resetWeek);
 
       window.addEventListener('resize', () => {
-        if (!current) return;
-        applyResponsiveCellSize();
-        fitWordsToWidth();
+        if (current) render();
       });
 
       if (!loadState()){
