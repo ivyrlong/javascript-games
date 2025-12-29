@@ -30,7 +30,7 @@
       background: var(--bg);
       color: var(--ink);
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      overflow-x:hidden; /* ✅ no horizontal bleed */
+      overflow-x:hidden; /* no horizontal bleed */
     }
 
     .fc-game-screen{
@@ -62,7 +62,7 @@
       border:1px solid var(--line);
       box-shadow: 0 6px 18px rgba(60,63,74,.10);
       padding:16px;
-      overflow:hidden; /* ✅ keep container clean */
+      overflow:hidden; /* clean container */
     }
 
     .fc-game-heading{
@@ -145,7 +145,6 @@
       white-space:nowrap;
     }
 
-    /* ✅ Board card */
     .cw-board-card{
       margin-top: 10px;
       border-radius: 22px;
@@ -156,7 +155,7 @@
       padding: 14px;
       border: 1px solid rgba(60,63,74,.08);
       box-shadow: 0 10px 24px rgba(60,63,74,.08);
-      overflow:hidden; /* ✅ no weird vertical line/shadow */
+      overflow:hidden;
     }
 
     .cw-board-head{
@@ -178,20 +177,12 @@
       font-size:.92rem;
       line-height:1.2;
     }
-    .cw-board-hint{
-      text-align:right;
-      font-weight:1000;
-      color: rgba(60,63,74,.70);
-      white-space:nowrap;
-      font-size:.92rem;
-    }
 
-    /* ✅ This wrapper lets us fit-to-screen without bleed */
     .cw-board-viewport{
       width:100%;
       display:flex;
       justify-content:center;
-      overflow:hidden; /* ✅ prevents horizontal bleed */
+      overflow:hidden; /* prevents bleed */
       padding: 6px 0 2px;
     }
 
@@ -205,7 +196,7 @@
       background: rgba(255,255,255,.70);
       border: 1px solid rgba(60,63,74,.08);
       box-shadow: 0 10px 18px rgba(60,63,74,.08);
-      overflow:hidden; /* ✅ board itself can't bleed */
+      overflow:hidden;
       touch-action: manipulation;
       max-width:100%;
     }
@@ -225,7 +216,6 @@
       -webkit-user-select:none;
     }
 
-    /* invisible unused cells (still keep spacing clean) */
     .cw-tile.blank{
       opacity:0;
       border-color: transparent;
@@ -257,17 +247,14 @@
       border-color: rgba(117,207,240,.95);
       box-shadow: 0 0 0 var(--ring) rgba(117,207,240,.18);
     }
-
     .cw-tile.inword{
       border-color: rgba(243,184,64,.80);
     }
-
     .cw-tile.locked{
       border-color: rgba(103,197,135,.70);
       background: rgba(103,197,135,.10);
     }
 
-    /* ✅ Clues */
     .cw-clues{
       margin-top: 12px;
       border-radius: 22px;
@@ -276,7 +263,6 @@
       box-shadow: 0 10px 24px rgba(60,63,74,.08);
       overflow:hidden;
     }
-
     .cw-clues-head{
       display:flex;
       justify-content:space-between;
@@ -293,7 +279,6 @@
       flex-direction:column;
       gap:10px;
     }
-
     .cw-clue{
       display:flex;
       align-items:center;
@@ -325,9 +310,7 @@
       flex: 0 0 auto;
       font-size: 1.25rem;
     }
-    .cw-clue .txt{
-      min-width:0;
-    }
+    .cw-clue .txt{ min-width:0; }
     .cw-clue .txt .line1{
       font-weight:1100;
       white-space:nowrap;
@@ -348,7 +331,7 @@
       border-color: rgba(255,130,105,.55);
     }
 
-    /* ✅ Bottom drawer (letters) */
+    /* Drawer */
     .cw-drawer-scrim{
       position: fixed;
       inset: 0;
@@ -386,7 +369,7 @@
 
     .cw-drawer-head{
       position:relative;
-      padding: 12px 44px 12px 14px; /* ✅ room for X */
+      padding: 12px 44px 12px 14px;
       background: rgba(255,255,255,.72);
       border-bottom: 1px solid rgba(60,63,74,.10);
       display:flex;
@@ -395,7 +378,6 @@
       text-align:center;
       min-height: 52px;
     }
-    /* ✅ remove keyboard icon + "tap letters" (more room) */
     .cw-drawer-title{
       font-weight:1100;
       color: rgba(60,63,74,.88);
@@ -453,10 +435,7 @@
       touch-action: manipulation;
     }
     .cw-letter-btn:active{ transform: scale(.99); }
-
-    .cw-letter-btn.alt{
-      background: rgba(172,148,244,.20);
-    }
+    .cw-letter-btn.alt{ background: rgba(172,148,244,.20); }
 
     .cw-status{
       margin-top: 10px;
@@ -503,7 +482,6 @@
             <h2 class="cw-board-title">🧩 Crossword</h2>
             <div class="cw-board-sub" id="boardSub">Tap a clue (or a square) to begin!</div>
           </div>
-          <div class="cw-board-hint" id="boardRight"> </div>
         </div>
 
         <div class="cw-board-viewport">
@@ -528,7 +506,7 @@
   <div class="cw-drawer" id="drawer" aria-hidden="true">
     <div class="cw-drawer-inner">
       <div class="cw-drawer-head">
-        <div class="cw-drawer-title" id="drawerTitle"> </div>
+        <div class="cw-drawer-title" id="drawerTitle"></div>
         <button class="cw-drawer-close" id="drawerClose" type="button" aria-label="Close">✕</button>
       </div>
       <div class="cw-letters" id="lettersGrid"></div>
@@ -538,7 +516,7 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       // ---------------------------
-      // Puzzle bank (swap weekly later)
+      // Puzzle bank
       // ---------------------------
       const PUZZLES = [
         {
@@ -551,6 +529,8 @@
             { answer: "SUN", clue: "Made the day bright", dir: "down", emoji: "💡" },
             { answer: "PAUL", clue: "Wrote letters", dir: "across", emoji: "🧾" },
             { answer: "MOSES", clue: "Led Israel", dir: "down", emoji: "🪵" },
+            { answer: "LAMB", clue: "Gentle animal", dir: "across", emoji: "🐑" },
+            { answer: "STAR", clue: "Shines at night", dir: "down", emoji: "⭐" },
           ]
         },
         {
@@ -562,12 +542,13 @@
             { answer: "PRAY", clue: "Talk to God", dir: "down", emoji: "🙏" },
             { answer: "BIBLE", clue: "God’s Word", dir: "across", emoji: "📖" },
             { answer: "KIND", clue: "Be this", dir: "down", emoji: "🌿" },
+            { answer: "PEACE", clue: "Calm feeling", dir: "across", emoji: "🫶" },
           ]
         }
       ];
 
       // ---------------------------
-      // State
+      // UI refs
       // ---------------------------
       const boardEl = document.getElementById('board');
       const cluesListEl = document.getElementById('cluesList');
@@ -589,48 +570,48 @@
       const drawerClose = document.getElementById('drawerClose');
       const lettersGrid = document.getElementById('lettersGrid');
 
+      // ---------------------------
+      // State
+      // ---------------------------
       let guided = true;
-
-      // grid is sparse map: key "r,c" => cell
-      // cell: { sol, user, locked, num, acrossId, downId }
-      let grid = new Map();
-      let placed = []; // words with placement {id, answer, clue, emoji, dir, r, c, len}
+      let grid = new Map();     // "r,c" => cell
+      let placed = [];          // placed words (and skipped shown as unused)
       let display = { r0:0, c0:0, r1:0, c1:0, rows:1, cols:1 };
       let active = { r:null, c:null, dir:'across', wordId:null };
 
       // ---------------------------
-      // Utilities
+      // Helpers
       // ---------------------------
       const keyRC = (r,c) => `${r},${c}`;
       const getCell = (r,c) => grid.get(keyRC(r,c)) || null;
       const setCell = (r,c, cell) => grid.set(keyRC(r,c), cell);
+      const isFilled = (r,c) => !!getCell(r,c);
 
       function setStatus(msg){ statusEl.textContent = msg || ''; }
+      function randPick(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
 
-      function randPick(arr){
-        return arr[Math.floor(Math.random() * arr.length)];
+      function shuffle(arr){
+        const a = arr.slice();
+        for (let i=a.length-1;i>0;i--){
+          const j = Math.floor(Math.random()*(i+1));
+          [a[i],a[j]] = [a[j],a[i]];
+        }
+        return a;
       }
 
       // ---------------------------
-      // Placement rules to FIX "words too close" & "unintentional groupings"
-      //
-      // Core rule enforced:
-      // - When placing ACROSS in an EMPTY cell, the cells ABOVE and BELOW must be empty
-      // - When placing DOWN in an EMPTY cell, the cells LEFT and RIGHT must be empty
-      // - Word ends must have a blank cell before/after
-      //
-      // This prevents side-by-side words on the same line and prevents accidental vertical letter groupings.
+      // Spacing rules (prevents accidental groupings)
       // ---------------------------
       function canPlaceWord(answer, dir, r, c){
         const len = answer.length;
 
         // end caps must be blank
         if (dir === 'across'){
-          if (getCell(r, c-1)) return false;
-          if (getCell(r, c+len)) return false;
+          if (isFilled(r, c-1)) return false;
+          if (isFilled(r, c+len)) return false;
         } else {
-          if (getCell(r-1, c)) return false;
-          if (getCell(r+len, c)) return false;
+          if (isFilled(r-1, c)) return false;
+          if (isFilled(r+len, c)) return false;
         }
 
         for (let i=0;i<len;i++){
@@ -642,25 +623,24 @@
 
           if (existing && existing.sol !== ch) return false;
 
-          // adjacency rules only when we're placing into an EMPTY cell
+          // adjacency rules only when placing into EMPTY cell
           if (!existing){
             if (dir === 'across'){
-              // forbid vertical neighbors to avoid accidental vertical groups
-              if (getCell(rr-1, cc)) return false;
-              if (getCell(rr+1, cc)) return false;
+              if (isFilled(rr-1, cc)) return false;
+              if (isFilled(rr+1, cc)) return false;
             } else {
-              // forbid horizontal neighbors to avoid accidental horizontal groups
-              if (getCell(rr, cc-1)) return false;
-              if (getCell(rr, cc+1)) return false;
+              if (isFilled(rr, cc-1)) return false;
+              if (isFilled(rr, cc+1)) return false;
             }
           }
         }
         return true;
       }
 
-      function placeWord(wordObj, dir, r, c, id){
-        const answer = wordObj.answer.toUpperCase();
+      function placeWord(entry, dir, r, c, id){
+        const answer = entry.answer;
         const len = answer.length;
+
         for (let i=0;i<len;i++){
           const rr = dir === 'across' ? r : r+i;
           const cc = dir === 'across' ? c+i : c;
@@ -682,20 +662,19 @@
         }
 
         placed.push({
-          id,
-          answer,
-          clue: wordObj.clue,
-          emoji: wordObj.emoji,
-          dir,
-          r,
-          c,
+          id, answer,
+          clue: entry.clue,
+          emoji: entry.emoji,
+          dir, r, c,
           len
         });
       }
 
+      // ---------------------------
+      // Compute trimmed display bounds (with small margin)
+      // ---------------------------
       function computeBounds(){
         let r0 = Infinity, c0 = Infinity, r1 = -Infinity, c1 = -Infinity;
-
         for (const k of grid.keys()){
           const [r,c] = k.split(',').map(Number);
           r0 = Math.min(r0,r);
@@ -703,42 +682,28 @@
           r1 = Math.max(r1,r);
           c1 = Math.max(c1,c);
         }
-
         if (!isFinite(r0)){
           display = { r0:0,c0:0,r1:0,c1:0,rows:1,cols:1 };
           return;
         }
-
-        // trim unused, but keep a small margin so it feels airy
         const margin = 2;
         r0 -= margin; c0 -= margin; r1 += margin; c1 += margin;
-
-        display = {
-          r0, c0, r1, c1,
-          rows: (r1 - r0 + 1),
-          cols: (c1 - c0 + 1)
-        };
+        display = { r0, c0, r1, c1, rows: (r1-r0+1), cols: (c1-c0+1) };
       }
 
       // ---------------------------
-      // Fit-to-screen board sizing (no crop)
+      // Fit-to-screen sizing
       // ---------------------------
       function fitBoardToScreen(){
-        const card = document.getElementById('boardCard');
-        if (!card) return;
-
         const cols = display.cols;
         const rows = display.rows;
-
         const gap = 6;
 
-        const viewportW = Math.min(window.innerWidth, 980) - 32; // screen padding + card padding approx
-        const viewportH = Math.max(240, window.innerHeight * 0.46); // keep board nicely visible above clues/drawer
+        const viewportW = Math.min(window.innerWidth, 980) - 32;
+        const viewportH = Math.max(240, window.innerHeight * 0.46);
 
-        // cell size that fits both directions
         const cellW = Math.floor((viewportW - (gap * (cols-1)) - 24) / cols);
         const cellH = Math.floor((viewportH - (gap * (rows-1)) - 24) / rows);
-
         const cell = Math.max(18, Math.min(34, Math.min(cellW, cellH)));
 
         document.documentElement.style.setProperty('--cell', cell + 'px');
@@ -748,13 +713,10 @@
       }
 
       // ---------------------------
-      // Clue numbering
+      // Numbering
       // ---------------------------
       function assignNumbers(){
-        // sort by row/col for consistent numbering
         const starts = [];
-        const isFilled = (r,c) => !!getCell(r,c);
-
         for (let rr = display.r0; rr <= display.r1; rr++){
           for (let cc = display.c0; cc <= display.c1; cc++){
             const cell = getCell(rr,cc);
@@ -762,10 +724,11 @@
 
             const startAcross = cell.acrossId && !isFilled(rr,cc-1);
             const startDown   = cell.downId && !isFilled(rr-1,cc);
-            if (startAcross || startDown) starts.push({r:rr,c:cc, startAcross, startDown});
+            if (startAcross || startDown) starts.push({r:rr,c:cc});
           }
         }
 
+        starts.sort((a,b)=> (a.r-b.r) || (a.c-b.c));
         let n = 1;
         for (const s of starts){
           const cell = getCell(s.r,s.c);
@@ -774,57 +737,61 @@
       }
 
       // ---------------------------
-      // Generator:
-      // - place first word centered
-      // - try to cross remaining words
-      // - if no crossing found, place with spacing using scan
+      // CONNECTED GENERATOR (no islands)
+      // Rule: every word after the first MUST CROSS an existing letter.
+      // If it can’t, it is marked "unused in this puzzle".
+      // Also: we retry multiple times and keep the best (most words placed).
       // ---------------------------
-      function generate(puzzle){
+      function tryGenerateConnected(entries){
         grid = new Map();
         placed = [];
         active = { r:null, c:null, dir:'across', wordId:null };
 
-        const entries = puzzle.entries.map(e => ({
-          ...e,
-          answer: e.answer.toUpperCase().replace(/[^A-Z]/g,'')
-        })).filter(e => e.answer.length >= 3);
+        const items = entries
+          .map(e => ({
+            ...e,
+            answer: e.answer.toUpperCase().replace(/[^A-Z]/g,'')
+          }))
+          .filter(e => e.answer.length >= 3);
 
-        // sort longest first to get better layouts and spacing
-        entries.sort((a,b)=> b.answer.length - a.answer.length);
+        // shuffle + bias to longer first
+        const shuffled = shuffle(items).sort((a,b)=> b.answer.length - a.answer.length);
 
         let idCounter = 1;
 
-        // first word
-        const first = entries[0];
+        // place first word near center
+        const first = shuffled[0];
         const firstDir = first.dir || 'across';
         const startR = 0;
         const startC = Math.floor(-first.answer.length/2);
         placeWord(first, firstDir, startR, startC, idCounter++);
 
-        // remaining
-        for (let idx=1; idx<entries.length; idx++){
-          const w = entries[idx];
+        // place remaining: MUST cross
+        for (let idx=1; idx<shuffled.length; idx++){
+          const w = shuffled[idx];
           const answer = w.answer;
-          const preferredDir = w.dir || 'across';
 
           let placedOk = false;
 
-          // try crossing with any existing word letters
           // try both directions (preferred first)
-          const dirOrder = preferredDir === 'across' ? ['across','down'] : ['down','across'];
+          const pref = (w.dir || 'across');
+          const dirOrder = pref === 'across' ? ['across','down'] : ['down','across'];
 
           for (const dir of dirOrder){
+            // find any crossing opportunity
             for (let i=0; i<answer.length && !placedOk; i++){
               const ch = answer[i];
 
-              // scan existing cells for same letter (potential crossing)
               for (const [k, cell] of grid.entries()){
                 if (cell.sol !== ch) continue;
                 const [rr,cc] = k.split(',').map(Number);
 
-                // compute start position so that answer[i] lands on (rr,cc)
                 const r0 = dir === 'across' ? rr : rr - i;
                 const c0 = dir === 'across' ? cc - i : cc;
+
+                // IMPORTANT: ensure we are actually crossing at least one EXISTING cell
+                // (placing purely in empty space is forbidden)
+                if (!getCell(rr,cc)) continue;
 
                 if (canPlaceWord(answer, dir, r0, c0)){
                   placeWord(w, dir, r0, c0, idCounter++);
@@ -835,52 +802,77 @@
             }
           }
 
-          // if no crossing, place by scanning positions with strict spacing
           if (!placedOk){
-            const dirOrder2 = preferredDir === 'across' ? ['across','down'] : ['down','across'];
-
-            outer:
-            for (const dir of dirOrder2){
-              // scan a reasonable area
-              for (let rr=-12; rr<=12; rr++){
-                for (let cc=-12; cc<=12; cc++){
-                  if (canPlaceWord(answer, dir, rr, cc)){
-                    placeWord(w, dir, rr, cc, idCounter++);
-                    placedOk = true;
-                    break outer;
-                  }
-                }
-              }
-            }
-          }
-
-          // if still not placed, skip (rare). But clues remain forever? We'll still include it as "unplaced".
-          if (!placedOk){
-            // Keep as unplaced in clues (still "forever"), but no cells.
+            // mark as unused (still show clue forever)
             placed.push({
               id: idCounter++,
               answer,
               clue: w.clue,
               emoji: w.emoji,
-              dir: preferredDir,
+              dir: pref,
               r: null,
               c: null,
               len: answer.length,
-              unplaced: true
+              unused: true
             });
           }
         }
 
         computeBounds();
         assignNumbers();
+
+        // count real placed words
+        const usedCount = placed.filter(w => w.r != null).length;
+        return { usedCount };
+      }
+
+      function generateBestConnected(puzzle){
+        const entries = puzzle.entries;
+        let best = null;
+
+        // try multiple times, keep layout with most placed words
+        for (let attempt=0; attempt<14; attempt++){
+          const snap = snapshotState();
+          const res = tryGenerateConnected(entries);
+          const score = res.usedCount;
+
+          if (!best || score > best.score){
+            best = { score, state: snapshotState() };
+          }
+
+          // restore snapshot so attempts don't accumulate
+          restoreState(snap);
+        }
+
+        // apply best state
+        if (best){
+          restoreState(best.state);
+          computeBounds();
+          assignNumbers();
+        }
+      }
+
+      function snapshotState(){
+        return {
+          grid: new Map(Array.from(grid.entries()).map(([k,v]) => [k, { ...v }])),
+          placed: placed.map(w => ({ ...w })),
+          active: { ...active },
+          display: { ...display }
+        };
+      }
+
+      function restoreState(s){
+        grid = new Map(Array.from(s.grid.entries()).map(([k,v]) => [k, { ...v }]));
+        placed = s.placed.map(w => ({ ...w }));
+        active = { ...s.active };
+        display = { ...s.display };
       }
 
       // ---------------------------
-      // Render board (with invisible blanks)
+      // Rendering
       // ---------------------------
       function renderBoard(){
         boardEl.innerHTML = '';
-
         boardEl.style.setProperty('--rows', display.rows);
         boardEl.style.setProperty('--cols', display.cols);
         fitBoardToScreen();
@@ -911,7 +903,6 @@
               continue;
             }
 
-            // numbering
             if (cell.num != null){
               const num = document.createElement('div');
               num.className = 'num';
@@ -924,37 +915,27 @@
             ch.textContent = (cell.user || '');
             tile.appendChild(ch);
 
-            // states
             if (cell.locked) tile.classList.add('locked');
             if (inActiveWord.has(keyRC(rr,cc))) tile.classList.add('inword');
             if (active.r === rr && active.c === cc) tile.classList.add('active');
 
             tile.addEventListener('click', () => {
-              if (cell.locked) {
-                setStatus('That word is locked ✅');
-                return;
-              }
+              if (cell.locked) { setStatus('That word is locked ✅'); return; }
 
-              // choose direction:
-              // - if tapping same cell again -> toggle
-              // - else prefer existing direction at that cell if possible
               if (active.r === rr && active.c === cc){
                 active.dir = (active.dir === 'across') ? 'down' : 'across';
               } else {
                 active.r = rr;
                 active.c = cc;
-
-                // prefer whichever exists
                 if (cell[active.dir + 'Id'] == null){
                   active.dir = cell.acrossId != null ? 'across' : 'down';
                 }
               }
 
-              // set wordId
               const newCell = getCell(active.r, active.c);
               active.wordId = active.dir === 'across' ? newCell.acrossId : newCell.downId;
-
               dirTextEl.textContent = active.dir.toUpperCase();
+
               renderAll();
               openDrawerForActive();
             });
@@ -967,8 +948,6 @@
       function renderClues(){
         cluesListEl.innerHTML = '';
 
-        // keep every clue forever (even unplaced)
-        // sort by number then dir, fallback to answer
         const clueItems = placed.slice().sort((a,b)=>{
           const na = (a.r==null) ? 9999 : (getCell(a.r,a.c)?.num ?? 9999);
           const nb = (b.r==null) ? 9999 : (getCell(b.r,b.c)?.num ?? 9999);
@@ -1011,20 +990,18 @@
           const right = document.createElement('div');
           right.style.fontWeight = '1100';
           right.style.color = 'rgba(60,63,74,.55)';
-          right.textContent = w.r==null ? 'not placed' : '›';
+          right.textContent = w.r==null ? 'unused' : '›';
 
           row.appendChild(left);
           row.appendChild(right);
 
-          const isActive = (active.wordId === w.id);
-          if (isActive) row.classList.add('active');
+          if (active.wordId === w.id) row.classList.add('active');
 
           row.addEventListener('click', () => {
             if (w.r == null){
-              setStatus('That clue is not placed in this layout.');
+              setStatus('That clue is unused in this puzzle (no good crossing).');
               return;
             }
-            // jump to start cell
             active.r = w.r;
             active.c = w.c;
             active.dir = w.dir;
@@ -1040,12 +1017,12 @@
 
       function updateLockedCount(){
         let lockedWords = 0;
-        const totalWords = placed.filter(w => !w.unplaced).length;
+        const totalWords = placed.filter(w => w.r != null).length;
 
         for (const w of placed){
-          if (w.unplaced) continue;
+          if (w.r == null) continue;
           const cells = getWordCells(w.id, w.dir);
-          if (cells.length === 0) continue;
+          if (!cells.length) continue;
           const allLocked = cells.every(({cell}) => cell.locked);
           if (allLocked) lockedWords++;
         }
@@ -1079,7 +1056,6 @@
             }
           }
         }
-        // sort in direction order
         out.sort((a,b)=> dir==='across' ? (a.c-b.c) : (a.r-b.r));
         return out;
       }
@@ -1098,8 +1074,6 @@
       function moveToNextCell(){
         const { list, idx } = activeIndexInWord();
         if (!list.length) return;
-
-        // go to next empty if possible, otherwise next
         for (let i = Math.max(0, idx+1); i < list.length; i++){
           if (!list[i].cell.locked && (list[i].cell.user || '') === ''){
             active.r = list[i].r;
@@ -1107,7 +1081,6 @@
             return;
           }
         }
-        // fallback: next position
         if (idx >= 0 && idx+1 < list.length){
           active.r = list[idx+1].r;
           active.c = list[idx+1].c;
@@ -1116,20 +1089,15 @@
 
       function checkAndLockWordIfComplete(wordId, dir){
         const w = getWordById(wordId);
-        if (!w || w.unplaced) return false;
+        if (!w || w.r == null) return false;
 
         const cells = getWordCells(wordId, dir);
         if (!cells.length) return false;
 
-        // build typed string
         const typed = cells.map(p => (p.cell.user || '')).join('');
         if (typed.length !== w.answer.length) return false;
+        if ([...typed].some(ch => ch === '')) return false;
 
-        // must be fully filled
-        if (typed.includes('')) return false;
-        if (typed.split('').some(ch => ch === '')) return false;
-
-        // compare
         if (typed === w.answer){
           cells.forEach(p => p.cell.locked = true);
           return true;
@@ -1139,7 +1107,6 @@
 
       function openDrawerForActive(){
         if (active.r == null || active.c == null) return;
-
         const cell = getCell(active.r, active.c);
         if (!cell) return;
 
@@ -1147,9 +1114,8 @@
         if (word){
           drawerTitle.textContent = `${word.emoji || '🧩'} ${word.clue} • ${active.dir.toUpperCase()} • ${word.len} letters`;
         } else {
-          drawerTitle.textContent = `Type letters • ${active.dir.toUpperCase()}`;
+          drawerTitle.textContent = `${active.dir.toUpperCase()}`;
         }
-
         openDrawer();
       }
 
@@ -1157,7 +1123,6 @@
         const cell = getCell(active.r, active.c);
         if (!cell || cell.locked) return;
 
-        // in guided mode, enforce solution for this cell
         if (guided && letter !== cell.sol){
           setStatus('Not quite — try another letter 🙂');
           return;
@@ -1166,18 +1131,10 @@
         cell.user = letter;
         setStatus('');
 
-        // if both across+down exist, ensure consistency (same cell shared)
-        // (already same cell, so fine)
-
-        // lock word if completed
         const lockedNow = checkAndLockWordIfComplete(active.wordId, active.dir);
-        if (lockedNow){
-          setStatus('Word locked! 🎉');
-        }
+        if (lockedNow) setStatus('Word locked! 🎉');
 
-        // advance
         moveToNextCell();
-
         renderAll();
       }
 
@@ -1193,12 +1150,7 @@
         if (!active.wordId) { setStatus('Tap a clue first.'); return; }
         const cells = activeWordCells();
         if (!cells.length) return;
-
-        // do not clear locked cells
-        cells.forEach(p => {
-          if (!p.cell.locked) p.cell.user = '';
-        });
-
+        cells.forEach(p => { if (!p.cell.locked) p.cell.user = ''; });
         setStatus('Cleared this word.');
         renderAll();
       }
@@ -1220,8 +1172,6 @@
       function buildLetters(){
         lettersGrid.innerHTML = '';
         const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-
-        // 26 letters in 7-col grid + backspace + clear
         for (const L of letters){
           const b = document.createElement('button');
           b.type = 'button';
@@ -1231,16 +1181,13 @@
           lettersGrid.appendChild(b);
         }
 
-        // backspace
         const bs = document.createElement('button');
         bs.type = 'button';
         bs.className = 'cw-letter-btn alt';
         bs.textContent = '⌫';
-        bs.setAttribute('aria-label', 'Backspace');
         bs.addEventListener('click', backspace);
         lettersGrid.appendChild(bs);
 
-        // clear cell
         const clr = document.createElement('button');
         clr.type = 'button';
         clr.className = 'cw-letter-btn alt';
@@ -1261,16 +1208,13 @@
         scrim.setAttribute('aria-hidden','true');
         drawer.setAttribute('aria-hidden','true');
       }
-
       drawerClose.addEventListener('click', closeDrawer);
       scrim.addEventListener('click', closeDrawer);
 
       // ---------------------------
       // Buttons
       // ---------------------------
-      newBtn.addEventListener('click', () => {
-        startNew();
-      });
+      newBtn.addEventListener('click', startNew);
 
       hintBtn.addEventListener('click', () => {
         if (active.r == null) { setStatus('Tap a clue first.'); return; }
@@ -1290,9 +1234,7 @@
         setStatus(guided ? 'Guided mode is ON.' : 'Guided mode is OFF.');
       });
 
-      window.addEventListener('resize', () => {
-        fitBoardToScreen();
-      });
+      window.addEventListener('resize', fitBoardToScreen);
 
       // ---------------------------
       // Start
@@ -1300,21 +1242,23 @@
       function startNew(){
         const p = randPick(PUZZLES);
         themeTextEl.textContent = p.theme || 'Mix';
-        generate(p);
+
+        // Build a connected crossword (no islands)
+        generateBestConnected(p);
+
         buildLetters();
         dirTextEl.textContent = 'ACROSS';
         boardSubEl.textContent = 'Tap a clue (or a square) to begin!';
         setStatus('');
 
-        // auto-select first placed word (if any)
-        const firstPlaced = placed.find(w => !w.unplaced && w.r != null);
+        // auto-select first placed word
+        const firstPlaced = placed.find(w => w.r != null);
         if (firstPlaced){
           active.r = firstPlaced.r;
           active.c = firstPlaced.c;
           active.dir = firstPlaced.dir;
           active.wordId = firstPlaced.id;
           dirTextEl.textContent = active.dir.toUpperCase();
-          boardSubEl.textContent = 'Tap letters in the drawer.';
           openDrawerForActive();
         } else {
           closeDrawer();
@@ -1324,10 +1268,8 @@
         fitBoardToScreen();
       }
 
-      // init
       startNew();
     });
   </script>
 </body>
 </html>
-```0
