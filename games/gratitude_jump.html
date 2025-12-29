@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gratitude Jump – Faithful Companion Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="../styles.css" />
+
+  <style>
+    .fc-game-screen {
+      min-height: 100vh;
+      background: var(--dove-white);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px;
+    }
+
+    .fc-game-box {
+      margin-top: 12px;
+      width: 100%;
+      max-width: 700px;
+      border-radius: 20px;
+      background: white;
+      box-shadow: 0 4px 10px rgba(60, 63, 74, 0.15);
+      padding: 16px;
+      text-align: center;
+    }
+
+    .fc-game-heading {
+      margin: 0 0 4px;
+      font-size: 1.4rem;
+    }
+
+    .fc-game-instructions {
+      margin: 0 0 10px;
+      font-size: 0.95rem;
+      color: rgba(60, 63, 74, 0.85);
+    }
+
+    .gj-hud {
+      margin: 8px 0 10px;
+      padding: 8px 10px;
+      border-radius: 14px;
+      background: radial-gradient(circle at left,
+        rgba(117, 207, 240, 0.18),
+        rgba(172, 148, 244, 0.12)
+      );
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .gj-hud-topline {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-size: 0.85rem;
+      color: rgba(60, 63, 74, 0.9);
+      font-weight: 600;
+    }
+
+    .gj-label {
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.06em;
+      color: rgba(60, 63, 74, 0.8);
+    }
+
+    .gj-count {
+      font-size: 0.85rem;
+      white-space: nowrap;
+    }
+
+    .gj-phrase {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--scripture-slate);
+    }
+
+    .gj-phrase-empty {
+      opacity: 0.7;
+      font-style: italic;
+    }
+
+    .gj-canvas-wrap {
+      margin-top: 8px;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(60, 63, 74, 0.15);
+      background: radial-gradient(circle at top,
+        rgba(117, 207, 240, 0.35),
+        rgba(60, 63, 74, 0.95)
+      );
+      display: inline-block;
+    }
+
+    canvas#gjCanvas {
+      display: block;
+      background: transparent;
+      touch-action: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .gj-tip {
+      margin-top: 8px;
+      font-size: 0.8rem;
+      color: rgba(60, 63, 74, 0.75);
+    }
+  </style>
+</head>
+<body>
+  <div class="fc-game-screen">
+    <a class="fc-back-link" href="../index.html">Back to games</a>
+
+    <div class="fc-game-box">
+      <h1 class="fc-game-heading">Gratitude Jump</h1>
+      <p class="fc-game-instructions">
+        Use ⬅️ ➡️ (or A / D) on a keyboard, or drag your finger on the screen to move.
+        Land on platforms to jump higher and see a new gratitude thought.
+      </p>
+
+      <div class="gj-hud">
+        <div class="gj-hud-topline">
+          <span class="gj-label">Gratitude</span>
+
+          <span class="gj-count">
+            Height: <span id="gjHeight">0</span> | Best: <span id="gjBestHeight">0</span>
+          </span>
+
+          <span class="gj-count">
+            Platforms touched: <span id="gjTouchedCount">0</span>
+          </span>
+        </div>
+
+        <p id="gjPhrase" class="gj-phrase gj-phrase-empty">
+          Land on a platform to see a gratitude phrase.
+        </p>
+      </div>
+
+      <div class="gj-canvas-wrap">
+        <canvas id="gjCanvas" width="320" height="480"></canvas>
+      </div>
+
+      <p class="gj-tip">
+        Grown-up tip: Pause and read each phrase together. Ask, “What else are we thankful for?”
+      </p>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const canvas = document.getElementById('gjCanvas');
+      const ctx = canvas.getContext('2d');
+      const WIDTH = canvas.width;
+      const HEIGHT = canvas.height;
+
+      const phraseEl = document.getElementById('gjPhrase');
+      const touchedCountEl = document.getElementById('gjTouchedCount');
+      const heightEl = document.getElementById('gjHeight');
+      const bestHeightEl = document.getElementById('gjBestHeight');
+
+      const gratitudePhrases = [
+        { type: 'personal', text: 'I am thankful for my family.' },
+        { type: 'personal', text: 'I am thankful for my friends.' },
+        { type: 'personal', text: 'I am thankful for a warm home.' },
+        { type: 'personal', text: 'I am thankful for good health today.' },
+        { type: 'personal', text: 'I am thankful for tasty food and treats.' },
+        { type: 'spiritual', text: 'Thank you, Jehovah, for the Bible.' },
+        { type: 'spiritual', text: 'Thank you, Jehovah, for our congregation family.' },
+        { type: 'spiritual', text: 'Thank you, Jehovah, for the hope of the future.' },
+        { type: 'spiritual', text: 'Thank you, Jehovah, for listening to prayers.' },
+        { type: 'spiritual', text: 'Thank you, Jehovah, for Bible meetings that teach us.' },
+        { type: 'spiritual', text: 'Thank you, Jehovah, for Jesus’ loving example.' }
+      ];
+
+      function getRandomPhraseIndex() {
+        return Math.floor(Math.random() * gratitudePhrases.length);
+      }
+
+      let touchedCount = 0;
+
+      function showPhrase(index) {
+        const phrase = gratitudePhrases[index];
+        phraseEl.textContent = phrase.text;
+        phraseEl.classList.remove('gj-phrase-empty');
+        touchedCountEl.textContent = String(touchedCount);
+      }
+
+      // Height tracking (scroll distance)
+      let heightScore = 0; // current run
+      let bestHeight = Number(localStorage.getItem('gjBestHeight') || '0');
+      bestHeightEl.textContent = String(Math.floor(bestHeight));
+      heightEl.textContent = '0';
+
+      // Player
+      const player = {
+        x: WIDTH / 2 - 15,
+        y: HEIGHT - 80,
+        w: 30,
+        h: 40,
+        vy: 0,
+        vx: 0
+      };
+
+      // Softer gravity + stronger jump (more forgiving)
+      const GRAVITY = 800;
+      const JUMP_VELOCITY = -650;
+      const H_SPEED = 220;
+
+      // Platforms
+      const PLATFORM_COUNT = 8;
+      const PLAT_WIDTH = 70;
+      const PLAT_HEIGHT = 12;
+      const platforms = [];
+
+      function createInitialPlatforms() {
+        platforms.length = 0;
+
+        // Base platform
+        platforms.push({
+          x: WIDTH / 2 - PLAT_WIDTH / 2,
+          y: HEIGHT - 40,
+          w: PLAT_WIDTH,
+          h: PLAT_HEIGHT,
+          triggered: false,
+          phraseIndex: getRandomPhraseIndex()
+        });
+
+        // Other platforms going upward with safe spacing
+        const baseGapMin = 70;
+        const baseGapMax = 110;
+        let currentY = HEIGHT - 40;
+
+        for (let i = 1; i < PLATFORM_COUNT; i++) {
+          const gap = baseGapMin + Math.random() * (baseGapMax - baseGapMin);
+          currentY -= gap;
+
+          platforms.push({
+            x: Math.random() * (WIDTH - PLAT_WIDTH),
+            y: currentY,
+            w: PLAT_WIDTH,
+            h: PLAT_HEIGHT,
+            triggered: false,
+            phraseIndex: getRandomPhraseIndex()
+          });
+        }
+      }
+
+      // Always place new platform a reachable distance above the highest one
+      function repositionPlatform(p) {
+        let highestY = HEIGHT;
+        platforms.forEach(pl => {
+          if (pl !== p && pl.y < highestY) {
+            highestY = pl.y;
+          }
+        });
+
+        const gapMin = 70;
+        const gapMax = 110;
+        const gap = gapMin + Math.random() * (gapMax - gapMin);
+
+        p.y = highestY - gap;
+        p.x = Math.random() * (WIDTH - PLAT_WIDTH);
+        p.triggered = false;
+        p.phraseIndex = getRandomPhraseIndex();
+      }
+
+      // Keyboard input
+      let leftPressed = false;
+      let rightPressed = false;
+
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+          leftPressed = true;
+        } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+          rightPressed = true;
+        }
+      });
+
+      window.addEventListener('keyup', (e) => {
+        if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+          leftPressed = false;
+        } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+          rightPressed = false;
+        }
+      });
+
+      // Touch input (drag to move)
+      let touchActive = false;
+
+      function handleTouchMove(e) {
+        const touch = e.touches[0];
+        if (!touch) return;
+
+        const rect = canvas.getBoundingClientRect();
+        const x = touch.clientX - rect.left;
+
+        let newX = x - player.w / 2;
+        if (newX < 0) newX = 0;
+        if (newX > WIDTH - player.w) newX = WIDTH - player.w;
+        player.x = newX;
+
+        // When dragging, ignore keyboard velocity
+        player.vx = 0;
+      }
+
+      canvas.addEventListener('touchstart', (e) => {
+        touchActive = true;
+        e.preventDefault();
+        handleTouchMove(e);
+      }, { passive: false });
+
+      canvas.addEventListener('touchmove', (e) => {
+        if (!touchActive) return;
+        e.preventDefault();
+        handleTouchMove(e);
+      }, { passive: false });
+
+      canvas.addEventListener('touchend', () => {
+        touchActive = false;
+      });
+
+      function handleInput(dt) {
+        if (touchActive) return; // touch controls x directly
+
+        if (leftPressed && !rightPressed) {
+          player.vx = -H_SPEED;
+        } else if (rightPressed && !leftPressed) {
+          player.vx = H_SPEED;
+        } else {
+          player.vx = 0;
+        }
+
+        player.x += player.vx * dt;
+
+        // Wrap horizontally for keyboard movement
+        if (player.x + player.w < 0) {
+          player.x = WIDTH;
+        } else if (player.x > WIDTH) {
+          player.x = -player.w;
+        }
+      }
+
+      let lastTime = null;
+
+      function resetGame() {
+        // Save best record
+        if (heightScore > bestHeight) {
+          bestHeight = heightScore;
+          localStorage.setItem('gjBestHeight', String(bestHeight));
+        }
+
+        // Reset run stats
+        heightScore = 0;
+        heightEl.textContent = '0';
+        bestHeightEl.textContent = String(Math.floor(bestHeight));
+
+        // Reset player + UI
+        player.x = WIDTH / 2 - 15;
+        player.y = HEIGHT - 80;
+        player.vy = 0;
+        player.vx = 0;
+
+        touchedCount = 0;
+        touchedCountEl.textContent = '0';
+
+        phraseEl.textContent = 'Land on a platform to see a gratitude phrase.';
+        phraseEl.classList.add('gj-phrase-empty');
+
+        createInitialPlatforms();
+      }
+
+      function update(dt) {
+        handleInput(dt);
+
+        // Remember previous position for collision check
+        const prevY = player.y;
+        const prevBottom = prevY + player.h;
+
+        // Gravity
+        player.vy += GRAVITY * dt;
+        player.y += player.vy * dt;
+        const currBottom = player.y + player.h;
+
+        // Scroll world down as player climbs
+        if (player.vy < 0 && player.y < HEIGHT * 0.4) {
+          const delta = HEIGHT * 0.4 - player.y;
+
+          // World scroll
+          player.y += delta;
+          platforms.forEach(p => p.y += delta);
+
+          // ✅ Height gained = scroll amount
+          heightScore += delta;
+          heightEl.textContent = String(Math.floor(heightScore));
+
+          // Live best preview
+          if (heightScore > bestHeight) {
+            bestHeightEl.textContent = String(Math.floor(heightScore));
+          }
+        }
+
+        // Landing on platforms (falling only)
+        if (player.vy > 0) {
+          for (const p of platforms) {
+            const isWithinHorizontal =
+              player.x + player.w > p.x &&
+              player.x < p.x + p.w;
+
+            const isCrossingPlatform =
+              prevBottom <= p.y &&
+              currBottom >= p.y;
+
+            if (isWithinHorizontal && isCrossingPlatform) {
+              // Put player on top and bounce
+              player.y = p.y - player.h;
+              player.vy = JUMP_VELOCITY;
+
+              if (!p.triggered) {
+                p.triggered = true;
+                touchedCount++;
+                showPhrase(p.phraseIndex);
+              }
+              break;
+            }
+          }
+        }
+
+        // Recycle platforms that go off bottom
+        platforms.forEach(p => {
+          if (p.y > HEIGHT + 20) {
+            repositionPlatform(p);
+          }
+        });
+
+        // Fell off screen → restart (player can lose)
+        if (player.y > HEIGHT + 80) {
+          resetGame();
+        }
+      }
+
+      function draw() {
+        const gradient = ctx.createLinearGradient(0, 0, 0, HEIGHT);
+        gradient.addColorStop(0, '#75CFF0');
+        gradient.addColorStop(1, '#3C3F4A');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+        // Platforms
+        platforms.forEach(p => {
+          ctx.fillStyle = p.triggered
+            ? 'rgba(250, 248, 246, 0.7)'
+            : '#F3B840';
+
+          ctx.beginPath();
+          ctx.roundRect(p.x, p.y, p.w, p.h, 4);
+          ctx.fill();
+
+          ctx.fillStyle = 'rgba(60, 63, 74, 0.25)';
+          ctx.fillRect(p.x + 4, p.y + 3, p.w - 8, 2);
+        });
+
+        // Player
+        ctx.save();
+        ctx.translate(player.x + player.w / 2, player.y + player.h / 2);
+
+        const radius = player.w / 2;
+
+        // Body
+        ctx.fillStyle = '#FF8269';
+        ctx.beginPath();
+        ctx.roundRect(-radius, -player.h / 2, player.w, player.h, radius);
+        ctx.fill();
+
+        // Face
+        ctx.fillStyle = '#FAF8F6';
+        ctx.beginPath();
+        ctx.arc(0, -player.h / 4, radius * 0.85, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Eyes
+        ctx.fillStyle = '#3C3F4A';
+        ctx.beginPath();
+        ctx.arc(-5, -player.h / 4, 2, 0, Math.PI * 2);
+        ctx.arc(5, -player.h / 4, 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Smile
+        ctx.beginPath();
+        ctx.arc(0, -player.h / 4 + 4, 6, 0, Math.PI);
+        ctx.strokeStyle = '#3C3F4A';
+        ctx.lineWidth = 1.4;
+        ctx.stroke();
+
+        ctx.restore();
+      }
+
+      function loop(timestamp) {
+        if (!lastTime) lastTime = timestamp;
+
+        // ✅ Clamp dt to prevent huge physics jumps on lag
+        const dt = Math.min((timestamp - lastTime) / 1000, 0.033);
+        lastTime = timestamp;
+
+        update(dt);
+        draw();
+
+        requestAnimationFrame(loop);
+      }
+
+      resetGame();
+      requestAnimationFrame(loop);
+    });
+  </script>
+</body>
+</html>

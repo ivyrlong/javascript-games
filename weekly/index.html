@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Weekly Hub – Faithful Companion</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="../styles.css" />
+
+  <style>
+    /* Page shell */
+    .fc-body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--dove-white, #FAF8F6);
+      color: var(--scripture-slate, #3C3F4A);
+    }
+    .fc-app-shell{
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+    }
+
+    /* Header */
+    .wh-header{
+      padding:14px 16px 10px;
+      background: radial-gradient(circle at top left,
+        rgba(117,207,240,.22),
+        rgba(172,148,244,.14),
+        rgba(255,213,183,.20)
+      );
+      border-bottom:1px solid rgba(60,63,74,.10);
+    }
+    .wh-header-inner{
+      max-width:980px;
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .wh-logo{
+      width:44px;
+      height:44px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:900;
+      color:#fff;
+      background: linear-gradient(135deg, var(--spiritual-sky,#75CFF0), var(--faithful-violet,#AC94F4));
+      box-shadow:0 6px 18px rgba(60,63,74,.15);
+      flex:0 0 auto;
+    }
+    .wh-title{
+      margin:0;
+      font-size:1.25rem;
+      line-height:1.1;
+    }
+    .wh-subtitle{
+      margin:4px 0 0;
+      font-size:.95rem;
+      color: rgba(60,63,74,.75);
+      font-weight:650;
+    }
+
+    /* Main content */
+    .wh-main{
+      max-width:980px;
+      width:100%;
+      margin:0 auto;
+      padding:14px 16px 88px; /* bottom padding so footer doesn’t cover content */
+      flex:1;
+    }
+
+    /* Week nav */
+    .wh-weekbar{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:10px;
+      margin:8px 0 14px;
+    }
+    .wh-navbtn{
+      width:42px;
+      height:36px;
+      border-radius:999px;
+      border:1px solid rgba(60,63,74,.14);
+      background:#fff;
+      box-shadow:0 3px 10px rgba(60,63,74,.10);
+      cursor:pointer;
+      font-weight:900;
+      color:rgba(60,63,74,.75);
+      touch-action:manipulation;
+    }
+    .wh-weekpill{
+      flex:1;
+      max-width:420px;
+      background:#fff;
+      border-radius:999px;
+      border:1px solid rgba(60,63,74,.12);
+      padding:10px 14px;
+      box-shadow:0 3px 10px rgba(60,63,74,.08);
+      text-align:center;
+      font-weight:900;
+      color:rgba(60,63,74,.8);
+    }
+    .wh-weekrange{
+      margin-top:2px;
+      font-size:.85rem;
+      font-weight:700;
+      color:rgba(60,63,74,.62);
+    }
+
+    /* JW-style list */
+    .wh-list{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .wh-row{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      background:#fff;
+      border:1px solid rgba(60,63,74,.12);
+      border-radius:18px;
+      padding:12px 12px;
+      box-shadow:0 6px 18px rgba(60,63,74,.08);
+      text-decoration:none;
+      color:inherit;
+      touch-action:manipulation;
+      transition: transform 120ms ease, box-shadow 120ms ease;
+    }
+    .wh-row:active{ transform:scale(.99); }
+    .wh-row:hover{ box-shadow:0 10px 24px rgba(60,63,74,.10); }
+
+    .wh-thumb{
+      width:54px;
+      height:54px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex:0 0 auto;
+      border:1px solid rgba(60,63,74,.10);
+      box-shadow:0 6px 14px rgba(60,63,74,.10);
+      background: radial-gradient(circle at top left,
+        rgba(117,207,240,.22),
+        rgba(172,148,244,.14),
+        rgba(255,213,183,.22)
+      );
+      font-size:1.55rem;
+    }
+
+    .wh-row-main{
+      flex:1;
+      min-width:0;
+    }
+    .wh-row-title{
+      margin:0;
+      font-weight:950;
+      font-size:1.05rem;
+      letter-spacing:.01em;
+    }
+    .wh-row-sub{
+      margin:4px 0 0;
+      font-size:.92rem;
+      color:rgba(60,63,74,.72);
+      font-weight:650;
+      line-height:1.2;
+    }
+    .wh-row-meta{
+      margin:3px 0 0;
+      font-size:.85rem;
+      color:rgba(60,63,74,.60);
+      font-weight:650;
+      line-height:1.2;
+    }
+
+    .wh-chevron{
+      font-size:1.6rem;
+      color:rgba(60,63,74,.40);
+      font-weight:900;
+      padding:0 4px;
+    }
+
+    /* Static footer */
+    .fc-footer{
+      position:fixed;
+      left:0;
+      right:0;
+      bottom:0;
+      background:#fff;
+      border-top:1px solid rgba(60,63,74,.10);
+      padding:10px 12px;
+      display:flex;
+      justify-content:center;
+      gap:12px;
+      z-index:999;
+    }
+    .fc-footer-btn{
+      border:none;
+      background:transparent;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-weight:900;
+      color: rgba(60,63,74,.72);
+      padding:8px 14px;
+      border-radius:999px;
+      text-decoration:none;
+      touch-action:manipulation;
+    }
+    .fc-footer-dot{
+      width:10px; height:10px; border-radius:999px;
+      background: rgba(60,63,74,.22);
+    }
+    .fc-footer-dot--active{ background: var(--cheerful-coral,#FF8269); }
+  </style>
+</head>
+
+<body class="fc-body">
+  <div class="fc-app-shell">
+
+    <header class="wh-header">
+      <div class="wh-header-inner">
+        <div class="wh-logo">FC</div>
+        <div>
+          <h1 class="wh-title">Weekly Hub</h1>
+          <p class="wh-subtitle">Daily Text comes first. Tap a section to open its activities.</p>
+        </div>
+      </div>
+    </header>
+
+    <main class="wh-main">
+      <!-- Week navigation (simple, not a dropdown) -->
+      <div class="wh-weekbar" aria-label="Week navigation">
+        <button class="wh-navbtn" id="whPrevBtn" type="button" aria-label="Previous week">«</button>
+        <div class="wh-weekpill">
+          <div id="whWeekLabel">This Week</div>
+          <div class="wh-weekrange" id="whWeekRange">Loading…</div>
+        </div>
+        <button class="wh-navbtn" id="whNextBtn" type="button" aria-label="Next week">»</button>
+      </div>
+
+      <!-- JW-style list -->
+      <section class="wh-list" aria-label="Weekly sections">
+
+        <!-- Daily Text -->
+        <a class="wh-row" href="../sections/daily_text.html" id="whDailyTextLink">
+          <div class="wh-thumb">📖</div>
+          <div class="wh-row-main">
+            <h2 class="wh-row-title">Daily Text</h2>
+            <p class="wh-row-sub" id="whDailyTextLine">Loading today’s scripture…</p>
+            <p class="wh-row-meta" id="whDailyTextRef"></p>
+          </div>
+          <div class="wh-chevron">›</div>
+        </a>
+
+        <!-- Life and Ministry -->
+        <a class="wh-row" href="../sections/life_and_ministry.html" id="whLfmLink">
+          <div class="wh-thumb">🧰</div>
+          <div class="wh-row-main">
+            <h2 class="wh-row-title">Life and Ministry</h2>
+            <p class="wh-row-sub">Open this week’s activities</p>
+            <p class="wh-row-meta" id="whLfmRange"></p>
+          </div>
+          <div class="wh-chevron">›</div>
+        </a>
+
+        <!-- Watchtower -->
+        <a class="wh-row" href="../sections/watchtower.html" id="whWtLink">
+          <div class="wh-thumb">📰</div>
+          <div class="wh-row-main">
+            <h2 class="wh-row-title">Watchtower Study</h2>
+            <p class="wh-row-sub">Open this week’s activities</p>
+            <p class="wh-row-meta" id="whWtRange"></p>
+          </div>
+          <div class="wh-chevron">›</div>
+        </a>
+
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <nav class="fc-footer" aria-label="Bottom navigation">
+      <a class="fc-footer-btn" href="../index.html">
+        <span class="fc-footer-dot"></span>
+        <span>Games</span>
+      </a>
+      <a class="fc-footer-btn" href="../weekly/index.html">
+        <span class="fc-footer-dot fc-footer-dot--active"></span>
+        <span>Weekly Hub</span>
+      </a>
+      <a class="fc-footer-btn" href="../special/index.html" aria-current="page">
+        <span class="fc-footer-dot"></span>
+        <span>Special</span>
+      </a>
+    </nav>
+
+  </div>
+
+  <script type="module">
+    // Minimal week logic for display + daily text preview
+    // Uses your monthly JSON structure: /data/daily_text/YYYY-MM.json
+    const weekRangeEl = document.getElementById('whWeekRange');
+    const weekLabelEl = document.getElementById('whWeekLabel');
+
+    const dailyLineEl = document.getElementById('whDailyTextLine');
+    const dailyRefEl  = document.getElementById('whDailyTextRef');
+
+    const lfmRangeEl = document.getElementById('whLfmRange');
+    const wtRangeEl  = document.getElementById('whWtRange');
+
+    const prevBtn = document.getElementById('whPrevBtn');
+    const nextBtn = document.getElementById('whNextBtn');
+
+    function pad(n){ return String(n).padStart(2,'0'); }
+    function ymd(d){ return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+
+    function mondayOfWeek(date){
+      const d = new Date(date);
+      const day = d.getDay() || 7; // Sunday=7
+      d.setDate(d.getDate() - (day - 1));
+      d.setHours(0,0,0,0);
+      return d;
+    }
+
+    function addDays(date, days){
+      const d = new Date(date);
+      d.setDate(d.getDate() + days);
+      return d;
+    }
+
+    function formatRange(start){
+      const end = addDays(start, 6);
+      const opts = { month:'long', day:'numeric', year:'numeric' };
+      return `${start.toLocaleDateString(undefined, opts)} – ${end.toLocaleDateString(undefined, opts)}`;
+    }
+
+    // Store selected week start (so users can browse weeks)
+    const STORE_KEY = "fc_selected_week_start";
+    let selectedStart = null;
+
+    function getInitialWeekStart(){
+      const saved = localStorage.getItem(STORE_KEY);
+      if (saved) {
+        const d = new Date(saved);
+        if (!isNaN(d.getTime())) return mondayOfWeek(d);
+      }
+      return mondayOfWeek(new Date());
+    }
+
+    async function loadDailyTextFor(date){
+      const y = date.getFullYear();
+      const m = pad(date.getMonth()+1);
+      const key = ymd(date);
+      try{
+        const res = await fetch(`../data/daily_text/${y}-${m}.json`);
+        if (!res.ok) throw new Error("missing");
+        const month = await res.json();
+        return month[key] || null;
+      }catch(e){
+        return null;
+      }
+    }
+
+    async function render(){
+      const range = formatRange(selectedStart);
+      weekRangeEl.textContent = range;
+
+      // We label "This Week" only if selectedStart equals current week start
+      const currentStart = mondayOfWeek(new Date());
+      weekLabelEl.textContent = (ymd(selectedStart) === ymd(currentStart)) ? "This Week" : "Selected Week";
+
+      // Daily text preview should be TODAY's scripture (not the week's Monday)
+      // If user is browsing another week, show that week's Monday scripture (keeps it consistent)
+      const today = new Date();
+      const inSameWeek = (ymd(mondayOfWeek(today)) === ymd(selectedStart));
+      const previewDate = inSameWeek ? today : selectedStart;
+
+      const dt = await loadDailyTextFor(previewDate);
+      if (dt){
+        dailyLineEl.textContent = `"${dt.text}"`;
+        dailyRefEl.textContent = `— ${dt.ref}`;
+      } else {
+        dailyLineEl.textContent = "Daily scripture not found for this date yet.";
+        dailyRefEl.textContent = "";
+      }
+
+      // Meta lines just show the same week range for now
+      lfmRangeEl.textContent = range;
+      wtRangeEl.textContent = range;
+    }
+
+    function setWeekStart(date){
+      selectedStart = mondayOfWeek(date);
+      localStorage.setItem(STORE_KEY, selectedStart.toISOString());
+      render();
+    }
+
+    prevBtn.addEventListener('click', () => setWeekStart(addDays(selectedStart, -7)));
+    nextBtn.addEventListener('click', () => setWeekStart(addDays(selectedStart,  7)));
+
+    // Init
+    selectedStart = getInitialWeekStart();
+    render();
+  </script>
+</body>
+</html>

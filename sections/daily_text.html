@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Daily Text – Faithful Companion</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="../styles.css" />
+
+  <style>
+    .fc-body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--dove-white, #FAF8F6);
+      color: var(--scripture-slate, #3C3F4A);
+    }
+    .fc-app-shell{ min-height:100vh; display:flex; flex-direction:column; }
+
+    /* Header */
+    .sec-header{
+      padding:14px 16px 10px;
+      background: radial-gradient(circle at top left,
+        rgba(117,207,240,.22),
+        rgba(172,148,244,.14),
+        rgba(255,213,183,.20)
+      );
+      border-bottom:1px solid rgba(60,63,74,.10);
+    }
+    .sec-header-inner{
+      max-width:980px;
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .sec-titlewrap{ display:flex; gap:12px; align-items:center; }
+    .sec-icon{
+      width:44px; height:44px; border-radius:14px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.45rem;
+      background: radial-gradient(circle at top left,
+        rgba(117,207,240,.22),
+        rgba(172,148,244,.14),
+        rgba(255,213,183,.22)
+      );
+      border:1px solid rgba(60,63,74,.10);
+      box-shadow:0 6px 18px rgba(60,63,74,.12);
+      flex:0 0 auto;
+    }
+    .sec-title{ margin:0; font-size:1.2rem; line-height:1.1; font-weight:950; }
+    .sec-sub{ margin:4px 0 0; font-size:.95rem; color:rgba(60,63,74,.72); font-weight:650; }
+
+    .sec-main{
+      max-width:980px;
+      width:100%;
+      margin:0 auto;
+      padding:14px 16px 88px;
+      flex:1;
+    }
+
+    /* JW-style bars */
+    .week_bar, .day_bar{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      margin:10px auto 6px;
+      max-width:980px;
+    }
+
+    .week-btn, .day-btn{
+      border:none;
+      background:#fff;
+      border:1px solid rgba(60,63,74,.14);
+      box-shadow:0 6px 16px rgba(60,63,74,.08);
+      border-radius:999px;
+      width:44px;
+      height:38px;
+      font-weight:900;
+      font-size:1.2rem;
+      color:rgba(60,63,74,.75);
+      cursor:pointer;
+      touch-action:manipulation;
+    }
+    .week-btn:active, .day-btn:active{ transform:scale(.99); }
+
+    .week-pill{
+      display:flex;
+      gap:8px;
+      flex:1;
+      justify-content:center;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .week-pill .week-label{
+      border:1px solid rgba(60,63,74,.14);
+      background:#fff;
+      border-radius:999px;
+      padding:8px 12px;
+      font-weight:950;
+      font-size:.95rem;
+      color:rgba(60,63,74,.75);
+      box-shadow:0 6px 16px rgba(60,63,74,.08);
+      user-select:none;
+      -webkit-user-select:none;
+    }
+
+    .day-pill{
+      display:flex;
+      gap:8px;
+      flex:1;
+      justify-content:center;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .day-pill button{
+      border:none;
+      cursor:pointer;
+      padding:8px 12px;
+      border-radius:999px;
+      font-weight:900;
+      font-size:.92rem;
+      color:rgba(60,63,74,.75);
+      background:#fff;
+      border:1px solid rgba(60,63,74,.14);
+      box-shadow:0 6px 16px rgba(60,63,74,.08);
+      touch-action:manipulation;
+    }
+    .day-pill button:active{ transform:scale(.99); }
+
+    .day-pill button.is-active{
+      color:var(--scripture-slate,#3C3F4A);
+      border-color: rgba(255,130,105,.55);
+      box-shadow:0 0 0 3px rgba(255,130,105,.18) inset, 0 6px 16px rgba(60,63,74,.08);
+      background: rgba(255,213,183,.35);
+    }
+
+    .btn-disabled{
+      opacity:.45 !important;
+      cursor:default !important;
+    }
+
+    /* Content card */
+    .dt-card{
+      margin-top:10px;
+      background:#fff;
+      border:1px solid rgba(60,63,74,.12);
+      border-radius:20px;
+      padding:14px;
+      box-shadow:0 6px 18px rgba(60,63,74,.10);
+    }
+
+    .dt-top{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+
+    .dt-date{
+      font-weight:950;
+      font-size:.95rem;
+      color:rgba(60,63,74,.72);
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      padding:7px 10px;
+      border-radius:999px;
+      border:1px solid rgba(60,63,74,.12);
+      background: rgba(117,207,240,.12);
+    }
+
+    .dt-ref{
+      margin:10px 0 4px;
+      font-size:1.15rem;
+      font-weight:950;
+      color:var(--scripture-slate,#3C3F4A);
+      letter-spacing:.01em;
+    }
+
+    .dt-text{
+      margin:0;
+      font-size:1.02rem;
+      line-height:1.35;
+      color:rgba(60,63,74,.92);
+      font-weight:650;
+    }
+
+    .dt-actions{
+      margin-top:12px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:center;
+    }
+
+    .dt-primary{
+      border:none;
+      cursor:pointer;
+      padding:10px 14px;
+      border-radius:999px;
+      font-weight:950;
+      font-size:.95rem;
+      color:#fff;
+      background: var(--cheerful-coral,#FF8269);
+      box-shadow:0 10px 22px rgba(255,130,105,.25);
+      touch-action:manipulation;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+    .dt-primary:active{ transform:scale(.99); }
+
+    .dt-secondary{
+      border:1px solid rgba(60,63,74,.14);
+      background:#fff;
+      cursor:pointer;
+      padding:10px 14px;
+      border-radius:999px;
+      font-weight:950;
+      font-size:.95rem;
+      color:rgba(60,63,74,.78);
+      box-shadow:0 6px 16px rgba(60,63,74,.08);
+      touch-action:manipulation;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+    .dt-secondary:active{ transform:scale(.99); }
+
+    .dt-status{
+      margin-top:10px;
+      text-align:center;
+      font-size:.9rem;
+      font-weight:800;
+      color:rgba(60,63,74,.70);
+      min-height:1.2em;
+    }
+
+    /* Footer (keep if you want; you said you already handled footers—safe to keep) */
+    .fc-footer{
+      position:fixed; left:0; right:0; bottom:0;
+      background:#fff;
+      border-top:1px solid rgba(60,63,74,.10);
+      padding:10px 12px;
+      display:flex;
+      justify-content:center;
+      gap:12px;
+      z-index:999;
+    }
+    .fc-footer-btn{
+      border:none;
+      background:transparent;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-weight:900;
+      color: rgba(60,63,74,.72);
+      padding:8px 14px;
+      border-radius:999px;
+      text-decoration:none;
+      touch-action:manipulation;
+    }
+    .fc-footer-dot{
+      width:10px; height:10px; border-radius:999px;
+      background: rgba(60,63,74,.22);
+    }
+    .fc-footer-dot--active{ background: var(--cheerful-coral,#FF8269); }
+  </style>
+</head>
+
+<body class="fc-body">
+  <div class="fc-app-shell">
+    <header class="sec-header">
+      <div class="sec-header-inner">
+        <div class="sec-titlewrap">
+          <div class="sec-icon">📜</div>
+          <div>
+            <h1 class="sec-title">Daily Text</h1>
+            <p class="sec-sub">Use the week and day pills to browse scriptures.</p>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="sec-main">
+      <!-- Week navigation -->
+      <div class="week_bar" aria-label="Week navigation">
+        <button class="week-btn" id="weekPrevBtn" type="button" aria-label="Previous week">‹</button>
+        <div class="week-pill">
+          <div class="week-label" id="weekLabel">Week</div>
+        </div>
+        <button class="week-btn" id="weekNextBtn" type="button" aria-label="Next week">›</button>
+      </div>
+
+      <!-- Day navigation (NEW) -->
+      <div class="day_bar" aria-label="Day navigation">
+        <button class="day-btn" id="dayPrevBtn" type="button" aria-label="Previous day">‹</button>
+        <div class="day-pill" id="dayPillGroup" role="tablist" aria-label="Choose day of week"></div>
+        <button class="day-btn" id="dayNextBtn" type="button" aria-label="Next day">›</button>
+      </div>
+
+      <section class="dt-card" aria-label="Daily text content">
+        <div class="dt-top">
+          <div class="dt-date" id="dtDateChip">📅 —</div>
+        </div>
+
+        <h2 class="dt-ref" id="dtRef">Loading…</h2>
+        <p class="dt-text" id="dtText">Please wait.</p>
+
+        <div class="dt-actions">
+          <!-- Opens JW.org without showing the URL on page -->
+          <button class="dt-primary" id="openJwBtn" type="button">Open verse on JW.ORG</button>
+
+          <!-- Optional: opens your activity page (fill-in-the-blank etc.) -->
+          <a class="dt-secondary" id="openActivityBtn" href="#">Open today’s activity</a>
+        </div>
+
+        <div class="dt-status" id="dtStatus"></div>
+      </section>
+    </main>
+
+    <!-- If you already did footers elsewhere, feel free to delete this block -->
+    <nav class="fc-footer" aria-label="Bottom navigation">
+      <a class="fc-footer-btn" href="../index.html">
+        <span class="fc-footer-dot"></span>
+        <span>Games</span>
+      </a>
+      <a class="fc-footer-btn" href="../weekly/index.html">
+        <span class="fc-footer-dot fc-footer-dot--active"></span>
+        <span>Weekly Hub</span>
+      </a>
+      <a class="fc-footer-btn" href="../special/index.html">
+        <span class="fc-footer-dot"></span>
+        <span>Special</span>
+      </a>
+    </nav>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // -------------------------
+      // CONFIG: where your daily JSON lives
+      // You said you created "2026-01.json".
+      // Put it in: /data/daily_text/2026-01.json
+      // -------------------------
+      const DAILY_TEXT_DATA_DIR = "../data/daily_text"; // change if yours is elsewhere
+
+      // You told me it's currently 12/28/2025 (Sunday).
+      // If you want automatic "today", set this to null and it'll use the user's device date.
+      const FIXED_TODAY_ISO = "2025-12-28";
+
+      // Storage (keeps their place + completion by week/day)
+      const POS_KEY = "fc_daily_text_position_v1"; // stores selectedWeekMondayISO + selectedDayIndex
+      const DONE_KEY_PREFIX = "fc_daily_text_done:"; // + weekMondayISO => { 'YYYY-MM-DD': true }
+
+      const DAY_NAMES = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+
+      // UI
+      const weekPrevBtn = document.getElementById("weekPrevBtn");
+      const weekNextBtn = document.getElementById("weekNextBtn");
+      const weekLabel = document.getElementById("weekLabel");
+
+      const dayPrevBtn = document.getElementById("dayPrevBtn");
+      const dayNextBtn = document.getElementById("dayNextBtn");
+      const dayPillGroup = document.getElementById("dayPillGroup");
+
+      const dtDateChip = document.getElementById("dtDateChip");
+      const dtRef = document.getElementById("dtRef");
+      const dtText = document.getElementById("dtText");
+      const dtStatus = document.getElementById("dtStatus");
+
+      const openJwBtn = document.getElementById("openJwBtn");
+      const openActivityBtn = document.getElementById("openActivityBtn");
+
+      // State
+      let selectedWeekMonday = null; // Date
+      let selectedDayIndex = 0;      // 0..6
+      let currentEntry = null;       // loaded daily text entry
+      const monthCache = new Map();  // "YYYY-MM" -> array/object
+
+      // -------------------------
+      // Date helpers
+      // -------------------------
+      function pad2(n){ return String(n).padStart(2,"0"); }
+
+      function isoDate(d){
+        const y = d.getFullYear();
+        const m = pad2(d.getMonth()+1);
+        const day = pad2(d.getDate());
+        return `${y}-${m}-${day}`;
+      }
+
+      function parseISO(iso){
+        // Safe parsing as local date (avoid timezone shifting)
+        const [y,m,d] = iso.split("-").map(Number);
+        return new Date(y, (m-1), d);
+      }
+
+      function addDays(dateObj, days){
+        const d = new Date(dateObj);
+        d.setDate(d.getDate() + days);
+        return d;
+      }
+
+      function startOfWeekMonday(dateObj){
+        const d = new Date(dateObj);
+        const day = d.getDay(); // Sun=0, Mon=1...
+        const diff = (day === 0) ? -6 : (1 - day); // move back to Monday
+        d.setDate(d.getDate() + diff);
+        d.setHours(0,0,0,0);
+        return d;
+      }
+
+      function formatWeekLabel(mondayDate){
+        const sunDate = addDays(mondayDate, 6);
+        // Example: "Dec 22 – Dec 28"
+        const opts = { month:"short", day:"numeric" };
+        const a = mondayDate.toLocaleDateString(undefined, opts);
+        const b = sunDate.toLocaleDateString(undefined, opts);
+        return `${a} – ${b}`;
+      }
+
+      function formatLongDate(dateObj){
+        // Example: "Sunday, Dec 28, 2025"
+        return dateObj.toLocaleDateString(undefined, { weekday:"long", month:"short", day:"numeric", year:"numeric" });
+      }
+
+      // -------------------------
+      // Progress storage
+      // -------------------------
+      function loadPosition(){
+        try{
+          const raw = localStorage.getItem(POS_KEY);
+          if (!raw) return null;
+          const parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== "object") return null;
+          return parsed;
+        }catch(e){ return null; }
+      }
+
+      function savePosition(){
+        try{
+          localStorage.setItem(POS_KEY, JSON.stringify({
+            weekMondayISO: isoDate(selectedWeekMonday),
+            dayIndex: selectedDayIndex
+          }));
+        }catch(e){}
+      }
+
+      function getDoneMap(weekMondayISO){
+        try{
+          return JSON.parse(localStorage.getItem(DONE_KEY_PREFIX + weekMondayISO) || "{}");
+        }catch(e){ return {}; }
+      }
+
+      function markDone(weekMondayISO, dateISO){
+        const m = getDoneMap(weekMondayISO);
+        m[dateISO] = true;
+        try{ localStorage.setItem(DONE_KEY_PREFIX + weekMondayISO, JSON.stringify(m)); }catch(e){}
+      }
+
+      // -------------------------
+      // Data loading
+      // -------------------------
+      function monthKeyFromISO(dateISO){
+        return dateISO.slice(0,7); // "YYYY-MM"
+      }
+
+      async function loadMonth(monthKey){
+        if (monthCache.has(monthKey)) return monthCache.get(monthKey);
+
+        const url = `${DAILY_TEXT_DATA_DIR}/${monthKey}.json`;
+        try{
+          const res = await fetch(url, { cache:"no-store" });
+          if (!res.ok) throw new Error("not ok");
+          const data = await res.json();
+          monthCache.set(monthKey, data);
+          return data;
+        }catch(e){
+          monthCache.set(monthKey, null);
+          return null;
+        }
+      }
+
+      function normalizeEntry(entry){
+        // Supports several possible schemas.
+        // Expected minimum: date + reference
+        // Examples:
+        // { date:"2026-01-01", ref:"Gen. 1:1", text:"...", jwUrl:"..." }
+        // { date:"2026-01-01", scripture:"Genesis 1:1", verse:"..." }
+        if (!entry || typeof entry !== "object") return null;
+
+        const date = entry.date || entry.iso || entry.day;
+        const ref  = entry.ref || entry.reference || entry.scripture || entry.citation;
+        const text = entry.text || entry.verse || entry.content || "";
+
+        // Optional: a prebuilt JW url
+        const jwUrl = entry.jwUrl || entry.url || "";
+
+        return { date, ref, text, jwUrl };
+      }
+
+      function findEntryInMonthData(monthData, dateISO){
+        if (!monthData) return null;
+
+        // If it's an array
+        if (Array.isArray(monthData)){
+          const hit = monthData.find(x => (x?.date || x?.iso || x?.day) === dateISO);
+          return normalizeEntry(hit);
+        }
+
+        // If it's an object keyed by date
+        if (typeof monthData === "object"){
+          if (monthData[dateISO]) {
+            const e = monthData[dateISO];
+            // Sometimes keyed value is {ref,text} only; attach date
+            const merged = (typeof e === "object" && e) ? { date: dateISO, ...e } : null;
+            return normalizeEntry(merged);
+          }
+        }
+        return null;
+      }
+
+      // -------------------------
+      // JW.org URL builder (optional)
+      // If your JSON already includes jwUrl, we use it.
+      // Otherwise we try a simple reference-based fallback:
+      // This fallback is best-effort; for perfect links, store jwUrl in JSON.
+      // -------------------------
+      const BOOK_SLUG = {
+        // Hebrew Scriptures (sample + common)
+        "Gen.":"genesis","Ex.":"exodus","Lev.":"leviticus","Num.":"numbers","Deut.":"deuteronomy",
+        "Josh.":"joshua","Judg.":"judges","Ruth":"ruth",
+        "1 Sam.":"1-samuel","2 Sam.":"2-samuel",
+        "1 Ki.":"1-kings","2 Ki.":"2-kings",
+        "1 Chron.":"1-chronicles","2 Chron.":"2-chronicles",
+        "Ezra":"ezra","Neh.":"nehemiah","Est.":"esther","Job":"job","Ps.":"psalms","Prov.":"proverbs",
+        "Eccl.":"ecclesiastes","Song":"song-of-solomon","Isa.":"isaiah","Jer.":"jeremiah","Lam.":"lamentations",
+        "Ezek.":"ezekiel","Dan.":"daniel","Hos.":"hosea","Joel":"joel","Amos":"amos","Obad.":"obadiah",
+        "Jonah":"jonah","Mic.":"micah","Nah.":"nahum","Hab.":"habakkuk","Zeph.":"zephaniah",
+        "Hag.":"haggai","Zech.":"zechariah","Mal.":"malachi",
+        // Greek Scriptures (sample + common)
+        "Matt.":"matthew","Mark":"mark","Luke":"luke","John":"john","Acts":"acts","Rom.":"romans",
+        "1 Cor.":"1-corinthians","2 Cor.":"2-corinthians","Gal.":"galatians","Eph.":"ephesians",
+        "Phil.":"philippians","Col.":"colossians","1 Thess.":"1-thessalonians","2 Thess.":"2-thessalonians",
+        "1 Tim.":"1-timothy","2 Tim.":"2-timothy","Titus":"titus","Philem.":"philemon",
+        "Heb.":"hebrews","Jas.":"james","1 Pet.":"1-peter","2 Pet.":"2-peter",
+        "Jude":"jude","Rev.":"revelation"
+      };
+
+      function parseRef(ref){
+        // Accept "Gen. 1:2" or "Genesis 1:2" (best with abbreviations)
+        const m = String(ref || "").match(/^(.+?)\s+(\d+)\s*:\s*(\d+)/);
+        if (!m) return null;
+        return { book: m[1].trim(), chapter: Number(m[2]), verse: Number(m[3]) };
+      }
+
+      function makeJwUrl(ref){
+        const p = parseRef(ref);
+        if (!p) return "";
+        const slug = BOOK_SLUG[p.book] || "";
+        if (!slug) return "";
+        // This URL format was provided by you:
+        // https://www.jw.org/en/library/bible/nwt/books/genesis/1/#v1001002
+        // NOTE: The "v1001002" id encoding is book-specific in reality.
+        // Because that exact encoding varies, this fallback just links to the chapter page.
+        // For PERFECT deep links, store jwUrl in your JSON entries.
+        return `https://www.jw.org/en/library/bible/nwt/books/${slug}/${p.chapter}/`;
+      }
+
+      // -------------------------
+      // Rendering
+      // -------------------------
+      function buildDayPills(){
+        dayPillGroup.innerHTML = "";
+        DAY_NAMES.forEach((label, idx) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.textContent = label;
+          btn.dataset.dayIndex = String(idx);
+          btn.addEventListener("click", () => setSelectedDay(idx));
+          dayPillGroup.appendChild(btn);
+        });
+      }
+
+      function updateDayPills(){
+        const buttons = dayPillGroup.querySelectorAll("button");
+        buttons.forEach(b => {
+          const idx = Number(b.dataset.dayIndex);
+          b.classList.toggle("is-active", idx === selectedDayIndex);
+        });
+
+        // Disable day buttons at ends of the week
+        if (selectedDayIndex === 0) {
+          dayPrevBtn.classList.add("btn-disabled");
+          dayPrevBtn.disabled = true;
+        } else {
+          dayPrevBtn.classList.remove("btn-disabled");
+          dayPrevBtn.disabled = false;
+        }
+
+        if (selectedDayIndex === 6) {
+          dayNextBtn.classList.add("btn-disabled");
+          dayNextBtn.disabled = true;
+        } else {
+          dayNextBtn.classList.remove("btn-disabled");
+          dayNextBtn.disabled = false;
+        }
+      }
+
+      function updateWeekLabel(){
+        weekLabel.textContent = formatWeekLabel(selectedWeekMonday);
+      }
+
+      function setSelectedWeekMonday(mondayDateObj, keepDay=false){
+        selectedWeekMonday = new Date(mondayDateObj);
+        selectedWeekMonday.setHours(0,0,0,0);
+
+        if (!keepDay) selectedDayIndex = 0; // default to Monday on week change
+
+        updateWeekLabel();
+        updateDayPills();
+        savePosition();
+        renderSelectedDay();
+      }
+
+      function setSelectedDay(idx){
+        selectedDayIndex = Math.max(0, Math.min(6, idx));
+        updateDayPills();
+        savePosition();
+        renderSelectedDay();
+      }
+
+      async function renderSelectedDay(){
+        const dateObj = addDays(selectedWeekMonday, selectedDayIndex);
+        const dateISO = isoDate(dateObj);
+
+        dtDateChip.textContent = "📅 " + formatLongDate(dateObj);
+        dtRef.textContent = "Loading…";
+        dtText.textContent = "Please wait.";
+        dtStatus.textContent = "";
+
+        // Load month JSON
+        const monthKey = monthKeyFromISO(dateISO);
+        const monthData = await loadMonth(monthKey);
+        const entry = findEntryInMonthData(monthData, dateISO);
+
+        if (!entry){
+          currentEntry = null;
+          dtRef.textContent = "No scripture found for this day.";
+          dtText.textContent = "If this day is outside your JSON files, add it to your data folder.";
+          openJwBtn.disabled = true;
+          openJwBtn.classList.add("btn-disabled");
+          openActivityBtn.classList.add("btn-disabled");
+          openActivityBtn.setAttribute("aria-disabled", "true");
+          openActivityBtn.href = "#";
+          return;
+        }
+
+        currentEntry = entry;
+
+        dtRef.textContent = entry.ref || "Daily Text";
+        dtText.textContent = entry.text || "";
+
+        // Mark "done" automatically when viewed
+        const weekISO = isoDate(selectedWeekMonday);
+        markDone(weekISO, dateISO);
+
+        const doneMap = getDoneMap(weekISO);
+        const doneCount = Object.keys(doneMap).length;
+        dtStatus.textContent = doneCount ? `✅ Viewed ${doneCount} day${doneCount===1?"":"s"} this week.` : "";
+
+        // JW open
+        const jwUrl = entry.jwUrl || makeJwUrl(entry.ref);
+        if (jwUrl){
+          openJwBtn.disabled = false;
+          openJwBtn.classList.remove("btn-disabled");
+          openJwBtn.onclick = () => window.open(jwUrl, "_blank", "noopener,noreferrer");
+        } else {
+          openJwBtn.disabled = true;
+          openJwBtn.classList.add("btn-disabled");
+          openJwBtn.onclick = null;
+        }
+
+        // Activity link (you can build this page later)
+        openActivityBtn.classList.remove("btn-disabled");
+        openActivityBtn.removeAttribute("aria-disabled");
+        openActivityBtn.href = `daily_text_activity.html?date=${encodeURIComponent(dateISO)}`;
+      }
+
+      // -------------------------
+      // Week controls
+      // -------------------------
+      weekPrevBtn.addEventListener("click", () => {
+        const prevMon = addDays(selectedWeekMonday, -7);
+        setSelectedWeekMonday(prevMon, false);
+      });
+
+      weekNextBtn.addEventListener("click", () => {
+        const nextMon = addDays(selectedWeekMonday, 7);
+        setSelectedWeekMonday(nextMon, false);
+      });
+
+      dayPrevBtn.addEventListener("click", () => {
+        if (selectedDayIndex > 0) setSelectedDay(selectedDayIndex - 1);
+      });
+
+      dayNextBtn.addEventListener("click", () => {
+        if (selectedDayIndex < 6) setSelectedDay(selectedDayIndex + 1);
+      });
+
+      // -------------------------
+      // Init
+      // -------------------------
+      buildDayPills();
+
+      const baseToday = FIXED_TODAY_ISO ? parseISO(FIXED_TODAY_ISO) : new Date();
+      const defaultMonday = startOfWeekMonday(baseToday);
+
+      // Load last position if available
+      const saved = loadPosition();
+      if (saved?.weekMondayISO){
+        const savedMonday = parseISO(saved.weekMondayISO);
+        selectedWeekMonday = startOfWeekMonday(savedMonday);
+        selectedDayIndex = Number.isFinite(saved.dayIndex) ? Math.max(0, Math.min(6, Number(saved.dayIndex))) : 0;
+      } else {
+        selectedWeekMonday = defaultMonday;
+        // set default day index to "today"
+        const todayMonday = startOfWeekMonday(baseToday);
+        if (isoDate(todayMonday) === isoDate(selectedWeekMonday)){
+          // Map JS day to Mon=0...Sun=6
+          const dow = baseToday.getDay(); // Sun=0
+          selectedDayIndex = (dow === 0) ? 6 : (dow - 1);
+        } else {
+          selectedDayIndex = 0;
+        }
+      }
+
+      updateWeekLabel();
+      updateDayPills();
+      savePosition();
+      renderSelectedDay();
+    });
+  </script>
+</body>
+</html>
