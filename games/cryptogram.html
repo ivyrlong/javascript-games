@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Crossword – Faithful Companion Games</title>
+  <title>Icon Cryptogram – Faithful Companion Games</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="../styles.css" />
 
@@ -15,27 +15,27 @@
       --peach: var(--joyful-peach, #FFD5B7);
       --gold: var(--golden-promise, #F3B840);
       --coral: var(--cheerful-coral, #FF8269);
-
-      --card:#fff;
+      --card: #fff;
       --line: rgba(60,63,74,.12);
 
-      /* Board sizing (JS updates --cell) */
-      --cell: 32px;
-      --gap: 6px;
+      /* responsive cell sizing defaults (JS updates these) */
+      --cellW: 64px;
+      --iconW: 40px;
+      --letterH: 48px;
+      --iconF: 1.15rem;
+      --letterF: 1.2rem;
 
-      --sel: rgba(117,207,240,.95);
-      --word: rgba(172,148,244,.55);
-      --locked: rgba(243,184,64,.95); /* golden outline for locked */
-      --bad: rgba(255,130,105,.92);
+      --wordGap: 8px;
     }
 
     *{ box-sizing:border-box; }
+
     body{
       margin:0;
       background: var(--bg);
       color: var(--ink);
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      overflow-x:hidden;
+      overflow-x:hidden; /* ✅ prevent horizontal bleed */
     }
 
     .fc-game-screen{
@@ -44,15 +44,15 @@
       flex-direction:column;
       align-items:center;
       padding:16px;
-      /* reserve space for drawer when open */
-      padding-bottom: calc(16px + env(safe-area-inset-bottom) + 140px);
+      /* reserve space for sticky key */
+      padding-bottom: calc(16px + env(safe-area-inset-bottom) + 170px);
     }
 
     .fc-back-link{
       align-self:flex-start;
       text-decoration:none;
       font-weight:900;
-      color: rgba(255,130,105,.85);
+      color: rgba(255,130,105,.88);
       padding:8px 10px;
       border-radius:999px;
       background: rgba(255,213,183,.35);
@@ -84,7 +84,7 @@
       line-height:1.25;
     }
 
-    .cw-controls{
+    .cg-controls{
       display:flex;
       flex-wrap:wrap;
       gap:10px;
@@ -100,7 +100,7 @@
       );
       border: 1px solid rgba(60,63,74,.08);
     }
-    .cw-btn{
+    .cg-btn{
       padding:10px 16px;
       border-radius:999px;
       border:none;
@@ -110,40 +110,45 @@
       box-shadow:0 6px 16px rgba(60,63,74,.14);
       touch-action:manipulation;
     }
-    .cw-btn:active{ transform: scale(.98); }
-    .cw-btn--primary{ background: var(--coral); color:#fff; }
-    .cw-btn--secondary{ background: rgba(172,148,244,.18); color: var(--ink); }
-    .cw-btn--ghost{ background: rgba(117,207,240,.18); color: var(--ink); }
+    .cg-btn:active{ transform: scale(.98); }
+    .cg-btn--primary{ background: var(--coral); color:#fff; }
+    .cg-btn--secondary{ background: rgba(172,148,244,.18); color: var(--ink); }
+    .cg-btn--ghost{ background: rgba(117,207,240,.18); color: var(--ink); }
 
-    .cw-pills{
+    .cg-meta{
       display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      justify-content:center;
+      justify-content:space-between;
       align-items:center;
-      margin: 10px 0 10px;
+      gap:10px;
+      margin: 10px 0 6px;
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: rgba(117,207,240,.10);
+      border: 1px solid rgba(60,63,74,.08);
+      flex-wrap:wrap; /* ✅ no overflow on small screens */
     }
-    .cw-pill{
+    .cg-chip{
       display:inline-flex;
       align-items:center;
       gap:8px;
-      padding:10px 14px;
+      padding:8px 10px;
       border-radius:999px;
       background: rgba(255,213,183,.40);
       border: 1px solid rgba(60,63,74,.10);
-      font-weight: 1000;
+      font-weight: 900;
       color: rgba(60,63,74,.88);
+      font-size:.92rem;
       white-space:nowrap;
-      box-shadow: 0 8px 16px rgba(60,63,74,.06);
     }
-    .cw-pill strong{ font-weight:1100; }
-    .cw-pill--dir{
-      background: rgba(117,207,240,.14);
+    .cg-week{
+      font-weight: 1000;
+      color: rgba(60,63,74,.70);
+      font-size:.92rem;
+      white-space:nowrap;
     }
 
-    /* Board card */
-    .cw-board-card{
-      margin-top: 10px;
+    .cg-card{
+      margin-top: 12px;
       border-radius: 22px;
       background: radial-gradient(circle at top left,
         rgba(117,207,240,.18),
@@ -152,198 +157,175 @@
       padding: 14px;
       border: 1px solid rgba(60,63,74,.08);
       box-shadow: 0 10px 24px rgba(60,63,74,.08);
-      overflow:hidden; /* ✅ stop container bleed */
+      overflow:hidden; /* ✅ no bleed */
     }
-    .cw-board-head{
+    .cg-card-head{
       display:flex;
       justify-content:space-between;
-      align-items:center;
-      gap:10px;
-      margin-bottom: 10px;
-      color: rgba(60,63,74,.72);
-      font-weight:900;
+      align-items:flex-start;
+      gap:12px;
+      margin-bottom: 8px;
+      flex-wrap:wrap; /* ✅ stacks on mobile */
     }
-    .cw-board-title{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      color: rgba(60,63,74,.90);
-      font-weight:1100;
+    .cg-card-title{
+      margin:0;
+      font-weight: 1100;
+      font-size: 1.2rem;
+    }
+    .cg-card-sub{
+      margin:2px 0 0;
+      font-weight: 800;
+      color: rgba(60,63,74,.70);
+      font-size: .95rem;
+    }
+    .cg-progress{
+      text-align:right;
+      font-weight: 1000;
+      color: rgba(60,63,74,.70);
+      white-space:nowrap;
     }
 
-    /* Fit-to-screen stage */
-    .cw-stage{
-      width:100%;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      padding: 10px 6px 6px;
+    .cg-message{
+      background: rgba(255,255,255,.75);
+      border-radius: 18px;
+      padding: 12px;
+      border: 1px solid rgba(60,63,74,.08);
       overflow:hidden; /* ✅ no horizontal bleed */
     }
 
-    .cw-grid{
-      display:grid;
-      gap: var(--gap);
-      /* grid-template set by JS */
-      touch-action:manipulation;
-      user-select:none;
-      -webkit-user-select:none;
-      transform-origin: top center;
-    }
-
-    /* Unused cell = invisible */
-    .cw-cell{
-      width: var(--cell);
-      height: var(--cell);
-      border-radius: 14px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight: 1100;
-      font-size: clamp(12px, calc(var(--cell) * 0.45), 18px);
-      color: rgba(60,63,74,.92);
-      background: rgba(255,255,255,.92);
-      border: 2px solid rgba(60,63,74,.10);
-      box-shadow: 0 10px 18px rgba(60,63,74,.08);
-      position:relative;
-      overflow:hidden;
-    }
-    .cw-cell.unused{
-      opacity:0;
-      pointer-events:none;
-      box-shadow:none;
-      border-color: transparent;
-      background: transparent;
-    }
-
-    /* Strong cursor outline */
-    .cw-cell.selected{
-      border-color: var(--sel);
-      box-shadow:
-        0 0 0 3px rgba(117,207,240,.18),
-        0 10px 18px rgba(60,63,74,.08);
-    }
-
-    /* Highlight word path (soft) */
-    .cw-cell.in-word{
-      border-color: rgba(172,148,244,.70);
-      box-shadow:
-        0 0 0 3px rgba(172,148,244,.14),
-        0 10px 18px rgba(60,63,74,.08);
-    }
-
-    /* Locked word outline (strong + distinct so adjacent doesn’t look shared) */
-    .cw-cell.locked{
-      border-color: var(--locked);
-      box-shadow:
-        0 0 0 3px rgba(243,184,64,.18),
-        0 10px 18px rgba(60,63,74,.08);
-    }
-
-    /* Correct letter glow */
-    .cw-cell.correct-pop{
-      animation: cwGlow 240ms ease-out;
-    }
-    @keyframes cwGlow{
-      0%{ filter: brightness(1); }
-      50%{ filter: brightness(1.12); }
-      100%{ filter: brightness(1); }
-    }
-
-    /* Wrong letter wiggle */
-    .cw-cell.wiggle{
-      animation: cwWiggle 180ms ease-in-out;
-      border-color: var(--bad) !important;
-      box-shadow:
-        0 0 0 3px rgba(255,130,105,.18),
-        0 10px 18px rgba(60,63,74,.08);
-    }
-    @keyframes cwWiggle{
-      0%{ transform: translateX(0); }
-      25%{ transform: translateX(-2px); }
-      50%{ transform: translateX(2px); }
-      75%{ transform: translateX(-2px); }
-      100%{ transform: translateX(0); }
-    }
-
-    /* Clues */
-    .cw-clues-card{
-      margin-top: 12px;
-      border-radius: 22px;
-      background: rgba(255,255,255,.75);
-      border: 1px solid rgba(60,63,74,.08);
-      box-shadow: 0 10px 24px rgba(60,63,74,.06);
-      padding: 12px;
-    }
-    .cw-clues-head{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:10px;
-      padding: 4px 6px 10px;
-      color: rgba(60,63,74,.78);
-      font-weight:1000;
-    }
-    .cw-clues{
+    /* Words stay together (each word is its own row block) */
+    .cg-words{
       display:flex;
       flex-direction:column;
-      gap:10px;
-    }
-    .cw-clue{
-      display:flex;
-      gap:10px;
+      gap: 12px;
       align-items:center;
-      padding: 12px 12px;
-      border-radius: 18px;
-      background: rgba(117,207,240,.10);
-      border: 1px solid rgba(60,63,74,.08);
-      box-shadow: 0 8px 16px rgba(60,63,74,.06);
-      cursor:pointer;
-      touch-action:manipulation;
     }
-    .cw-clue:active{ transform: scale(.995); }
-    .cw-clue .icon{
-      width: 40px;
-      height: 40px;
+
+    /* Each word gets its own scroll if needed */
+    .cg-word-wrap{
+      width:100%;
+      display:flex;
+      justify-content:center;
+      overflow-x:auto;
+      overflow-y:hidden;
+      -webkit-overflow-scrolling: touch;
+      padding: 2px 0 6px;
+    }
+    .cg-word-wrap::-webkit-scrollbar{ height: 8px; }
+    .cg-word-wrap::-webkit-scrollbar-thumb{
+      background: rgba(60,63,74,.18);
+      border-radius: 999px;
+    }
+
+    .cg-word{
+      display:inline-flex;
+      flex-wrap:nowrap;
+      gap: var(--wordGap);
+      align-items:flex-start;
+      padding: 8px 8px;
+      border-radius: 14px;
+      background: rgba(117,207,240,.06);
+      border: 1px solid rgba(60,63,74,.06);
+      flex: 0 0 auto;
+      max-width: 100%;
+    }
+
+    .cg-cell{
+      width: var(--cellW);
+      border-radius: 18px;
+      padding: 9px 9px 10px;
+      background: #fff;
+      border: 1px solid rgba(60,63,74,.10);
+      box-shadow: 0 8px 18px rgba(60,63,74,.10);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:flex-start;
+      user-select:none;
+      -webkit-user-select:none;
+      flex: 0 0 auto;
+    }
+    .cg-icon{
+      width: var(--iconW);
+      height: var(--iconW);
       border-radius: 16px;
       display:flex;
       align-items:center;
       justify-content:center;
-      background: rgba(255,213,183,.42);
+      font-size: var(--iconF);
+      background: rgba(255,213,183,.40);
       border: 1px solid rgba(60,63,74,.08);
-      font-size: 1.25rem;
-      flex: 0 0 auto;
+      box-shadow: inset 0 0 0 3px rgba(255,255,255,.55);
+      margin-bottom: 8px;
     }
-    .cw-clue .txt{
-      flex:1;
-      min-width:0;
+    .cg-letter-box{
+      width: var(--iconW);
+      height: var(--letterH);
+      border-radius: 16px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight: 1100;
+      font-size: var(--letterF);
+      color: rgba(60,63,74,.90);
+      background: rgba(117,207,240,.12);
+      border: 2px solid rgba(103,197,135,.55);
+      box-shadow: 0 0 0 4px rgba(103,197,135,.10) inset;
     }
-    .cw-clue .t1{
-      font-weight:1100;
-      color: rgba(60,63,74,.92);
-      line-height:1.05;
+    .cg-letter-box--active{
+      border-color: rgba(117,207,240,.95);
+      box-shadow: 0 0 0 4px rgba(117,207,240,.18) inset, 0 0 0 3px rgba(117,207,240,.20);
     }
-    .cw-clue .t2{
-      margin-top:2px;
-      font-weight:900;
-      color: rgba(60,63,74,.65);
-      font-size:.92rem;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-    .cw-clue.active{
-      outline: 3px solid rgba(255,130,105,.35);
-      border-color: rgba(255,130,105,.35);
-      background: rgba(255,213,183,.35);
-    }
-    .cw-clue.locked{
-      outline: 3px solid rgba(243,184,64,.22);
-      border-color: rgba(243,184,64,.30);
-      background: rgba(243,184,64,.10);
+    .cg-letter-box--filled{
+      border-color: rgba(103,197,135,.75);
+      box-shadow: 0 0 0 4px rgba(103,197,135,.12) inset;
     }
 
-    .cw-status{
+    .cg-solved{
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 16px;
+      display:inline-block;
+      background: rgba(103,197,135,.18);
+      border: 1px solid rgba(60,63,74,.08);
+      font-weight: 1000;
+    }
+
+    /* ✅ Completed card stacks on mobile so it never runs off screen */
+    .cg-completed{
+      margin-top: 12px;
+      border-radius: 20px;
+      padding: 12px;
+      background: rgba(255,255,255,.78);
+      border: 1px solid rgba(60,63,74,.08);
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .cg-completed-left{
+      min-width: 180px;
+      flex: 1 1 180px;
+    }
+    .cg-pill{
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(60,63,74,.10);
+      background: rgba(255,255,255,.95);
+      font-weight: 1100;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      box-shadow: 0 8px 16px rgba(60,63,74,.08);
+      width: 100%;
+      max-width: 100%;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1 1 220px;
+    }
+
+    .cg-status{
       margin: 10px 0 0;
       text-align:center;
       font-weight: 900;
@@ -351,135 +333,143 @@
       min-height: 1.2em;
     }
 
-    /* Drawer (bottom letters) */
-    .cw-drawer-backdrop{
+    /* Sticky bottom key */
+    .cg-sticky{
       position: fixed;
-      inset: 0;
-      background: rgba(60,63,74,.25);
-      backdrop-filter: blur(2px);
-      opacity:0;
-      pointer-events:none;
-      transition: opacity 160ms ease;
-      z-index: 1200;
-    }
-    .cw-drawer-backdrop.open{
-      opacity:1;
-      pointer-events:auto;
-    }
-
-    .cw-drawer{
-      position: fixed;
-      left:0;
-      right:0;
+      left: 0;
+      right: 0;
       bottom: 0;
-      z-index: 1300;
-      transform: translateY(100%);
-      transition: transform 180ms ease;
+      z-index: 999;
       padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+      background: rgba(250,248,246,.92);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(60,63,74,.10);
+      box-shadow: 0 -10px 24px rgba(60,63,74,.08);
     }
-    .cw-drawer.open{
-      transform: translateY(0);
-    }
-    .cw-drawer-inner{
+    .cg-sticky-inner{
       max-width: 980px;
       margin: 0 auto;
-      border-radius: 22px;
+      border-radius: 18px;
       background: radial-gradient(circle at left,
         rgba(117,207,240,.18),
         rgba(172,148,244,.10),
         rgba(255,213,183,.22)
       );
-      border: 1px solid rgba(60,63,74,.10);
-      box-shadow: 0 -10px 26px rgba(60,63,74,.14);
+      border: 1px solid rgba(60,63,74,.08);
+      padding: 10px;
+      box-shadow: 0 10px 24px rgba(60,63,74,.08);
       overflow:hidden;
     }
-    .cw-drawer-top{
+    .cg-key-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom: 8px;
+      padding: 0 4px;
+    }
+    .cg-key-title{
+      font-weight: 1100;
+      color: rgba(60,63,74,.88);
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .cg-key-hint{
+      font-weight: 900;
+      color: rgba(60,63,74,.65);
+      white-space:nowrap;
+    }
+    .cg-key-row{
+      display:flex;
+      gap:10px;
+      overflow-x:auto;
+      overflow-y:hidden;
+      padding: 6px 6px 10px;
+      -webkit-overflow-scrolling: touch;
+      scroll-snap-type: x mandatory;
+      overscroll-behavior-x: contain;
+    }
+    .cg-key-row::-webkit-scrollbar{ height: 8px; }
+    .cg-key-row::-webkit-scrollbar-thumb{
+      background: rgba(60,63,74,.18);
+      border-radius: 999px;
+    }
+
+    .cg-key-btn{
+      flex: 0 0 auto;
+      scroll-snap-align: start;
+      width: 132px;
+      border-radius: 18px;
+      border: 1px solid rgba(60,63,74,.10);
+      background: rgba(255,255,255,.85);
+      box-shadow: 0 10px 18px rgba(60,63,74,.08);
+      padding: 10px;
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:10px;
-      padding: 10px 12px;
-      background: rgba(255,255,255,.55);
-      border-bottom: 1px solid rgba(60,63,74,.08);
-    }
-    .cw-handle{
-      width: 54px;
-      height: 6px;
-      border-radius: 999px;
-      background: rgba(60,63,74,.20);
-      margin: 2px auto 0;
-    }
-    .cw-drawer-title{
-      font-weight:1100;
-      color: rgba(60,63,74,.88);
-      display:flex;
-      gap:10px;
-      align-items:center;
-      min-width:0;
-    }
-    .cw-drawer-title .meta{
-      font-weight:900;
-      color: rgba(60,63,74,.70);
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      max-width: 62vw;
-    }
-    .cw-close{
-      border:none;
-      background: rgba(255,255,255,.8);
-      border: 1px solid rgba(60,63,74,.12);
-      width: 44px;
-      height: 44px;
-      border-radius: 16px;
-      font-size: 1.25rem;
       cursor:pointer;
-      font-weight: 900;
-      color: rgba(60,63,74,.70);
-    }
-    .cw-close:active{ transform: scale(.98); }
-
-    .cw-keys{
-      padding: 12px;
-      display:grid;
-      grid-template-columns: repeat(7, minmax(0, 1fr));
-      gap:10px;
-    }
-    .cw-key{
-      border:none;
-      background: rgba(255,213,183,.60);
-      border: 1px solid rgba(60,63,74,.10);
-      border-radius: 18px;
-      height: 48px;
-      font-weight: 1100;
-      font-size: 1.05rem;
-      cursor:pointer;
-      box-shadow: 0 10px 16px rgba(60,63,74,.08);
       touch-action:manipulation;
     }
-    .cw-key:active{ transform: scale(.99); }
-    .cw-key--util{
-      background: rgba(172,148,244,.18);
+    .cg-key-btn:active{ transform: scale(.99); }
+
+    .cg-key-emoji{
+      width: 42px;
+      height: 42px;
+      border-radius: 16px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 1.25rem;
+      background: rgba(255,213,183,.42);
+      border: 1px solid rgba(60,63,74,.08);
+    }
+    .cg-key-letter{
+      width: 42px;
+      height: 42px;
+      border-radius: 16px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight: 1100;
+      font-size: 1.15rem;
+      background: rgba(117,207,240,.12);
+      border: 2px solid rgba(60,63,74,.10);
+      color: rgba(60,63,74,.88);
     }
 
     /* Confetti */
-    .cw-confetti{
+    .cg-confetti{
       position: fixed;
       inset: 0;
       pointer-events: none;
       overflow: hidden;
       z-index: 2000;
     }
-    .cw-confetti-piece{
+    .cg-confetti-piece{
       position:absolute;
       width:10px;
       height:14px;
       border-radius:3px;
       opacity:.95;
       transform: translateY(-20px) rotate(0deg);
-      animation: cwFall linear forwards;
+      animation: cgFall linear forwards;
     }
-    @keyframes cwFall { to { transform: translateY(calc(100vh + 40px)) rotate(720deg); } }
+    @keyframes cgFall { to { transform: translateY(calc(100vh + 40px)) rotate(720deg); } }
+
+    /* Small screens: slightly tighter by default */
+    @media (max-width: 420px){
+      :root{
+        --cellW: 58px;
+        --iconW: 36px;
+        --letterH: 44px;
+        --iconF: 1.05rem;
+        --letterF: 1.1rem;
+        --wordGap: 7px;
+      }
+      .cg-key-btn{ width: 124px; }
+    }
   </style>
 </head>
 
@@ -488,152 +478,160 @@
     <a class="fc-back-link" href="../index.html">← Back to games</a>
 
     <div class="fc-game-box">
-      <h1 class="fc-game-heading">Tap-to-Type Crossword</h1>
+      <h1 class="fc-game-heading">Icon Cryptogram</h1>
       <p class="fc-game-instructions">
-        Tap a clue to jump to its word. Or tap a square to select it.
-        If a square is shared, tap it again to switch <strong>Across ↔ Down</strong>.
+        Look at the icon clues above the blanks. Find the same icon in the key (sticky at the bottom),
+        then tap it to fill the next blank.
       </p>
 
-      <div class="cw-controls">
-        <select id="cwThemeSel" class="cw-btn cw-btn--secondary" style="appearance:none;">
-          <option value="mix">Mix (random)</option>
-          <option value="creation">Creation</option>
-          <option value="characters">Bible Characters</option>
-        </select>
-
-        <select id="cwSizeSel" class="cw-btn cw-btn--secondary" style="appearance:none;">
-          <option value="7">Medium (7 words)</option>
-          <option value="5">Small (5 words)</option>
-          <option value="9">Large (9 words)</option>
-        </select>
-
-        <button class="cw-btn cw-btn--primary" id="cwNewBtn" type="button">New Crossword</button>
-        <button class="cw-btn cw-btn--ghost" id="cwHintBtn" type="button">Hint (1 letter)</button>
-
-        <label class="cw-btn cw-btn--secondary" style="display:flex; align-items:center; gap:10px;">
-          <input id="cwGuided" type="checkbox" style="transform:scale(1.2);" />
-          Guided mode (no wrong letters)
-        </label>
+      <div class="cg-controls">
+        <button class="cg-btn cg-btn--primary" id="cgNewBtn" type="button">New Puzzle</button>
+        <button class="cg-btn cg-btn--secondary" id="cgUndoBtn" type="button">Undo</button>
+        <button class="cg-btn cg-btn--ghost" id="cgClearBtn" type="button">Clear</button>
+        <button class="cg-btn cg-btn--secondary" id="cgResetWeekBtn" type="button">Reset Week</button>
       </div>
 
-      <div class="cw-pills">
-        <div class="cw-pill">🧩 Theme: <strong id="cwThemeTxt">Mix</strong></div>
-        <div class="cw-pill">Words locked: <strong id="cwLockedTxt">0/0</strong></div>
-        <div class="cw-pill cw-pill--dir">Direction: <strong id="cwDirTxt">ACROSS</strong></div>
+      <div class="cg-meta">
+        <div class="cg-chip">🧩 Theme: <strong id="cgTheme">Mix</strong></div>
+        <div class="cg-week" id="cgWeekText">Week</div>
       </div>
 
-      <div class="cw-board-card">
-        <div class="cw-board-head">
-          <div class="cw-board-title">🧩 Crossword</div>
-          <div>Tap a square or a clue</div>
+      <div class="cg-card">
+        <div class="cg-card-head">
+          <div>
+            <h2 class="cg-card-title">🧩 The Secret Message</h2>
+            <div class="cg-card-sub">Tap an icon in the key to fill the next blank.</div>
+          </div>
+          <div class="cg-progress"><span id="cgFilled">0</span> / <span id="cgTotal">0</span><br/>letters</div>
         </div>
 
-        <div class="cw-stage">
-          <div id="cwGrid" class="cw-grid" aria-label="Crossword grid"></div>
+        <div class="cg-message">
+          <div class="cg-words" id="cgWords"></div>
+
+          <div style="text-align:center;">
+            <span class="cg-solved" id="cgSolved" style="display:none;">You solved it! 🎉</span>
+          </div>
+
+          <div class="cg-completed" id="cgCompleted" style="display:none;">
+            <div class="cg-completed-left">
+              <div style="font-weight:1100;">
+                <span style="margin-right:6px;">✅</span>Completed This Week
+              </div>
+              <div style="font-weight:900; color:rgba(60,63,74,.65); font-size:.92rem;" id="cgCompletedWeek"></div>
+            </div>
+            <div class="cg-pill" id="cgCompletedPhrase"></div>
+          </div>
         </div>
 
-        <div class="cw-status" id="cwStatus">Tap a clue (or a square) to begin!</div>
-      </div>
-
-      <div class="cw-clues-card">
-        <div class="cw-clues-head">
-          <div>📝 Clues</div>
-          <div>Tap to go there</div>
-        </div>
-        <div class="cw-clues" id="cwClues"></div>
+        <div class="cg-status" id="cgStatus"></div>
       </div>
     </div>
   </div>
 
-  <!-- Drawer -->
-  <div class="cw-drawer-backdrop" id="cwBackdrop" aria-hidden="true"></div>
-  <div class="cw-drawer" id="cwDrawer" role="dialog" aria-label="Letter drawer">
-    <div class="cw-drawer-inner">
-      <div class="cw-handle" id="cwHandle" aria-hidden="true"></div>
-      <div class="cw-drawer-top">
-        <div class="cw-drawer-title">
-          <span style="font-size:1.1rem;">⌨️</span>
-          <span>Tap letters</span>
-          <span class="meta" id="cwDrawerMeta">—</span>
-        </div>
-        <button class="cw-close" id="cwCloseBtn" type="button" aria-label="Close">✕</button>
+  <div class="cg-sticky" role="region" aria-label="Icon key (sticky)">
+    <div class="cg-sticky-inner">
+      <div class="cg-key-head">
+        <div class="cg-key-title">🔑 Icon Key</div>
+        <div class="cg-key-hint">(scroll ↔︎) tap an icon</div>
       </div>
-      <div class="cw-keys" id="cwKeys"></div>
+      <div class="cg-key-row" id="cgKeyRow" aria-label="Icon key list"></div>
     </div>
   </div>
 
-  <div class="cw-confetti" id="cwConfetti"></div>
+  <div class="cg-confetti" id="cgConfetti"></div>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // ------------------ Data ------------------
-      const THEMES = {
-        creation: [
-          { a:'LIGHT', clue:'Made the day bright', icon:'💡' },
-          { a:'LAND', clue:'Dry ground', icon:'🌍' },
-          { a:'SEAS', clue:'Big water', icon:'🌊' },
-          { a:'STAR', clue:'Shines at night', icon:'⭐' },
-          { a:'FISH', clue:'Swims in water', icon:'🐟' },
-          { a:'BIRD', clue:'Flies in the sky', icon:'🕊️' },
-          { a:'TREE', clue:'Tall plant', icon:'🌳' },
-          { a:'SEED', clue:'Tiny start', icon:'🌱' },
-          { a:'MOON', clue:'Night light', icon:'🌙' },
-          { a:'SKY',  clue:'Up above us', icon:'☁️' },
-        ],
-        characters: [
-          { a:'ESTHER', clue:'Brave queen', icon:'👑' },
-          { a:'PAUL',   clue:'Wrote many letters', icon:'✉️' },
-          { a:'PETER',  clue:'Fisherman apostle', icon:'🐟' },
-          { a:'RUTH',   clue:'Loyal friend', icon:'🌾' },
-          { a:'NOAH',   clue:'Built an ark', icon:'⛵' },
-          { a:'DAVID',  clue:'Played a harp', icon:'🎵' },
-          { a:'MARY',   clue:'Jesus’ mother', icon:'💛' },
-          { a:'MARK',   clue:'Wrote a Gospel', icon:'📝' },
-          { a:'LUKE',   clue:'Doctor writer', icon:'🩺' },
-          { a:'MARTA',  clue:'Busy helper', icon:'🧺' },
-        ],
-      };
+      // ---------- helpers ----------
+      function pad2(n){ return String(n).padStart(2,'0'); }
+      function isoWeekKey(date){
+        const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+        const dayNum = d.getUTCDay() || 7;
+        d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+        const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+        const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        return `${d.getUTCFullYear()}-W${pad2(weekNo)}`;
+      }
+      const WEEK_KEY = isoWeekKey(new Date());
 
-      const MIX = () => {
-        const merged = [...THEMES.creation, ...THEMES.characters];
-        return merged;
-      };
+      function shuffle(arr){
+        const a = arr.slice();
+        for (let i = a.length - 1; i > 0; i--){
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+      }
 
-      // ------------------ UI refs ------------------
-      const gridEl = document.getElementById('cwGrid');
-      const cluesEl = document.getElementById('cwClues');
-      const statusEl = document.getElementById('cwStatus');
-      const themeSel = document.getElementById('cwThemeSel');
-      const sizeSel = document.getElementById('cwSizeSel');
-      const newBtn = document.getElementById('cwNewBtn');
-      const hintBtn = document.getElementById('cwHintBtn');
-      const guidedCb = document.getElementById('cwGuided');
+      // ---------- UI refs ----------
+      const wordsEl = document.getElementById('cgWords');
+      const keyRowEl = document.getElementById('cgKeyRow');
+      const statusEl = document.getElementById('cgStatus');
+      const filledEl = document.getElementById('cgFilled');
+      const totalEl = document.getElementById('cgTotal');
+      const solvedEl = document.getElementById('cgSolved');
+      const themeEl = document.getElementById('cgTheme');
+      const weekTextEl = document.getElementById('cgWeekText');
 
-      const themeTxt = document.getElementById('cwThemeTxt');
-      const lockedTxt = document.getElementById('cwLockedTxt');
-      const dirTxt = document.getElementById('cwDirTxt');
+      const completedWrap = document.getElementById('cgCompleted');
+      const completedWeekEl = document.getElementById('cgCompletedWeek');
+      const completedPhraseEl = document.getElementById('cgCompletedPhrase');
 
-      const drawer = document.getElementById('cwDrawer');
-      const backdrop = document.getElementById('cwBackdrop');
-      const closeBtn = document.getElementById('cwCloseBtn');
-      const handle = document.getElementById('cwHandle');
-      const keysEl = document.getElementById('cwKeys');
-      const drawerMeta = document.getElementById('cwDrawerMeta');
+      const newBtn = document.getElementById('cgNewBtn');
+      const undoBtn = document.getElementById('cgUndoBtn');
+      const clearBtn = document.getElementById('cgClearBtn');
+      const resetWeekBtn = document.getElementById('cgResetWeekBtn');
 
-      const confettiLayer = document.getElementById('cwConfetti');
+      const confettiLayer = document.getElementById('cgConfetti');
+
+      // ---------- puzzles ----------
+      const PUZZLES = [
+        { theme:'Encouragement', phrase:'GOD IS GOOD' },
+        { theme:'Faith', phrase:'TRUST JEHOVAH' },
+        { theme:'Kindness', phrase:'BE KIND' },
+        { theme:'Love', phrase:'LOVE OTHERS' },
+        { theme:'Prayer', phrase:'PRAY OFTEN' },
+        { theme:'Bible', phrase:'READ THE BIBLE' },
+        { theme:'Hope', phrase:'DO NOT GIVE UP' },
+      ];
+
+      const ICONS = [
+        '🏠','🕯️','🏺','⛵','🛡️','🐑','🌿','👑','📜','🌊','🌟','🐟','🧺','🌳','🪙',
+        '🍇','🍞','🐪','🫓','🪵','🔥','🫒','🧱','🪶','🦁','🕊️','⛰️','🏜️','⚓'
+      ];
+
+      // ---------- weekly storage ----------
+      const STORAGE_PREFIX = 'fc_cryptogram_v6_';
+      const STORAGE_KEY = STORAGE_PREFIX + WEEK_KEY;
+      const COMPLETED_KEY = STORAGE_PREFIX + 'completed_' + WEEK_KEY;
+
+      // state
+      let current = null;
+      let answer = [];
+      let input = [];
+      let cursor = 0;
+      let history = [];
+      let solved = false;
 
       function setStatus(t){ statusEl.textContent = t || ''; }
 
-      // ------------------ Confetti ------------------
+      // ✅ preserve key scroll between renders
+      function saveKeyScroll(){
+        return keyRowEl ? keyRowEl.scrollLeft : 0;
+      }
+      function restoreKeyScroll(x){
+        if (keyRowEl) keyRowEl.scrollLeft = x;
+      }
+
       function confettiBurst(big=false){
-        const pieceCount = big ? 160 : 70;
+        const pieceCount = big ? 140 : 70;
         const durationMin = big ? 1200 : 900;
         const durationMax = big ? 2200 : 1600;
-        const colors = ['#75CFF0','#FFD5B7','#F3B840','#AC94F4','#FF8269','#FAF8F6'];
 
+        const colors = ['#75CFF0','#FFD5B7','#F3B840','#AC94F4','#FF8269','#FAF8F6'];
         for (let i = 0; i < pieceCount; i++){
           const p = document.createElement('div');
-          p.className = 'cw-confetti-piece';
+          p.className = 'cg-confetti-piece';
           p.style.background = colors[Math.floor(Math.random() * colors.length)];
 
           const x = Math.random() * window.innerWidth;
@@ -655,790 +653,349 @@
         }
       }
 
-      // ------------------ Generator (with spacing to prevent “too close” words) ------------------
-      // Big placement grid size
-      const BIG = 33; // generous so we can keep words separated
-      const EMPTY = null;
+      function pickPuzzle(){
+        const last = current?.phrase;
+        const pool = shuffle(PUZZLES);
+        return pool.find(p => p.phrase !== last) || pool[0];
+      }
 
-      // Buffer rule:
-      // - Words may intersect on same letter.
-      // - Words MUST NOT touch side-by-side unless it’s an intersection.
-      // - Words MUST have empty cell before/after each word end.
-      // This prevents “ESTHER” having other words immediately before/after on same line,
-      // and prevents accidental vertical groupings near horizontal words.
-      function canPlace(grid, word, r, c, dir, placed){
-        const len = word.length;
-        const dr = dir === 'across' ? 0 : 1;
-        const dc = dir === 'across' ? 1 : 0;
+      function buildMapping(phrase){
+        const letters = Array.from(new Set(
+          phrase.toUpperCase().split('').filter(ch => ch >= 'A' && ch <= 'Z')
+        ));
+        const icons = shuffle(ICONS).slice(0, Math.max(letters.length, 8));
+        const map = {};
+        letters.forEach((L, i) => { map[L] = icons[i % icons.length]; });
+        return map;
+      }
 
-        // Ensure word fits
-        const rEnd = r + dr*(len-1);
-        const cEnd = c + dc*(len-1);
-        if (r < 0 || c < 0 || rEnd < 0 || cEnd < 0 || rEnd >= BIG || cEnd >= BIG) return false;
+      function tokenize(phrase, mapping){
+        const words = phrase.trim().toUpperCase().split(/\s+/).filter(Boolean);
+        const tokens = [];
+        let gi = 0;
+        for (const w of words){
+          const letters = [];
+          for (const ch of w){
+            if (ch < 'A' || ch > 'Z') continue;
+            letters.push({ L: ch, icon: mapping[ch], globalIndex: gi });
+            gi++;
+          }
+          if (letters.length) tokens.push({ word: w, letters });
+        }
+        return { tokens, totalLetters: gi };
+      }
 
-        // Must have empty space before start and after end (unless out of bounds)
-        const rBefore = r - dr;
-        const cBefore = c - dc;
-        const rAfter  = rEnd + dr;
-        const cAfter  = cEnd + dc;
+      function findNextBlank(startIdx){
+        for (let i = startIdx; i < input.length; i++){
+          if (input[i] === '') return i;
+        }
+        return -1;
+      }
 
-        if (rBefore >= 0 && cBefore >= 0 && rBefore < BIG && cBefore < BIG && grid[rBefore][cBefore] !== EMPTY) return false;
-        if (rAfter  >= 0 && cAfter  >= 0 && rAfter  < BIG && cAfter  < BIG && grid[rAfter][cAfter]  !== EMPTY) return false;
+      function updateCounters(){
+        const totalLetters = answer.length;
+        const filledLetters = input.filter(x => x !== '').length;
+        filledEl.textContent = String(filledLetters);
+        totalEl.textContent = String(totalLetters);
+      }
 
-        // For each letter, cell must be empty or matching intersection
-        let intersections = 0;
-        for (let i=0;i<len;i++){
-          const rr = r + dr*i;
-          const cc = c + dc*i;
-          const ch = word[i];
+      function updateSolvedUI(){
+        solvedEl.style.display = solved ? 'inline-block' : 'none';
 
-          const existing = grid[rr][cc];
-          if (existing !== EMPTY && existing !== ch) return false;
-          if (existing === ch) intersections++;
+        if (solved) {
+          const phrase = current.phrase.toUpperCase();
+          completedWrap.style.display = 'flex';
+          completedWeekEl.textContent = WEEK_KEY;
+          completedPhraseEl.textContent = phrase;
 
-          // Perpendicular neighbors must be empty unless this cell is an intersection
-          // This prevents “touching” that creates fake vertical letter groups.
-          const perp = dir === 'across'
-            ? [[rr-1,cc],[rr+1,cc]]
-            : [[rr,cc-1],[rr,cc+1]];
-
-          for (const [pr, pc] of perp){
-            if (pr < 0 || pc < 0 || pr >= BIG || pc >= BIG) continue;
-            const neigh = grid[pr][pc];
-            // If neighbor is occupied, only allow if current cell is intersection AND that neighbor belongs to a crossing word.
-            // Safer: disallow any perpendicular adjacency unless current cell is intersection (existing same letter).
-            if (neigh !== EMPTY && existing === EMPTY){
-              return false;
+          try {
+            const done = JSON.parse(localStorage.getItem(COMPLETED_KEY) || '[]');
+            if (!done.includes(phrase)) {
+              done.push(phrase);
+              localStorage.setItem(COMPLETED_KEY, JSON.stringify(done));
             }
-            // If existing is a letter (intersection), allow adjacency (the crossing word uses it).
-          }
-        }
-
-        // We prefer intersections (better crossword), but allow zero only for first word
-        if (placed.length > 0 && intersections === 0) return false;
-
-        return true;
-      }
-
-      function placeWord(grid, word, r, c, dir){
-        const len = word.length;
-        const dr = dir === 'across' ? 0 : 1;
-        const dc = dir === 'across' ? 1 : 0;
-        for (let i=0;i<len;i++){
-          grid[r + dr*i][c + dc*i] = word[i];
+          } catch (e) {}
+        } else {
+          completedWrap.style.display = 'none';
         }
       }
 
-      function findCandidates(grid, word, placed){
-        const candidates = [];
-        for (const pw of placed){
-          const pWord = pw.word;
-          for (let i=0;i<word.length;i++){
-            for (let j=0;j<pWord.length;j++){
-              if (word[i] !== pWord[j]) continue;
+      // ✅ responsive sizing to fit longest word (best effort), without horizontal bleed
+      function applyResponsiveCellSize(){
+        if (!current?.tokens?.length) return;
 
-              // Try crossing: if placed is across, candidate is down and vice versa
-              const dir = pw.dir === 'across' ? 'down' : 'across';
-              const dr = dir === 'across' ? 0 : 1;
-              const dc = dir === 'across' ? 1 : 0;
+        const longest = Math.max(...current.tokens.map(t => t.letters.length));
+        const msgBox = document.querySelector('.cg-message');
+        const rect = msgBox ? msgBox.getBoundingClientRect() : null;
 
-              const startR = pw.r + (pw.dir === 'across' ? 0 : j) - dr*i;
-              const startC = pw.c + (pw.dir === 'across' ? j : 0) - dc*i;
+        const available = Math.max(240, (rect ? rect.width : window.innerWidth) - 24);
+        const gap = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--wordGap')) || 8;
 
-              candidates.push({ r:startR, c:startC, dir, score: 10 }); // base score
-            }
-          }
-        }
+        const minCell = 50;
+        const maxCell = 66;
 
-        // Shuffle-ish, but keep some scoring: closer to center is better
-        const center = (BIG-1)/2;
-        for (const c of candidates){
-          const dist = Math.abs(c.r - center) + Math.abs(c.c - center);
-          c.score += Math.max(0, 20 - dist);
-        }
-        candidates.sort((a,b)=>b.score - a.score);
-        return candidates;
+        let target = Math.floor((available - (gap * (longest - 1))) / longest);
+        if (!Number.isFinite(target)) target = maxCell;
+
+        const cellW = Math.max(minCell, Math.min(maxCell, target));
+
+        const iconW = Math.max(32, Math.min(42, Math.floor(cellW * 0.62)));
+        const letterH = Math.max(40, Math.min(50, Math.floor(cellW * 0.78)));
+        const iconF = (iconW <= 34) ? '1.0rem' : '1.15rem';
+        const letterF = (cellW <= 54) ? '1.05rem' : '1.2rem';
+
+        document.documentElement.style.setProperty('--cellW', cellW + 'px');
+        document.documentElement.style.setProperty('--iconW', iconW + 'px');
+        document.documentElement.style.setProperty('--letterH', letterH + 'px');
+        document.documentElement.style.setProperty('--iconF', iconF);
+        document.documentElement.style.setProperty('--letterF', letterF);
       }
 
-      function makeGrid(){
-        return Array.from({length: BIG}, () => Array.from({length: BIG}, () => EMPTY));
-      }
+      // optional hook for future tweaks; keep as no-op for now
+      function fitWordsToWidth(){}
 
-      function generate(wordObjs, targetCount){
-        const pool = wordObjs
-          .map(w => ({...w, a: w.a.toUpperCase().replace(/[^A-Z]/g,'') }))
-          .filter(w => w.a.length >= 3)
-          .sort((x,y)=>y.a.length - x.a.length);
-
-        const picked = pool.slice(0, Math.min(targetCount, pool.length));
-
-        const grid = makeGrid();
-        const placed = [];
-
-        // Place first word at center, across
-        const first = picked[0];
-        const startR = Math.floor((BIG-1)/2);
-        const startC = Math.floor((BIG-1)/2) - Math.floor(first.a.length/2);
-        placeWord(grid, first.a, startR, startC, 'across');
-        placed.push({ id:0, ...first, word:first.a, r:startR, c:startC, dir:'across' });
-
-        // Place rest
-        for (let idx=1; idx<picked.length; idx++){
-          const w = picked[idx];
-          const word = w.a;
-          const candidates = findCandidates(grid, word, placed);
-
-          let placedIt = false;
-          for (const cand of candidates){
-            if (!canPlace(grid, word, cand.r, cand.c, cand.dir, placed)) continue;
-            placeWord(grid, word, cand.r, cand.c, cand.dir);
-            placed.push({ id: idx, ...w, word, r:cand.r, c:cand.c, dir:cand.dir });
-            placedIt = true;
-            break;
-          }
-
-          // If we couldn't place with intersection, try a few “open” spots but still with buffer rules
-          if (!placedIt){
-            outer:
-            for (let r=0;r<BIG;r++){
-              for (let c=0;c<BIG;c++){
-                for (const dir of ['across','down']){
-                  if (canPlace(grid, word, r, c, dir, placed)){
-                    placeWord(grid, word, r, c, dir);
-                    placed.push({ id: idx, ...w, word, r, c, dir });
-                    placedIt = true;
-                    break outer;
-                  }
-                }
-              }
-            }
-          }
-        }
-
-        return { grid, placed };
-      }
-
-      // Trim to used bounding box, but keep ALL words (we’re not filtering clues)
-      function trimGrid(grid){
-        let r0=BIG, r1=-1, c0=BIG, c1=-1;
-        for (let r=0;r<BIG;r++){
-          for (let c=0;c<BIG;c++){
-            if (grid[r][c] !== EMPTY){
-              r0 = Math.min(r0,r);
-              r1 = Math.max(r1,r);
-              c0 = Math.min(c0,c);
-              c1 = Math.max(c1,c);
-            }
-          }
-        }
-        if (r1 === -1) return { r0:0,r1:0,c0:0,c1:0, small:[[EMPTY]] };
-
-        // Add 1-cell padding around to avoid edge crowding
-        r0 = Math.max(0, r0-1); c0 = Math.max(0, c0-1);
-        r1 = Math.min(BIG-1, r1+1); c1 = Math.min(BIG-1, c1+1);
-
-        const small = [];
-        for (let r=r0;r<=r1;r++){
-          const row = [];
-          for (let c=c0;c<=c1;c++){
-            row.push(grid[r][c]);
-          }
-          small.push(row);
-        }
-        return { r0,r1,c0,c1, small };
-      }
-
-      // ------------------ Game State ------------------
-      let state = {
-        themeKey: 'mix',
-        targetCount: 7,
-        gridBig: null,
-        placed: [],
-        trimmed: null,
-        // user input per big cell key "r,c" -> letter
-        input: new Map(),
-        lockedWordIds: new Set(),
-        selected: null, // {r,c}
-        dir: 'across',
-        activeWordId: null,
-        solvedAll: false,
-      };
-
-      // Helpers
-      function keyOf(r,c){ return r + ',' + c; }
-      function isLetter(ch){ return typeof ch === 'string' && ch >= 'A' && ch <= 'Z'; }
-
-      function getAnswerAt(r,c){
-        return state.gridBig?.[r]?.[c] ?? EMPTY;
-      }
-
-      function getInputAt(r,c){
-        return state.input.get(keyOf(r,c)) || '';
-      }
-
-      function setInputAt(r,c,val){
-        state.input.set(keyOf(r,c), val);
-      }
-
-      // Find words that cover a cell
-      function wordsAtCell(r,c){
-        const out = [];
-        for (const w of state.placed){
-          const len = w.word.length;
-          const dr = w.dir==='across'?0:1;
-          const dc = w.dir==='across'?1:0;
-          for (let i=0;i<len;i++){
-            const rr = w.r + dr*i;
-            const cc = w.c + dc*i;
-            if (rr===r && cc===c){ out.push({ w, i }); break; }
-          }
-        }
-        return out;
-      }
-
-      function pickActiveWordForCell(r,c){
-        const list = wordsAtCell(r,c);
-        if (list.length === 0) return null;
-
-        // If cell has both across & down:
-        const hasAcross = list.some(x=>x.w.dir==='across');
-        const hasDown = list.some(x=>x.w.dir==='down');
-
-        if (hasAcross && hasDown){
-          // Toggle if same cell selected again
-          const want = state.dir;
-          const match = list.find(x=>x.w.dir===want);
-          return match ? match.w.id : list[0].w.id;
-        }
-
-        // Otherwise choose the only word
-        return list[0].w.id;
-      }
-
-      function getWordById(id){
-        return state.placed.find(w=>w.id===id) || null;
-      }
-
-      function getWordCells(word){
-        const cells = [];
-        const len = word.word.length;
-        const dr = word.dir==='across'?0:1;
-        const dc = word.dir==='across'?1:0;
-        for (let i=0;i<len;i++){
-          cells.push({ r: word.r + dr*i, c: word.c + dc*i, i });
-        }
-        return cells;
-      }
-
-      function wordIsCompleteAndCorrect(word){
-        const cells = getWordCells(word);
-        for (const cell of cells){
-          const ans = getAnswerAt(cell.r, cell.c);
-          const inp = getInputAt(cell.r, cell.c);
-          if (inp !== ans) return false;
-        }
-        return true;
-      }
-
-      function lockWord(word){
-        state.lockedWordIds.add(word.id);
-      }
-
-      function allWordsLocked(){
-        return state.lockedWordIds.size === state.placed.length;
-      }
-
-      // ------------------ Fit-to-screen board sizing ------------------
-      function applyFitSizing(){
-        const stage = document.querySelector('.cw-stage');
-        if (!stage || !state.trimmed) return;
-
-        const rows = state.trimmed.small.length;
-        const cols = state.trimmed.small[0].length;
-
-        // available space
-        const rect = stage.getBoundingClientRect();
-        const availW = Math.max(260, rect.width - 14);
-        // Height: aim to keep full board visible, but leave room for clues below
-        // We use viewport height minus some safe margins.
-        const availH = Math.max(220, Math.min(window.innerHeight * 0.46, rect.width * 0.95));
-
-        // gaps
-        const gap = 6;
-
-        const cellByW = Math.floor((availW - gap*(cols-1)) / cols);
-        const cellByH = Math.floor((availH - gap*(rows-1)) / rows);
-
-        // ✅ smaller responsive tile sizing (and cap so it stays legible)
-        const cell = Math.max(20, Math.min(36, Math.min(cellByW, cellByH)));
-
-        document.documentElement.style.setProperty('--cell', cell + 'px');
-        document.documentElement.style.setProperty('--gap', (cell <= 24 ? 5 : 6) + 'px');
-      }
-
-      // ------------------ Drawer open/close (and make it closable) ------------------
-      function openDrawer(){
-        drawer.classList.add('open');
-        backdrop.classList.add('open');
-        backdrop.setAttribute('aria-hidden','false');
-      }
-      function closeDrawer(){
-        drawer.classList.remove('open');
-        backdrop.classList.remove('open');
-        backdrop.setAttribute('aria-hidden','true');
-      }
-
-      closeBtn.addEventListener('click', closeDrawer);
-      backdrop.addEventListener('click', closeDrawer);
-
-      // Swipe down to close (simple touch)
-      (function enableSwipeClose(){
-        let startY = null;
-        let startT = null;
-
-        function onStart(e){
-          const t = e.touches ? e.touches[0] : null;
-          if (!t) return;
-          startY = t.clientY;
-          startT = Date.now();
-        }
-        function onMove(e){
-          if (startY == null) return;
-          const t = e.touches ? e.touches[0] : null;
-          if (!t) return;
-          const dy = t.clientY - startY;
-          // ignore upward
-          if (dy < 0) return;
-          // if dragged enough, close
-          if (dy > 60) closeDrawer();
-        }
-        function onEnd(){
-          startY = null;
-          startT = null;
-        }
-
-        const top = drawer.querySelector('.cw-drawer-top');
-        top.addEventListener('touchstart', onStart, {passive:true});
-        top.addEventListener('touchmove', onMove, {passive:true});
-        top.addEventListener('touchend', onEnd);
-      })();
-
-      // ------------------ Keyboard rendering ------------------
-      function renderKeyboard(){
-        keysEl.innerHTML = '';
-        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-        const mkBtn = (label, cls, onClick) => {
-          const b = document.createElement('button');
-          b.type = 'button';
-          b.className = 'cw-key' + (cls ? ' ' + cls : '');
-          b.textContent = label;
-          b.addEventListener('click', onClick);
-          return b;
-        };
-
-        letters.forEach(ch => {
-          keysEl.appendChild(mkBtn(ch, '', () => onLetterTap(ch)));
-        });
-
-        // Backspace + Clear word
-        keysEl.appendChild(mkBtn('⌫', 'cw-key--util', () => onBackspace()));
-        keysEl.appendChild(mkBtn('Clear', 'cw-key--util', () => onClearWord()));
-      }
-
-      // ------------------ Rendering ------------------
       function render(){
-        if (!state.gridBig) return;
+        // ✅ preserve key scroll so it doesn't snap back to start after each selection
+        const keyScrollX = saveKeyScroll();
 
-        // Pills
-        themeTxt.textContent = (state.themeKey === 'mix') ? 'Mix' : (state.themeKey === 'creation' ? 'Creation' : 'Characters');
-        lockedTxt.textContent = `${state.lockedWordIds.size}/${state.placed.length}`;
-        dirTxt.textContent = state.dir.toUpperCase();
+        wordsEl.innerHTML = '';
+        keyRowEl.innerHTML = '';
+        weekTextEl.textContent = WEEK_KEY;
 
-        // Trim + fit sizing
-        state.trimmed = trimGrid(state.gridBig);
-        applyFitSizing();
+        applyResponsiveCellSize();
 
-        const small = state.trimmed.small;
-        const rows = small.length;
-        const cols = small[0].length;
+        // render message (word chips)
+        current.tokens.forEach(tok => {
+          const wrap = document.createElement('div');
+          wrap.className = 'cg-word-wrap';
 
-        gridEl.style.gridTemplateColumns = `repeat(${cols}, var(--cell))`;
-        gridEl.style.gridTemplateRows = `repeat(${rows}, var(--cell))`;
+          const wEl = document.createElement('div');
+          wEl.className = 'cg-word';
 
-        gridEl.innerHTML = '';
+          tok.letters.forEach(cell => {
+            const box = document.createElement('div');
+            box.className = 'cg-cell';
 
-        // Determine active word cells for highlight
-        let activeCells = new Set();
-        if (state.activeWordId != null){
-          const w = getWordById(state.activeWordId);
-          if (w){
-            for (const cell of getWordCells(w)){
-              activeCells.add(keyOf(cell.r, cell.c));
-            }
-          }
-        }
+            const icon = document.createElement('div');
+            icon.className = 'cg-icon';
+            icon.textContent = cell.icon;
 
-        // Render each trimmed cell
-        for (let rr=0; rr<rows; rr++){
-          for (let cc=0; cc<cols; cc++){
-            const bigR = rr + state.trimmed.r0;
-            const bigC = cc + state.trimmed.c0;
-            const ans = getAnswerAt(bigR, bigC);
-            const used = isLetter(ans);
+            const lb = document.createElement('div');
+            lb.className = 'cg-letter-box';
+            lb.textContent = input[cell.globalIndex] || '';
 
-            const cell = document.createElement('div');
-            cell.className = 'cw-cell' + (used ? '' : ' unused');
-            cell.dataset.r = bigR;
-            cell.dataset.c = bigC;
+            if (cell.globalIndex === cursor) lb.classList.add('cg-letter-box--active');
+            if (input[cell.globalIndex] !== '') lb.classList.add('cg-letter-box--filled');
 
-            if (used){
-              const inp = getInputAt(bigR, bigC);
-              cell.textContent = inp || '';
-
-              const sel = state.selected && state.selected.r === bigR && state.selected.c === bigC;
-              if (sel) cell.classList.add('selected');
-
-              if (activeCells.has(keyOf(bigR, bigC))) cell.classList.add('in-word');
-
-              // Locked outline if belongs to a locked word (but keep distinction even if adjacent)
-              const covering = wordsAtCell(bigR, bigC).map(x=>x.w.id);
-              if (covering.some(id=>state.lockedWordIds.has(id))){
-                cell.classList.add('locked');
-              }
-            }
-
-            cell.addEventListener('click', () => onCellTap(bigR, bigC));
-            gridEl.appendChild(cell);
-          }
-        }
-
-        // Clues (keep ALL clues forever; never filter out)
-        cluesEl.innerHTML = '';
-        const across = state.placed.filter(w=>w.dir==='across');
-        const down = state.placed.filter(w=>w.dir==='down');
-
-        // Numbering (stable order: top-left)
-        const sorted = [...state.placed].sort((a,b)=> (a.r-b.r) || (a.c-b.c) || (a.dir.localeCompare(b.dir)));
-        const numberById = new Map();
-        let n = 1;
-        for (const w of sorted){
-          numberById.set(w.id, n++);
-        }
-
-        function addClue(word){
-          const div = document.createElement('div');
-          const locked = state.lockedWordIds.has(word.id);
-          div.className = 'cw-clue' + (state.activeWordId===word.id ? ' active' : '') + (locked ? ' locked' : '');
-          div.dataset.wordId = word.id;
-
-          const icon = document.createElement('div');
-          icon.className = 'icon';
-          icon.textContent = word.icon || '🧩';
-
-          const txt = document.createElement('div');
-          txt.className = 'txt';
-
-          const t1 = document.createElement('div');
-          t1.className = 't1';
-          t1.textContent = `${numberById.get(word.id)}. ${word.clue}`;
-
-          const t2 = document.createElement('div');
-          t2.className = 't2';
-          t2.textContent = `${word.dir.toUpperCase()} • ${word.word.length} letters`;
-
-          txt.appendChild(t1);
-          txt.appendChild(t2);
-
-          div.appendChild(icon);
-          div.appendChild(txt);
-
-          div.addEventListener('click', () => {
-            selectWord(word.id, true);
+            box.appendChild(icon);
+            box.appendChild(lb);
+            wEl.appendChild(box);
           });
 
-          cluesEl.appendChild(div);
-        }
+          wrap.appendChild(wEl);
+          wordsEl.appendChild(wrap);
+        });
 
-        // Keep a single list (mixed) but still displays dir; (JW-ish list feel)
-        // If you want separate sections later, we can split.
-        for (const w of sorted){
-          addClue(w);
-        }
+        // render key buttons
+        const mappingEntries = Object.entries(current.mapping)
+          .map(([letter, icon]) => ({ letter, icon }))
+          .sort((a,b) => a.icon.localeCompare(b.icon));
 
-        // Drawer meta
-        if (state.activeWordId != null){
-          const w = getWordById(state.activeWordId);
-          const dir = w ? w.dir.toUpperCase() : '';
-          const len = w ? w.word.length : '';
-          const clue = w ? w.clue : '';
-          drawerMeta.textContent = `• ${clue} • ${dir} • ${len} letters`;
-        } else {
-          drawerMeta.textContent = '—';
-        }
+        mappingEntries.forEach(({letter, icon}) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'cg-key-btn';
+          btn.setAttribute('aria-label', `Icon ${icon}, letter ${letter}`);
+
+          const e = document.createElement('div');
+          e.className = 'cg-key-emoji';
+          e.textContent = icon;
+
+          const l = document.createElement('div');
+          l.className = 'cg-key-letter';
+          l.textContent = letter;
+
+          btn.appendChild(e);
+          btn.appendChild(l);
+          btn.addEventListener('click', () => onKeyTap(letter));
+
+          keyRowEl.appendChild(btn);
+        });
+
+        updateCounters();
+        updateSolvedUI();
+
+        // restore key scroll + keep active cell visible within its word wrap
+        requestAnimationFrame(() => {
+          restoreKeyScroll(keyScrollX);
+          fitWordsToWidth();
+
+          const active = document.querySelector('.cg-letter-box--active');
+          if (!active) return;
+          const wrap = active.closest('.cg-word-wrap');
+          if (!wrap) return;
+
+          const aRect = active.getBoundingClientRect();
+          const wRect = wrap.getBoundingClientRect();
+
+          const leftCut = aRect.left < wRect.left + 12;
+          const rightCut = aRect.right > wRect.right - 12;
+
+          if (leftCut) wrap.scrollLeft -= (wRect.left + 12 - aRect.left);
+          if (rightCut) wrap.scrollLeft += (aRect.right - (wRect.right - 12));
+        });
       }
 
-      // ------------------ Selection / Direction toggle ------------------
-      function onCellTap(r,c){
-        const ans = getAnswerAt(r,c);
-        if (!isLetter(ans)) return;
+      function saveState(){
+        try {
+          const data = { current, answer, input, cursor, history, solved };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        } catch (e) {}
+      }
 
-        const same = state.selected && state.selected.r===r && state.selected.c===c;
+      function loadState(){
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return false;
+          const data = JSON.parse(raw);
+          if (!data?.current?.phrase || !Array.isArray(data.answer) || !Array.isArray(data.input) || !Array.isArray(data.current.tokens)) return false;
 
-        // If tapping same cell that is shared, toggle direction
-        if (same){
-          const list = wordsAtCell(r,c);
-          const hasAcross = list.some(x=>x.w.dir==='across');
-          const hasDown = list.some(x=>x.w.dir==='down');
-          if (hasAcross && hasDown){
-            state.dir = (state.dir === 'across') ? 'down' : 'across';
+          current = data.current;
+          answer = data.answer;
+          input = data.input;
+          cursor = typeof data.cursor === 'number' ? data.cursor : 0;
+          history = Array.isArray(data.history) ? data.history : [];
+          solved = !!data.solved;
+
+          if (!solved) {
+            const next = findNextBlank(0);
+            cursor = (next === -1) ? 0 : next;
           }
+          return true;
+        } catch (e) {
+          return false;
         }
+      }
 
-        state.selected = { r, c };
+      function startNewPuzzle(){
+        solved = false;
+        history = [];
 
-        // Choose active word consistent with direction
-        const list = wordsAtCell(r,c);
-        if (list.length){
-          const preferred = list.find(x=>x.w.dir===state.dir);
-          const chosen = preferred ? preferred.w.id : list[0].w.id;
-          state.activeWordId = chosen;
-          state.dir = getWordById(chosen)?.dir || state.dir;
-        } else {
-          state.activeWordId = null;
-        }
+        const p = pickPuzzle();
+        themeEl.textContent = p.theme;
 
-        // Open drawer when user starts playing
-        openDrawer();
-        setStatus('Tap a letter.');
+        const phrase = p.phrase.toUpperCase().trim();
+        const mapping = buildMapping(phrase);
+        const { tokens, totalLetters } = tokenize(phrase, mapping);
+
+        current = { theme: p.theme, phrase, mapping, tokens };
+
+        answer = new Array(totalLetters).fill('');
+        tokens.forEach(tok => tok.letters.forEach(c => { answer[c.globalIndex] = c.L; }));
+        input = new Array(totalLetters).fill('');
+
+        cursor = findNextBlank(0);
+        if (cursor === -1) cursor = 0;
+
+        setStatus('Pick the matching icon to fill the next blank.');
         render();
+        saveState();
       }
 
-      function selectWord(wordId, open){
-        const w = getWordById(wordId);
-        if (!w) return;
-
-        state.activeWordId = wordId;
-        state.dir = w.dir;
-        // Select first not-yet-correct cell, else first cell
-        const cells = getWordCells(w);
-        let pick = cells[0];
-        for (const cell of cells){
-          const inp = getInputAt(cell.r, cell.c);
-          const ans = getAnswerAt(cell.r, cell.c);
-          if (inp !== ans){
-            pick = cell;
-            break;
-          }
+      function checkSolved(){
+        for (let i = 0; i < answer.length; i++){
+          if ((input[i] || '') !== answer[i]) return false;
         }
-        state.selected = { r: pick.r, c: pick.c };
-
-        if (open) openDrawer();
-        setStatus('Tap a letter.');
-        render();
+        return true;
       }
 
-      // ------------------ Input rules (don’t advance on wrong letter) ------------------
-      function currentCellInfo(){
-        if (!state.selected) return null;
-        const { r,c } = state.selected;
-        if (!isLetter(getAnswerAt(r,c))) return null;
-        return { r,c };
-      }
+      function onKeyTap(letter){
+        if (solved) { setStatus('Great job! Tap New Puzzle for another one.'); return; }
 
-      function nextCellInWord(word, fromR, fromC){
-        const cells = getWordCells(word);
-        const idx = cells.findIndex(x=>x.r===fromR && x.c===fromC);
-        if (idx === -1) return cells[0];
-        // advance to next in direction, but stay if at end
-        return cells[Math.min(idx+1, cells.length-1)];
-      }
+        if (cursor < 0 || cursor >= input.length || input[cursor] !== '') {
+          const next = findNextBlank(0);
+          cursor = next === -1 ? cursor : next;
+        }
+        if (cursor === -1) return;
 
-      function onLetterTap(letter){
-        const info = currentCellInfo();
-        if (!info || state.activeWordId == null) return;
-
-        const { r,c } = info;
-        const ans = getAnswerAt(r,c);
-        const guided = !!guidedCb.checked;
-
-        // already locked word? allow touching but don’t change
-        if (wordsAtCell(r,c).some(x=>state.lockedWordIds.has(x.w.id))){
-          setStatus('That word is locked ✅');
+        const isCorrect = (answer[cursor] === letter);
+        if (!isCorrect){
+          setStatus('Not quite — try a different icon 🙂');
           return;
         }
 
-        if (guided && letter !== ans){
-          wiggleCell(r,c);
-          setStatus('Try a different letter 🙂');
-          return;
-        }
+        history.push({ idx: cursor, prev: input[cursor] });
+        input[cursor] = letter;
 
-        // If not guided, still show feedback and do NOT advance when wrong
-        if (!guided && letter !== ans){
-          wiggleCell(r,c);
-          setInputAt(r,c, letter); // show the wrong letter briefly? (keeps your “I typed” feel)
-          render();
-          setStatus('Not quite — try again 🙂');
-          // don’t advance
-          return;
-        }
+        const next = findNextBlank(cursor + 1);
+        cursor = (next === -1) ? findNextBlank(0) : next;
+        if (cursor === -1) cursor = 0;
 
-        // Correct
-        setInputAt(r,c, letter);
-        popCorrect(r,c);
+        setStatus('Nice! Keep going 🙂');
 
-        // If word now complete, lock + confetti
-        const w = getWordById(state.activeWordId);
-        if (w && wordIsCompleteAndCorrect(w)){
-          lockWord(w);
-          setStatus('Word locked! 🎉');
-          confettiBurst(false);
-          if (allWordsLocked()){
-            setStatus('All words done! 🎉🎉🎉');
-            confettiBurst(true);
-          }
-        } else {
-          setStatus('Nice!');
-        }
-
-        // Advance ONLY when correct
-        if (w){
-          const nxt = nextCellInWord(w, r, c);
-          state.selected = { r: nxt.r, c: nxt.c };
+        if (checkSolved()){
+          solved = true;
+          setStatus('You solved it! 🎉');
+          confettiBurst(true);
         }
 
         render();
+        saveState();
       }
 
-      function onBackspace(){
-        const info = currentCellInfo();
-        if (!info) return;
-        const { r,c } = info;
+      function undo(){
+        if (history.length === 0) { setStatus('Nothing to undo.'); return; }
+        if (solved) solved = false;
 
-        // don’t edit locked word cells
-        if (wordsAtCell(r,c).some(x=>state.lockedWordIds.has(x.w.id))){
-          setStatus('That word is locked ✅');
-          return;
-        }
+        const last = history.pop();
+        input[last.idx] = last.prev || '';
+        cursor = last.idx;
 
-        setInputAt(r,c,'');
-        setStatus('Cleared letter.');
+        setStatus('Undid the last letter.');
         render();
+        saveState();
       }
 
-      function onClearWord(){
-        if (state.activeWordId == null) return;
-        const w = getWordById(state.activeWordId);
-        if (!w) return;
-
-        if (state.lockedWordIds.has(w.id)){
-          setStatus('That word is locked ✅');
-          return;
-        }
-
-        for (const cell of getWordCells(w)){
-          setInputAt(cell.r, cell.c, '');
-        }
-        setStatus('Cleared word.');
+      function clearAll(){
+        if (!current) return;
+        solved = false;
+        history = [];
+        input = new Array(answer.length).fill('');
+        cursor = findNextBlank(0);
+        if (cursor === -1) cursor = 0;
+        setStatus('Cleared. Start again 🙂');
         render();
+        saveState();
       }
 
-      function wiggleCell(r,c){
-        const el = document.querySelector(`.cw-cell[data-r="${r}"][data-c="${c}"]`);
-        if (!el) return;
-        el.classList.remove('wiggle');
-        void el.offsetWidth;
-        el.classList.add('wiggle');
-        setTimeout(()=>el.classList.remove('wiggle'), 220);
+      function resetWeek(){
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+          localStorage.removeItem(COMPLETED_KEY);
+        } catch (e) {}
+        setStatus('Week reset. New puzzle loaded.');
+        startNewPuzzle();
       }
 
-      function popCorrect(r,c){
-        const el = document.querySelector(`.cw-cell[data-r="${r}"][data-c="${c}"]`);
-        if (!el) return;
-        el.classList.remove('correct-pop');
-        void el.offsetWidth;
-        el.classList.add('correct-pop');
-        setTimeout(()=>el.classList.remove('correct-pop'), 260);
-      }
-
-      // ------------------ Hint ------------------
-      function hintOne(){
-        if (state.activeWordId == null) { setStatus('Tap a clue first 🙂'); return; }
-        const w = getWordById(state.activeWordId);
-        if (!w) return;
-        if (state.lockedWordIds.has(w.id)) { setStatus('That word is already locked ✅'); return; }
-
-        // find first incorrect/blank cell in word
-        const cells = getWordCells(w);
-        let target = null;
-        for (const cell of cells){
-          const ans = getAnswerAt(cell.r, cell.c);
-          const inp = getInputAt(cell.r, cell.c);
-          if (inp !== ans){ target = cell; break; }
-        }
-        if (!target){ setStatus('Almost!'); return; }
-
-        setInputAt(target.r, target.c, getAnswerAt(target.r, target.c));
-        state.selected = { r: target.r, c: target.c };
-        setStatus('Hint filled one letter ✨');
-
-        if (wordIsCompleteAndCorrect(w)){
-          lockWord(w);
-          setStatus('Word locked! 🎉');
-          confettiBurst(false);
-          if (allWordsLocked()){
-            setStatus('All words done! 🎉🎉🎉');
-            confettiBurst(true);
-          }
-        }
-
-        render();
-      }
-
-      // ------------------ New crossword ------------------
-      function newCrossword(){
-        const themeKey = themeSel.value;
-        const targetCount = parseInt(sizeSel.value, 10) || 7;
-
-        const bank = (themeKey === 'mix') ? MIX() : THEMES[themeKey];
-        // shuffle but keep stable-ish variety
-        const pool = bank.slice().sort(()=>Math.random()-0.5);
-
-        // generate
-        const { grid, placed } = generate(pool, targetCount);
-
-        state.themeKey = themeKey;
-        state.targetCount = targetCount;
-        state.gridBig = grid;
-        state.placed = placed;
-
-        state.input = new Map();
-        state.lockedWordIds = new Set();
-        state.selected = null;
-        state.dir = 'across';
-        state.activeWordId = null;
-        state.solvedAll = false;
-
-        closeDrawer(); // start clean
-        setStatus('Tap a clue (or a square) to begin!');
-        renderKeyboard();
-        render();
-      }
-
-      // ------------------ Events ------------------
-      newBtn.addEventListener('click', newCrossword);
-      hintBtn.addEventListener('click', hintOne);
+      newBtn.addEventListener('click', startNewPuzzle);
+      undoBtn.addEventListener('click', undo);
+      clearBtn.addEventListener('click', clearAll);
+      resetWeekBtn.addEventListener('click', resetWeek);
 
       window.addEventListener('resize', () => {
-        // keep fit-to-screen sizing
-        if (state.gridBig) render();
+        if (current) render();
       });
 
-      // First load
-      renderKeyboard();
-      newCrossword();
+      if (!loadState()){
+        startNewPuzzle();
+      } else {
+        themeEl.textContent = current.theme || 'Mix';
+        render();
+        setStatus(solved ? 'You solved it! Tap New Puzzle for another.' : 'Pick the matching icon to fill the next blank.');
+      }
     });
   </script>
 </body>
 </html>
 ```0
+
