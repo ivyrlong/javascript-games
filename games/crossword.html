@@ -7,34 +7,79 @@
   <link rel="stylesheet" href="../styles.css" />
 
   <style>
+    :root{
+      --bg: var(--dove-white, #FAF8F6);
+      --ink: var(--scripture-slate, #3C3F4A);
+      --sky: var(--spiritual-sky, #75CFF0);
+      --violet: var(--faithful-violet, #AC94F4);
+      --peach: var(--joyful-peach, #FFD5B7);
+      --gold: var(--golden-promise, #F3B840);
+      --coral: var(--cheerful-coral, #FF8269);
+      --card: #fff;
+      --line: rgba(60,63,74,.12);
+
+      /* JS will set this so board always fits */
+      --cell: 44px;
+      --gap: 6px;
+
+      --lockedOutline: rgba(243,184,64,.95);
+      --activeOutline: rgba(117,207,240,.95);
+      --wrongOutline: rgba(255,130,105,.95);
+      --correctGlow: rgba(103,197,135,.35);
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      overflow-x:hidden; /* ✅ no horizontal bleed */
+    }
+
     .fc-game-screen{
       min-height:100vh;
-      background:var(--dove-white);
       display:flex;
       flex-direction:column;
       align-items:center;
       padding:16px;
+      padding-bottom: calc(16px + env(safe-area-inset-bottom) + 170px); /* reserve for keyboard */
     }
+
+    .fc-back-link{
+      align-self:flex-start;
+      text-decoration:none;
+      font-weight:900;
+      color: rgba(255,130,105,.88);
+      padding:8px 10px;
+      border-radius:999px;
+      background: rgba(255,213,183,.35);
+      border: 1px solid rgba(60,63,74,.10);
+    }
+
     .fc-game-box{
-      margin-top:12px;
       width:100%;
       max-width:1100px;
-      border-radius:20px;
-      background:#fff;
-      box-shadow:0 4px 10px rgba(60,63,74,.15);
+      margin-top:12px;
+      border-radius:22px;
+      background: var(--card);
+      border:1px solid var(--line);
+      box-shadow: 0 6px 18px rgba(60,63,74,.10);
       padding:16px;
     }
+
     .fc-game-heading{
-      margin:0 0 6px;
-      font-size:1.4rem;
-      color:var(--scripture-slate);
+      margin: 6px 0 4px;
+      font-size: 1.65rem;
+      font-weight: 1000;
       text-align:center;
     }
     .fc-game-instructions{
-      margin:0 0 12px;
-      font-size:.95rem;
-      color:rgba(60,63,74,.85);
+      margin:0 0 14px;
       text-align:center;
+      color: rgba(60,63,74,.78);
+      font-weight:650;
+      line-height:1.25;
     }
 
     .cw-controls{
@@ -43,55 +88,61 @@
       gap:10px;
       justify-content:center;
       align-items:center;
-      margin:10px 0 12px;
-      padding:10px;
-      border-radius:16px;
-      background:radial-gradient(circle at left,
+      margin:12px 0 12px;
+      padding:12px;
+      border-radius:18px;
+      background: radial-gradient(circle at left,
         rgba(117,207,240,.18),
-        rgba(172,148,244,.10)
+        rgba(172,148,244,.12),
+        rgba(255,213,183,.22)
       );
+      border: 1px solid rgba(60,63,74,.08);
     }
+
     .cw-select{
       padding:8px 12px;
       border-radius:999px;
       border:1px solid rgba(60,63,74,.18);
-      background:var(--dove-white);
-      color:var(--scripture-slate);
+      background: rgba(250,248,246,.95);
+      color: var(--ink);
       font-weight:900;
       font-size:.95rem;
     }
+
     .cw-btn{
-      padding:9px 14px;
+      padding:10px 16px;
       border-radius:999px;
       border:none;
       cursor:pointer;
       font-weight:900;
-      font-size:.95rem;
-      box-shadow:0 3px 8px rgba(60,63,74,.2);
+      font-size:.98rem;
+      box-shadow:0 6px 16px rgba(60,63,74,.14);
       touch-action:manipulation;
+      user-select:none;
+      -webkit-user-select:none;
     }
-    .cw-btn:active{ transform:scale(.98); }
-    .cw-btn--primary{ background:var(--cheerful-coral); color:#fff; }
-    .cw-btn--secondary{ background:rgba(172,148,244,.16); color:var(--scripture-slate); }
+    .cw-btn:active{ transform: scale(.98); }
+    .cw-btn--primary{ background: var(--coral); color:#fff; }
+    .cw-btn--secondary{ background: rgba(172,148,244,.18); color: var(--ink); }
+    .cw-btn--ghost{ background: rgba(117,207,240,.18); color: var(--ink); }
 
     .cw-toggle{
       display:inline-flex;
       align-items:center;
       gap:8px;
-      padding:7px 10px;
+      padding:8px 12px;
       border-radius:999px;
       border:1px solid rgba(60,63,74,.18);
-      background:rgba(250,248,246,.9);
-      color:var(--scripture-slate);
-      font-weight:900;
-      font-size:.92rem;
+      background: rgba(255,255,255,.85);
+      font-weight:1000;
+      color: rgba(60,63,74,.85);
       user-select:none;
       -webkit-user-select:none;
     }
     .cw-toggle input{
       width:18px;
       height:18px;
-      accent-color: var(--spiritual-sky);
+      accent-color: var(--sky);
     }
 
     .cw-hud{
@@ -100,22 +151,23 @@
       gap:10px;
       justify-content:center;
       align-items:center;
-      margin:0 0 12px;
-      color:rgba(60,63,74,.9);
+      margin:0 0 10px;
+      color:rgba(60,63,74,.85);
       font-weight:900;
     }
     .cw-chip{
-      padding:7px 10px;
+      padding:8px 10px;
       border-radius:999px;
-      background:rgba(255,213,183,.55);
-      border:1px solid rgba(60,63,74,.12);
-      font-size:.9rem;
+      background: rgba(255,213,183,.40);
+      border:1px solid rgba(60,63,74,.10);
+      font-size:.92rem;
+      white-space:nowrap;
     }
-    .cw-chip strong{ color:var(--scripture-slate); }
+    .cw-chip strong{ color: var(--ink); }
 
     .cw-layout{
       display:grid;
-      grid-template-columns:1fr;
+      grid-template-columns: 1fr;
       gap:12px;
       align-items:start;
     }
@@ -124,251 +176,318 @@
     }
 
     .cw-panel{
-      border-radius:18px;
-      padding:12px;
-      background:radial-gradient(circle at top left,
-        rgba(117,207,240,.14),
-        rgba(172,148,244,.10)
+      border-radius:22px;
+      background: radial-gradient(circle at top left,
+        rgba(117,207,240,.18),
+        rgba(172,148,244,.12)
       );
-      box-shadow:0 3px 8px rgba(60,63,74,.12);
+      padding:14px;
+      border: 1px solid rgba(60,63,74,.08);
+      box-shadow: 0 10px 24px rgba(60,63,74,.08);
+      overflow:hidden; /* ✅ no weird lines */
     }
+
     .cw-panel-title{
-      margin:0 0 10px;
-      font-size:1rem;
+      margin:0 0 8px;
+      font-weight:1100;
+      font-size:1.1rem;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .cw-subtle{
+      font-weight:900;
+      color: rgba(60,63,74,.65);
+      font-size:.92rem;
+      white-space:nowrap;
+    }
+
+    /* ✅ Board wrapper: guarantees board fits */
+    .cw-board-wrap{
+      width:100%;
+      border-radius:18px;
+      background: rgba(255,255,255,.72);
+      border:1px solid rgba(60,63,74,.08);
+      padding:10px;
+      overflow:hidden; /* ✅ prevents crop bleed/shadows */
+    }
+    .cw-board-sizer{
+      width:100%;
+      /* JS sets height based on viewport available so board never crops */
+      height: 52vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+    }
+
+    .cw-board{
+      display:grid;
+      gap: var(--gap);
+      padding: var(--gap);
+      border-radius:18px;
+      background:#fff;
+      border:1px solid rgba(60,63,74,.10);
+      box-shadow: 0 10px 22px rgba(60,63,74,.10);
+      max-width:100%;
+      max-height:100%;
+      overflow:hidden;
+      touch-action:manipulation;
+    }
+
+    .cw-cell{
+      width: var(--cell);
+      height: var(--cell);
+      border-radius: 14px;
+      border: 1px solid rgba(60,63,74,.14);
+      background: rgba(117,207,240,.06);
+      position:relative;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:1100;
+      font-size: calc(var(--cell) * 0.45);
+      color: rgba(60,63,74,.90);
+      user-select:none;
+      -webkit-user-select:none;
+      overflow:hidden;
+    }
+
+    /* Invisible unused cells (holes) */
+    .cw-cell--unused{
+      opacity:0;
+      pointer-events:none;
+      border:none;
+      background:transparent;
+    }
+
+    /* number in corner */
+    .cw-num{
+      position:absolute;
+      top:4px;
+      left:6px;
+      font-size: calc(var(--cell) * 0.22);
       font-weight:1000;
-      color:var(--scripture-slate);
+      color: rgba(60,63,74,.55);
+      pointer-events:none;
+    }
+
+    .cw-cell--selected{
+      outline: 4px solid var(--activeOutline);
+      outline-offset: -2px;
+      box-shadow: 0 0 0 6px rgba(117,207,240,.18);
+      background: rgba(117,207,240,.12);
+    }
+
+    .cw-cell--inword{
+      background: rgba(255,213,183,.26);
+      border-color: rgba(60,63,74,.18);
+    }
+
+    /* Crossing cell highlight */
+    .cw-cell--cross{
+      box-shadow: 0 0 0 4px rgba(172,148,244,.18) inset;
+    }
+
+    /* Correct letter feedback */
+    .cw-cell--correct{
+      box-shadow: 0 0 0 6px var(--correctGlow) inset;
+      border-color: rgba(103,197,135,.55);
+      background: rgba(103,197,135,.12);
+    }
+
+    /* Wrong letter feedback (wiggle) */
+    .cw-cell--wrong{
+      outline: 4px solid var(--wrongOutline);
+      outline-offset: -2px;
+      animation: cwWiggle 220ms ease-in-out 0s 1;
+    }
+    @keyframes cwWiggle{
+      0%{ transform: translateX(0); }
+      25%{ transform: translateX(-4px); }
+      50%{ transform: translateX(4px); }
+      75%{ transform: translateX(-3px); }
+      100%{ transform: translateX(0); }
+    }
+
+    /* Locked word outline (applied to cells in that word) */
+    .cw-cell--locked{
+      outline: 3px solid var(--lockedOutline);
+      outline-offset: -2px;
+      background: rgba(243,184,64,.14);
+      border-color: rgba(243,184,64,.35);
+    }
+
+    /* Clues list */
+    .cw-clues{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .cw-clue-block{
+      border-radius:18px;
+      background: rgba(255,255,255,.78);
+      border:1px solid rgba(60,63,74,.08);
+      padding:12px;
+      box-shadow: 0 8px 16px rgba(60,63,74,.06);
+    }
+    .cw-clue-title{
+      margin:0 0 8px;
+      font-weight:1100;
+      font-size:1rem;
       display:flex;
       justify-content:space-between;
       align-items:center;
       gap:10px;
     }
-    .cw-subtle{
-      font-size:.85rem;
-      font-weight:900;
-      color:rgba(60,63,74,.70);
-    }
-
-    .cw-grid-wrap{
-      display:flex;
-      justify-content:center;
-      align-items:flex-start;
-    }
-    .cw-grid{
-      display:grid;
-      gap:6px;
-      padding:10px;
-      border-radius:18px;
-      background:transparent;
-      width:min(560px, 100%);
-      touch-action: manipulation;
-    }
-
-    .cw-cell{
-      width:44px;
-      height:44px;
-      border-radius:12px;
-      border:2px solid rgba(60,63,74,.14);
-      background:rgba(250,248,246,.98);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight:1000;
-      font-size:1.1rem;
-      color:var(--scripture-slate);
-      user-select:none;
-      -webkit-user-select:none;
-      position:relative;
-      cursor:pointer;
-      transition: box-shadow 120ms ease, border-color 120ms ease, transform 120ms ease, background 120ms ease;
-    }
-    .cw-cell:active{ transform:scale(.98); }
-
-    /* ✅ unused = invisible */
-    .cw-cell--unused{
-      background:transparent !important;
-      border-color:transparent !important;
-      box-shadow:none !important;
-      cursor:default !important;
-      pointer-events:none !important;
-      color:transparent !important;
-    }
-
-    /* ✅ strong cursor outline */
-    .cw-cell--selected{
-      border-color: var(--cheerful-coral) !important;
-      box-shadow:
-        0 0 0 5px rgba(255,130,105,.30),
-        0 0 0 2px rgba(255,130,105,.85) inset,
-        0 6px 16px rgba(60,63,74,.18);
-      background: rgba(255,130,105,.08);
-    }
-
-    .cw-cell--activeword{
-      border-color: rgba(117,207,240,.95);
-      box-shadow: 0 0 0 3px rgba(117,207,240,.16) inset;
-      background: rgba(117,207,240,.06);
-    }
-
-    /* highlight crossing letters */
-    .cw-cell--cross{
-      border-color: rgba(172,148,244,.95) !important;
-      box-shadow: 0 0 0 3px rgba(172,148,244,.18) inset;
-      background: rgba(172,148,244,.06);
-    }
-
-    /* ✅ locked-word outlines */
-    .cw-cell--lockedword{
-      border-color: rgba(243,184,64,.95) !important;
-      box-shadow:
-        0 0 0 3px rgba(243,184,64,.22),
-        0 0 0 2px rgba(243,184,64,.40) inset;
-      background: rgba(243,184,64,.06);
-    }
-
-    .cw-cell--correct{
-      background: rgba(103,197,135,.12);
-      border-color: rgba(103,197,135,.60);
-    }
-
-    .cw-cell--wrong{
-      animation: cwShake 260ms ease-in-out 0s 1;
-      border-color: rgba(255,130,105,.95);
-      box-shadow:0 0 0 3px rgba(255,130,105,.18) inset;
-    }
-    @keyframes cwShake{
-      0%{ transform:translateX(0); }
-      25%{ transform:translateX(-4px); }
-      50%{ transform:translateX(4px); }
-      75%{ transform:translateX(-3px); }
-      100%{ transform:translateX(0); }
-    }
-
     .cw-clue-list{
       display:flex;
       flex-direction:column;
       gap:8px;
+      margin:0;
+      padding:0;
+      list-style:none;
     }
     .cw-clue{
-      border-radius:16px;
-      border:1px solid rgba(60,63,74,.12);
+      width:100%;
+      text-align:left;
+      border-radius:14px;
+      border:1px solid rgba(60,63,74,.10);
       background:#fff;
-      box-shadow:0 3px 10px rgba(60,63,74,.10);
       padding:10px 10px;
+      cursor:pointer;
+      font-weight:900;
+      color: rgba(60,63,74,.90);
+      box-shadow: 0 6px 14px rgba(60,63,74,.08);
       display:flex;
+      justify-content:space-between;
       align-items:center;
       gap:10px;
-      cursor:pointer;
-      user-select:none;
-      -webkit-user-select:none;
       touch-action:manipulation;
-      transition: box-shadow 120ms ease, border-color 120ms ease, transform 120ms ease;
     }
-    .cw-clue:active{ transform:scale(.99); }
+    .cw-clue:active{ transform: scale(.99); }
+    .cw-clue small{
+      font-weight:1000;
+      color: rgba(60,63,74,.60);
+      white-space:nowrap;
+    }
     .cw-clue--active{
-      border-color: var(--cheerful-coral);
-      box-shadow:0 0 0 4px rgba(255,130,105,.20) inset, 0 3px 10px rgba(60,63,74,.10);
-      background: rgba(255,130,105,.05);
+      border-color: rgba(117,207,240,.75);
+      box-shadow: 0 0 0 4px rgba(117,207,240,.18) inset, 0 6px 14px rgba(60,63,74,.08);
+      background: rgba(117,207,240,.10);
     }
     .cw-clue--done{
-      border-color: rgba(243,184,64,.90);
-      background: rgba(243,184,64,.08);
-    }
-    .cw-clue-icon{
-      width:40px;
-      height:40px;
-      border-radius:14px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background: radial-gradient(circle at top left,
-        rgba(117,207,240,.16),
-        rgba(172,148,244,.10)
-      );
-      font-size:1.25rem;
-      flex:0 0 auto;
-    }
-    .cw-clue-text{
-      display:flex;
-      flex-direction:column;
-      gap:2px;
-      min-width:0;
-    }
-    .cw-clue-text strong{
-      font-size:.98rem;
-      color:var(--scripture-slate);
-      font-weight:1000;
-      line-height:1.15;
-    }
-    .cw-clue-text span{
-      font-size:.86rem;
-      color:rgba(60,63,74,.78);
-      font-weight:900;
-      line-height:1.15;
+      border-color: rgba(243,184,64,.55);
+      background: rgba(243,184,64,.12);
     }
 
-    .cw-pad{
+    .cw-status{
       margin-top:10px;
-      border-radius:18px;
-      background:#fff;
-      border:1px solid rgba(60,63,74,.12);
-      box-shadow:0 3px 10px rgba(60,63,74,.10);
-      padding:10px;
+      text-align:center;
+      font-weight:900;
+      color: rgba(60,63,74,.75);
+      min-height:1.2em;
     }
-    .cw-pad-title{
+
+    /* Sticky keyboard drawer */
+    .cw-kb{
+      position:fixed;
+      left:0;
+      right:0;
+      bottom:0;
+      z-index:999;
+      padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+      background: rgba(250,248,246,.92);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(60,63,74,.10);
+      box-shadow: 0 -10px 24px rgba(60,63,74,.08);
+    }
+    .cw-kb-inner{
+      max-width:1100px;
+      margin:0 auto;
+      border-radius:18px;
+      background: radial-gradient(circle at left,
+        rgba(117,207,240,.18),
+        rgba(172,148,244,.10),
+        rgba(255,213,183,.22)
+      );
+      border: 1px solid rgba(60,63,74,.08);
+      padding:10px;
+      box-shadow: 0 10px 24px rgba(60,63,74,.08);
+    }
+    .cw-kb-head{
       display:flex;
       justify-content:space-between;
       align-items:center;
       gap:10px;
       margin-bottom:8px;
-      color:rgba(60,63,74,.85);
-      font-weight:1000;
+      padding:0 4px;
+      flex-wrap:wrap;
     }
-    .cw-pad-grid{
-      display:grid;
-      grid-template-columns: repeat(7, minmax(0, 1fr));
+    .cw-kb-title{
+      font-weight:1100;
+      color: rgba(60,63,74,.88);
+    }
+    .cw-kb-meta{
+      font-weight:900;
+      color: rgba(60,63,74,.62);
+      white-space:nowrap;
+    }
+    .cw-kb-row{
+      display:flex;
       gap:8px;
+      overflow-x:auto;
+      overflow-y:hidden;
+      -webkit-overflow-scrolling: touch;
+      padding:6px 6px 10px;
+      scroll-snap-type: x mandatory;
+      overscroll-behavior-x: contain;
     }
-    @media (min-width:520px){
-      .cw-pad-grid{ grid-template-columns: repeat(9, minmax(0, 1fr)); }
+    .cw-kb-row::-webkit-scrollbar{ height: 8px; }
+    .cw-kb-row::-webkit-scrollbar-thumb{
+      background: rgba(60,63,74,.18);
+      border-radius: 999px;
     }
+
     .cw-key{
-      border:none;
+      flex: 0 0 auto;
+      scroll-snap-align:start;
+      width: 52px;
+      height: 52px;
+      border-radius: 18px;
+      border: 1px solid rgba(60,63,74,.10);
+      background: rgba(255,255,255,.88);
+      box-shadow: 0 10px 18px rgba(60,63,74,.08);
+      font-weight:1100;
+      font-size: 1.2rem;
+      color: rgba(60,63,74,.92);
+      display:flex;
+      align-items:center;
+      justify-content:center;
       cursor:pointer;
-      border-radius:14px;
-      padding:10px 0;
-      font-weight:1000;
-      background:rgba(255,213,183,.55);
-      color:var(--scripture-slate);
-      box-shadow:0 3px 8px rgba(60,63,74,.12);
       touch-action:manipulation;
       user-select:none;
       -webkit-user-select:none;
     }
-    .cw-key:active{ transform:scale(.98); }
-    .cw-key--action{ background:rgba(172,148,244,.16); }
+    .cw-key:active{ transform: scale(.99); }
 
-    .cw-status{
-      margin-top:10px;
-      text-align:center;
-      min-height:1.3em;
-      font-weight:1000;
-      color:rgba(60,63,74,.85);
-    }
-    .cw-win{
-      display:inline-block;
-      padding:8px 10px;
-      border-radius:12px;
-      background:rgba(103,197,135,.22);
-      color:var(--scripture-slate);
-      font-weight:1000;
+    .cw-key--action{
+      width: 86px;
+      font-size: .95rem;
+      font-weight: 1000;
+      color: rgba(60,63,74,.85);
+      background: rgba(255,255,255,.92);
     }
 
+    /* Confetti */
     .cw-confetti{
-      position:fixed;
-      inset:0;
-      pointer-events:none;
-      z-index:9999;
-      overflow:hidden;
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 2000;
     }
     .cw-confetti-piece{
       position:absolute;
@@ -379,67 +498,54 @@
       transform: translateY(-20px) rotate(0deg);
       animation: cwFall linear forwards;
     }
-    @keyframes cwFall{
-      to { transform: translateY(calc(100vh + 40px)) rotate(720deg); }
-    }
-
-    @media (max-width:420px){
-      .cw-cell{ width:40px; height:40px; font-size:1.02rem; }
-      .cw-grid{ gap:5px; padding:8px; }
-      .cw-clue-icon{ width:38px; height:38px; border-radius:14px; }
-      .cw-pad-grid{ grid-template-columns: repeat(7, minmax(0, 1fr)); }
-    }
+    @keyframes cwFall { to { transform: translateY(calc(100vh + 40px)) rotate(720deg); } }
   </style>
 </head>
 
 <body>
   <div class="fc-game-screen">
-    <a class="fc-back-link" href="../index.html">Back to games</a>
+    <a class="fc-back-link" href="../index.html">← Back to games</a>
 
     <div class="fc-game-box">
-      <h1 class="fc-game-heading">Tap-to-Type Crossword</h1>
+      <h1 class="fc-game-heading">Crossword</h1>
       <p class="fc-game-instructions">
-        Tap a clue to jump to its word. Or tap a square to select it.
-        If a square is shared, tap it again to switch Across ↔ Down.
+        Tap a clue to jump to its word. Tap the same square again to switch direction (Across/Down).
+        Correct letters glow. Wrong letters wiggle (and won’t advance).
       </p>
 
       <div class="cw-controls">
-        <select class="cw-select" id="cwTheme" aria-label="Choose crossword theme">
-          <option value="creation">Creation</option>
-          <option value="characters">Characters</option>
-          <option value="mix" selected>Mix (random)</option>
+        <label style="font-weight:1000;">Puzzle:</label>
+        <select class="cw-select" id="cwPuzzleSelect" aria-label="Choose crossword">
+          <option value="creation" selected>Creation Crossword</option>
+          <option value="character">Character Crossword</option>
         </select>
-
-        <select class="cw-select" id="cwDifficulty" aria-label="Choose difficulty">
-          <option value="5">Easy (5 words)</option>
-          <option value="7" selected>Medium (7 words)</option>
-          <option value="9">Hard (9 words)</option>
-        </select>
-
-        <button class="cw-btn cw-btn--primary" id="cwNewBtn" type="button">New Crossword</button>
-        <button class="cw-btn cw-btn--secondary" id="cwHintBtn" type="button">Hint (1 letter)</button>
 
         <label class="cw-toggle" for="cwGuided">
           <input id="cwGuided" type="checkbox" />
-          Guided mode (no wrong letters)
+          Guided Mode
         </label>
+
+        <button class="cw-btn cw-btn--primary" id="cwRestartBtn" type="button">Start / Restart</button>
+        <button class="cw-btn cw-btn--secondary" id="cwHintBtn" type="button">Hint (1 letter)</button>
+        <button class="cw-btn cw-btn--ghost" id="cwClearBtn" type="button">Clear Word</button>
       </div>
 
       <div class="cw-hud">
-        <div class="cw-chip">Theme: <strong id="cwPuzzleName">—</strong></div>
-        <div class="cw-chip">Words locked: <strong id="cwLocked">0</strong>/<strong id="cwTotal">0</strong></div>
-        <div class="cw-chip">Direction: <strong id="cwDir">ACROSS</strong></div>
+        <div class="cw-chip">✅ Words done: <strong id="cwDone">0</strong>/<strong id="cwTotalWords">0</strong></div>
+        <div class="cw-chip">⌁ Direction: <strong id="cwDir">Across</strong></div>
       </div>
 
       <div class="cw-layout">
         <div class="cw-panel">
           <div class="cw-panel-title">
-            <span>🧩 Crossword</span>
-            <span class="cw-subtle">Tap a square or a clue</span>
+            <span>🗺️ Board</span>
+            <span class="cw-subtle">Everything stays visible</span>
           </div>
 
-          <div class="cw-grid-wrap">
-            <div class="cw-grid" id="cwGrid" aria-label="Crossword grid"></div>
+          <div class="cw-board-wrap">
+            <div class="cw-board-sizer" id="cwSizer">
+              <div class="cw-board" id="cwBoard" aria-label="Crossword board"></div>
+            </div>
           </div>
 
           <div class="cw-status" id="cwStatus"></div>
@@ -447,22 +553,40 @@
 
         <div class="cw-panel">
           <div class="cw-panel-title">
-            <span>📝 Clues</span>
-            <span class="cw-subtle">Tap to go there</span>
+            <span>🧩 Clues</span>
+            <span class="cw-subtle">Tap to jump</span>
           </div>
 
-          <div class="cw-clue-list" id="cwClueList"></div>
-
-          <div class="cw-pad" aria-label="Letter pad">
-            <div class="cw-pad-title">
-              <span>🔤 Tap letters</span>
-              <span class="cw-subtle" id="cwActiveWordLabel"></span>
+          <div class="cw-clues">
+            <div class="cw-clue-block">
+              <div class="cw-clue-title">
+                <span>➡️ Across</span>
+                <span class="cw-subtle" id="cwAcrossCount"></span>
+              </div>
+              <ul class="cw-clue-list" id="cwAcross"></ul>
             </div>
-            <div class="cw-pad-grid" id="cwPad"></div>
+
+            <div class="cw-clue-block">
+              <div class="cw-clue-title">
+                <span>⬇️ Down</span>
+                <span class="cw-subtle" id="cwDownCount"></span>
+              </div>
+              <ul class="cw-clue-list" id="cwDown"></ul>
+            </div>
           </div>
         </div>
       </div>
+    </div>
+  </div>
 
+  <!-- Sticky keyboard -->
+  <div class="cw-kb" role="region" aria-label="Letter keyboard (sticky)">
+    <div class="cw-kb-inner">
+      <div class="cw-kb-head">
+        <div class="cw-kb-title">🔤 Tap letters (or use your keyboard)</div>
+        <div class="cw-kb-meta" id="cwKbMeta">Word</div>
+      </div>
+      <div class="cw-kb-row" id="cwKbRow" aria-label="Letter keys"></div>
     </div>
   </div>
 
@@ -470,823 +594,15 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const gridEl = document.getElementById('cwGrid');
-      const clueListEl = document.getElementById('cwClueList');
-      const padEl = document.getElementById('cwPad');
-      const statusEl = document.getElementById('cwStatus');
-
-      const themeSelect = document.getElementById('cwTheme');
-      const difficultySelect = document.getElementById('cwDifficulty');
-
-      const puzzleNameEl = document.getElementById('cwPuzzleName');
-      const lockedEl = document.getElementById('cwLocked');
-      const totalEl = document.getElementById('cwTotal');
-      const dirEl = document.getElementById('cwDir');
-
-      const newBtn = document.getElementById('cwNewBtn');
-      const hintBtn = document.getElementById('cwHintBtn');
-      const guidedToggle = document.getElementById('cwGuided');
-      const activeWordLabelEl = document.getElementById('cwActiveWordLabel');
-
-      const confettiLayer = document.getElementById('cwConfetti');
-
-      const GUIDED_KEY = 'fc_crossword_guided_v2';
-      guidedToggle.checked = (localStorage.getItem(GUIDED_KEY) === '1');
-      guidedToggle.addEventListener('change', () => {
-        localStorage.setItem(GUIDED_KEY, guidedToggle.checked ? '1' : '0');
-        setStatus(guidedToggle.checked ? 'Guided mode ON ✅' : 'Guided mode OFF 🙂');
-      });
-
-      // ============================================================
-      // WORD BANKS (simple starter set; expand any time)
-      // Answers should be A–Z only (no spaces) for kid typing.
-      // ============================================================
-      const BANK_CREATION = [
-        { answer:'LIGHT', icon:'💡', clue:'Made the day bright' },
-        { answer:'SKY', icon:'☁️', clue:'Up above us' },
-        { answer:'SEA', icon:'🌊', clue:'Big water' },
-        { answer:'LAND', icon:'🌍', clue:'Dry ground' },
-        { answer:'STAR', icon:'⭐', clue:'Shines at night' },
-        { answer:'SUN', icon:'☀️', clue:'Bright daytime light' },
-        { answer:'MOON', icon:'🌙', clue:'Light at night' },
-        { answer:'BIRD', icon:'🐦', clue:'Flies in the sky' },
-        { answer:'FISH', icon:'🐟', clue:'Swims in water' },
-        { answer:'TREE', icon:'🌳', clue:'Tall plant' },
-        { answer:'SEED', icon:'🌱', clue:'Starts a plant' },
-        { answer:'LIFE', icon:'🧬', clue:'Living things' },
-        { answer:'GOD', icon:'👑', clue:'The Creator' }
-      ];
-
-      const BANK_CHARACTERS = [
-        { answer:'JESUS', icon:'❤️', clue:'God’s Son' },
-        { answer:'DAVID', icon:'🪨', clue:'Fought Goliath' },
-        { answer:'NOAH', icon:'🛶', clue:'Built the ark' },
-        { answer:'MOSES', icon:'🧺', clue:'Led Israel out' },
-        { answer:'RUTH', icon:'🌾', clue:'Kind and loyal' },
-        { answer:'SARAH', icon:'👵', clue:'Abraham’s wife' },
-        { answer:'ADAM', icon:'🍃', clue:'First man' },
-        { answer:'EVE', icon:'🌸', clue:'First woman' },
-        { answer:'JOHN', icon:'📖', clue:'A Bible writer' },
-        { answer:'MARK', icon:'📝', clue:'Wrote a Gospel' },
-        { answer:'LUKE', icon:'🩺', clue:'Helped Paul' },
-        { answer:'PAUL', icon:'⛵', clue:'Traveled to teach' },
-        { answer:'PETER', icon:'🐟', clue:'Fisherman apostle' }
-      ];
-
-      // ============================================================
-      // GENERATOR + TRIM (bxword-style)
-      // ============================================================
-      function shuffle(arr){
-        const a = arr.slice();
-        for (let i=a.length-1; i>0; i--){
-          const j = Math.floor(Math.random()*(i+1));
-          [a[i], a[j]] = [a[j], a[i]];
-        }
-        return a;
-      }
-
-      function canPlaceWord(grid, word, startRow, startCol, direction) {
-        const size = grid.length;
-        if (startRow < 0 || startCol < 0) return false;
-
-        const endRow = direction === 'across' ? startRow : startRow + word.length - 1;
-        const endCol = direction === 'across' ? startCol + word.length - 1 : startCol;
-        if (endRow >= size || endCol >= size) return false;
-
-        // Check adjacency + collisions
-        for (let i=0; i<word.length; i++){
-          const r = direction === 'across' ? startRow : startRow + i;
-          const c = direction === 'across' ? startCol + i : startCol;
-
-          const existing = grid[r][c];
-          if (existing !== null && existing !== word[i]) return false;
-
-          // Avoid touching side-by-side in same direction (keeps crossword clean)
-          if (direction === 'across') {
-            // above/below should be empty unless this is an intersection
-            if (existing === null) {
-              if (r-1 >= 0 && grid[r-1][c] !== null) return false;
-              if (r+1 < size && grid[r+1][c] !== null) return false;
-            }
-          } else {
-            if (existing === null) {
-              if (c-1 >= 0 && grid[r][c-1] !== null) return false;
-              if (c+1 < size && grid[r][c+1] !== null) return false;
-            }
-          }
-        }
-
-        // Also ensure ends don't butt into other letters
-        if (direction === 'across') {
-          if (startCol-1 >= 0 && grid[startRow][startCol-1] !== null) return false;
-          if (endCol+1 < size && grid[startRow][endCol+1] !== null) return false;
-        } else {
-          if (startRow-1 >= 0 && grid[startRow-1][startCol] !== null) return false;
-          if (endRow+1 < size && grid[endRow+1][startCol] !== null) return false;
-        }
-
-        return true;
-      }
-
-      function findBestPlacement(grid, word, placedWords) {
-        const size = grid.length;
-        const candidates = [];
-
-        for (const placed of placedWords) {
-          for (let i=0; i<placed.answer.length; i++){
-            for (let j=0; j<word.length; j++){
-              if (placed.answer[i] !== word[j]) continue;
-
-              const placedRow = placed.direction === 'across' ? placed.startRow : placed.startRow + i;
-              const placedCol = placed.direction === 'across' ? placed.startCol + i : placed.startCol;
-
-              const newDir = placed.direction === 'across' ? 'down' : 'across';
-              const startRow = newDir === 'across' ? placedRow : placedRow - j;
-              const startCol = newDir === 'across' ? placedCol - j : placedCol;
-
-              if (canPlaceWord(grid, word, startRow, startCol, newDir)) {
-                // Prefer more centered placements slightly (kid-friendly layouts)
-                const center = size / 2;
-                const dist = Math.abs(startRow-center) + Math.abs(startCol-center);
-                candidates.push({ startRow, startCol, direction: newDir, score: -dist });
-              }
-            }
-          }
-        }
-
-        if (!candidates.length) return null;
-        candidates.sort((a,b) => b.score - a.score);
-        // pick among top few for variety
-        const pickPool = candidates.slice(0, Math.min(8, candidates.length));
-        return pickPool[Math.floor(Math.random()*pickPool.length)];
-      }
-
-      function trimGrid(grid, placedWords) {
-        let minRow = grid.length, maxRow = 0, minCol = grid[0].length, maxCol = 0;
-
-        for (let r=0; r<grid.length; r++){
-          for (let c=0; c<grid[r].length; c++){
-            if (grid[r][c] !== null){
-              minRow = Math.min(minRow, r);
-              maxRow = Math.max(maxRow, r);
-              minCol = Math.min(minCol, c);
-              maxCol = Math.max(maxCol, c);
-            }
-          }
-        }
-
-        // padding (helps the rounded cell look)
-        minRow = Math.max(0, minRow - 1);
-        minCol = Math.max(0, minCol - 1);
-        maxRow = Math.min(grid.length - 1, maxRow + 1);
-        maxCol = Math.min(grid[0].length - 1, maxCol + 1);
-
-        const newGrid = [];
-        for (let r=minRow; r<=maxRow; r++){
-          newGrid.push(grid[r].slice(minCol, maxCol + 1));
-        }
-
-        // shift word starts
-        const shiftedWords = placedWords.map(w => ({
-          ...w,
-          startRow: w.startRow - minRow,
-          startCol: w.startCol - minCol
-        }));
-
-        return { grid: newGrid, words: shiftedWords };
-      }
-
-      function generatePuzzle(wordBank, targetWordCount) {
-        const maxAttempts = 60;
-        let best = null;
-
-        for (let attempt=0; attempt<maxAttempts; attempt++){
-          const result = tryGeneratePuzzle(wordBank, targetWordCount);
-          if (!result) continue;
-
-          if (!best || result.words.length > best.words.length) best = result;
-          if (result.words.length >= Math.max(3, targetWordCount - 1)) return result;
-        }
-
-        return best || tryGeneratePuzzle(wordBank, Math.max(3, Math.min(5, targetWordCount))) || null;
-      }
-
-      function tryGeneratePuzzle(wordBank, targetWordCount) {
-        const shuffled = shuffle(wordBank).map((w, idx) => ({
-          id: `w${idx}_${w.answer}`,
-          answer: String(w.answer || '').toUpperCase().replace(/[^A-Z]/g,''),
-          clue: w.clue || 'Clue',
-          icon: w.icon || '❓'
-        })).filter(w => w.answer.length >= 3 && w.answer.length <= 9);
-
-        if (shuffled.length < 3) return null;
-
-        const gridSize = Math.max(12, targetWordCount * 2);
-        const grid = Array(gridSize).fill(null).map(() => Array(gridSize).fill(null));
-        const placedWords = [];
-
-        // first word across centered
-        const first = shuffled[0];
-        const startRow = Math.floor(gridSize / 2);
-        const startCol = Math.floor((gridSize - first.answer.length) / 2);
-
-        for (let i=0; i<first.answer.length; i++){
-          grid[startRow][startCol + i] = first.answer[i];
-        }
-        placedWords.push({ ...first, direction:'across', startRow, startCol });
-
-        // place more by intersections
-        for (let i=1; i<shuffled.length && placedWords.length < targetWordCount; i++){
-          const w = shuffled[i];
-          const placement = findBestPlacement(grid, w.answer, placedWords);
-          if (!placement) continue;
-
-          for (let k=0; k<w.answer.length; k++){
-            const r = placement.direction === 'across' ? placement.startRow : placement.startRow + k;
-            const c = placement.direction === 'across' ? placement.startCol + k : placement.startCol;
-            grid[r][c] = w.answer[k];
-          }
-
-          placedWords.push({
-            ...w,
-            direction: placement.direction,
-            startRow: placement.startRow,
-            startCol: placement.startCol
-          });
-        }
-
-        if (placedWords.length < 3) return null;
-
-        const trimmed = trimGrid(grid, placedWords);
-        return {
-          grid: trimmed.grid,
-          words: trimmed.words
-        };
-      }
-
-      // ============================================================
-      // GAME STATE (keeps current UX + adds selectCell toggling)
-      // ============================================================
-      let puzzle = null;           // { grid, words }
-      let size = 0;
-      let boardMap = [];           // [r][c] => { used, solution, value, owners:Set, el }
-      let wordStates = {};         // id => { locked, cells, clueEl, meta }
-      let activeWordId = null;
-      let activeCellIndex = 0;
-
-      let selectedCell = null;     // {row,col}
-      let currentDirection = 'across'; // across/down
-
-      function setStatus(text, isWin=false){
-        if (isWin) statusEl.innerHTML = `<span class="cw-win">${text}</span>`;
-        else statusEl.textContent = text || '';
-      }
-
-      function confettiBurst(pieceCount=90){
-        const colors = ['#75CFF0','#FFD5B7','#F3B840','#AC94F4','#FF8269','#FAF8F6'];
-        const durationMin = 1100;
-        const durationMax = 1900;
-
-        for (let i = 0; i < pieceCount; i++){
-          const p = document.createElement('div');
-          p.className = 'cw-confetti-piece';
-          p.style.background = colors[Math.floor(Math.random()*colors.length)];
-          p.style.left = (Math.random() * window.innerWidth) + 'px';
-          p.style.top = (-20 - Math.random()*60) + 'px';
-          p.style.animationDuration = (durationMin + Math.random()*(durationMax-durationMin)) + 'ms';
-          confettiLayer.appendChild(p);
-          setTimeout(() => p.remove(), 2400);
-        }
-      }
-
-      function cellKey(r,c){ return `${r},${c}`; }
-
-      function computeCrossingSet(){
-        const crossings = new Set();
-        for (let r=0; r<size; r++){
-          for (let c=0; c<size; c++){
-            const cell = boardMap[r][c];
-            if (cell.used && cell.owners.size >= 2) crossings.add(cellKey(r,c));
-          }
-        }
-        return crossings;
-      }
-
-      function buildBoardFromPuzzle(p){
-        puzzle = p;
-        size = puzzle.grid.length;
-        puzzleNameEl.textContent = themeSelect.value === 'mix' ? 'Mix' : (themeSelect.value === 'creation' ? 'Creation' : 'Characters');
-
-        boardMap = Array.from({length:size}, () =>
-          Array.from({length:size}, () => ({
-            used:false,
-            solution:null,
-            value:'',
-            owners:new Set(),
-            el:null
-          }))
-        );
-
-        // mark used + solution letters
-        for (let r=0; r<size; r++){
-          for (let c=0; c<size; c++){
-            const ch = puzzle.grid[r][c];
-            if (ch !== null && ch !== undefined){
-              boardMap[r][c].used = true;
-              boardMap[r][c].solution = ch;
-            }
-          }
-        }
-
-        // build wordStates + cells list from start positions
-        wordStates = {};
-        puzzle.words.forEach((w, idx) => {
-          wordStates[w.id] = { locked:false, cells:[], clueEl:null, meta:w };
-        });
-
-        puzzle.words.forEach((w) => {
-          const letters = w.answer.split('');
-          const cells = [];
-          for (let i=0; i<letters.length; i++){
-            const r = w.direction === 'across' ? w.startRow : w.startRow + i;
-            const c = w.direction === 'across' ? w.startCol + i : w.startCol;
-            if (r < 0 || c < 0 || r >= size || c >= size) continue;
-            boardMap[r][c].owners.add(w.id);
-            cells.push({r,c});
-          }
-          wordStates[w.id].cells = cells;
-        });
-      }
-
-      function renderGrid(){
-        gridEl.innerHTML = '';
-        gridEl.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
-
-        for (let r=0; r<size; r++){
-          for (let c=0; c<size; c++){
-            const cell = boardMap[r][c];
-            const el = document.createElement('button');
-            el.type = 'button';
-            el.className = 'cw-cell';
-
-            if (!cell.used){
-              el.classList.add('cw-cell--unused');
-              el.disabled = true;
-            } else {
-              el.textContent = cell.value || '';
-              el.addEventListener('click', () => selectCell(r,c));
-            }
-
-            cell.el = el;
-            gridEl.appendChild(el);
-          }
-        }
-      }
-
-      function renderClues(){
-        clueListEl.innerHTML = '';
-
-        // group across then down for clarity
-        const across = puzzle.words.filter(w => w.direction === 'across');
-        const down = puzzle.words.filter(w => w.direction === 'down');
-        const ordered = across.concat(down);
-
-        ordered.forEach((w, idx) => {
-          const clue = document.createElement('div');
-          clue.className = 'cw-clue';
-          clue.dataset.wordId = w.id;
-
-          const icon = document.createElement('div');
-          icon.className = 'cw-clue-icon';
-          icon.textContent = w.icon || '❓';
-
-          const txt = document.createElement('div');
-          txt.className = 'cw-clue-text';
-
-          const title = document.createElement('strong');
-          title.textContent = `${idx+1}. ${w.clue}`;
-
-          const sub = document.createElement('span');
-          sub.textContent = `${w.direction.toUpperCase()} • ${w.answer.length} letters`;
-
-          txt.appendChild(title);
-          txt.appendChild(sub);
-
-          clue.appendChild(icon);
-          clue.appendChild(txt);
-
-          clue.addEventListener('click', () => {
-            currentDirection = w.direction;
-            dirEl.textContent = currentDirection.toUpperCase();
-            setActiveWord(w.id);
-          });
-
-          clueListEl.appendChild(clue);
-          wordStates[w.id].clueEl = clue;
-        });
-      }
-
-      function clearHighlights(){
-        for (let r=0; r<size; r++){
-          for (let c=0; c<size; c++){
-            const cell = boardMap[r][c];
-            if (!cell.el) continue;
-            cell.el.classList.remove('cw-cell--selected','cw-cell--activeword','cw-cell--cross');
-          }
-        }
-        clueListEl.querySelectorAll('.cw-clue--active').forEach(el => el.classList.remove('cw-clue--active'));
-      }
-
-      function updateWordLockOutlines(){
-        for (let r=0; r<size; r++){
-          for (let c=0; c<size; c++){
-            const cell = boardMap[r][c];
-            if (!cell.used || !cell.el) continue;
-            cell.el.classList.remove('cw-cell--lockedword');
-          }
-        }
-
-        Object.values(wordStates).forEach(ws => {
-          if (!ws.locked) return;
-          ws.cells.forEach(({r,c}) => boardMap[r][c].el?.classList.add('cw-cell--lockedword'));
-        });
-      }
-
-      function highlightWord(wordId, preferredCell=null){
-        clearHighlights();
-        updateWordLockOutlines();
-
-        const crossings = computeCrossingSet();
-        const ws = wordStates[wordId];
-        if (!ws) return;
-
-        ws.clueEl?.classList.add('cw-clue--active');
-
-        ws.cells.forEach(({r,c}) => {
-          const cell = boardMap[r][c];
-          cell.el?.classList.add('cw-cell--activeword');
-          if (crossings.has(cellKey(r,c))) cell.el?.classList.add('cw-cell--cross');
-        });
-
-        const pick = preferredCell || ws.cells[activeCellIndex] || ws.cells[0];
-        if (pick) boardMap[pick.r][pick.c].el?.classList.add('cw-cell--selected');
-      }
-
-      function updateHud(){
-        const total = puzzle.words.length;
-        const locked = Object.values(wordStates).filter(w => w.locked).length;
-        lockedEl.textContent = String(locked);
-        totalEl.textContent = String(total);
-
-        if (locked === total && total > 0){
-          setStatus('Puzzle complete! Amazing! 🎉🎉', true);
-          confettiBurst(160);
-          setTimeout(() => confettiBurst(140), 120);
-        }
-      }
-
-      function setCellValue(r,c, ch){
-        const cell = boardMap[r][c];
-        if (!cell.used) return;
-
-        cell.value = ch;
-        if (cell.el) cell.el.textContent = ch || '';
-
-        cell.el?.classList.remove('cw-cell--wrong');
-        cell.el?.classList.remove('cw-cell--correct');
-        if (ch && ch === cell.solution) cell.el?.classList.add('cw-cell--correct');
-      }
-
-      function animateWrongCell(r,c){
-        const el = boardMap[r][c]?.el;
-        if (!el) return;
-        el.classList.add('cw-cell--wrong');
-        setTimeout(() => el.classList.remove('cw-cell--wrong'), 320);
-      }
-
-      function firstEmptyInWord(wordId){
-        const ws = wordStates[wordId];
-        for (let i=0; i<ws.cells.length; i++){
-          const {r,c} = ws.cells[i];
-          if (!boardMap[r][c].value) return i;
-        }
-        return -1;
-      }
-
-      function isWordSolved(wordId){
-        const ws = wordStates[wordId];
-        return ws.cells.every(({r,c}) => boardMap[r][c].value === boardMap[r][c].solution);
-      }
-
-      function nextUnlockedWord(){
-        const ordered = puzzle.words.filter(w => w.direction === 'across').concat(puzzle.words.filter(w => w.direction === 'down'));
-        for (const w of ordered){
-          if (!wordStates[w.id].locked) return w.id;
-        }
-        return null;
-      }
-
-      function lockWord(wordId){
-        const ws = wordStates[wordId];
-        if (ws.locked) return;
-        ws.locked = true;
-
-        ws.clueEl?.classList.add('cw-clue--done');
-        updateWordLockOutlines();
-
-        confettiBurst(80);
-        setStatus('Word locked! ✅');
-
-        const next = nextUnlockedWord();
-        if (next) setActiveWord(next);
-        updateHud();
-      }
-
-      function setActiveWord(wordId, preferredCell=null){
-        if (!wordStates[wordId]) return;
-        activeWordId = wordId;
-
-        const ws = wordStates[wordId];
-        let idx = 0;
-
-        if (preferredCell){
-          const k = cellKey(preferredCell.r, preferredCell.c);
-          const found = ws.cells.findIndex(p => cellKey(p.r,p.c) === k);
-          if (found >= 0) idx = found;
-        } else {
-          const fe = firstEmptyInWord(wordId);
-          idx = (fe >= 0) ? fe : 0;
-        }
-        activeCellIndex = idx;
-
-        const meta = ws.meta;
-        activeWordLabelEl.textContent = meta ? `${meta.icon || '🧩'} ${meta.answer.length} letters` : '';
-        dirEl.textContent = (meta?.direction || currentDirection).toUpperCase();
-
-        highlightWord(wordId, ws.cells[activeCellIndex]);
-      }
-
-      // ============================================================
-      // ✅ bxword-style selectCell + direction toggle + clue highlight
-      // ============================================================
-      function getWordsAtCell(row, col){
-        const cell = boardMap[row][col];
-        if (!cell || !cell.used) return [];
-        const ids = Array.from(cell.owners);
-        return ids.map(id => wordStates[id]?.meta).filter(Boolean);
-      }
-
-      function highlightClueForCell(row, col){
-        const words = getWordsAtCell(row, col);
-        if (!words.length) return;
-
-        const chosen = words.find(w => w.direction === currentDirection) || words[0];
-        setActiveWord(chosen.id, { r: row, c: col });
-      }
-
-      function selectCell(row, col){
-        // clicking same cell toggles direction if it has 2 words
-        if (selectedCell && selectedCell.row === row && selectedCell.col === col){
-          const wordsAt = getWordsAtCell(row, col);
-          if (wordsAt.length > 1){
-            currentDirection = currentDirection === 'across' ? 'down' : 'across';
-            dirEl.textContent = currentDirection.toUpperCase();
-          }
-        } else {
-          selectedCell = { row, col };
-          const wordsAt = getWordsAtCell(row, col);
-          if (wordsAt.length === 1){
-            currentDirection = wordsAt[0].direction;
-            dirEl.textContent = currentDirection.toUpperCase();
-          }
-        }
-
-        highlightClueForCell(row, col);
-      }
-
-      // ============================================================
-      // INPUT: KEEP "DON'T ADVANCE ON WRONG LETTER"
-      // ============================================================
-      function advanceWithinActiveWord(){
-        const ws = wordStates[activeWordId];
-        if (!ws) return;
-
-        for (let i = activeCellIndex + 1; i < ws.cells.length; i++){
-          const {r,c} = ws.cells[i];
-          if (!boardMap[r][c].value){
-            activeCellIndex = i;
-            highlightWord(activeWordId, ws.cells[activeCellIndex]);
-            return;
-          }
-        }
-
-        const fe = firstEmptyInWord(activeWordId);
-        if (fe >= 0){
-          activeCellIndex = fe;
-          highlightWord(activeWordId, ws.cells[activeCellIndex]);
-        } else {
-          if (isWordSolved(activeWordId)) lockWord(activeWordId);
-          else setStatus('That word is full. Fix any wrong letters 🙂');
-        }
-      }
-
-      function inputLetter(letter){
-        if (!activeWordId) return;
-        const ws = wordStates[activeWordId];
-        if (!ws || ws.locked) return;
-
-        const {r,c} = ws.cells[activeCellIndex];
-        const cell = boardMap[r][c];
-        if (!cell.used) return;
-
-        const want = cell.solution;
-        const guided = guidedToggle.checked;
-
-        if (guided && letter !== want){
-          animateWrongCell(r,c);
-          setStatus('Try a different letter 🙂');
-          highlightWord(activeWordId, {r,c});
-          return; // ✅ do not advance
-        }
-
-        setCellValue(r,c, letter);
-
-        if (!guided && letter !== want){
-          animateWrongCell(r,c);
-          setStatus('Oops—try again 🙂');
-          highlightWord(activeWordId, {r,c});
-          return; // ✅ do not advance
-        }
-
-        setStatus('Nice! ✅');
-
-        if (isWordSolved(activeWordId)){
-          lockWord(activeWordId);
-        } else {
-          advanceWithinActiveWord();
-        }
-
-        updateHud();
-      }
-
-      function backspace(){
-        if (!activeWordId) return;
-        const ws = wordStates[activeWordId];
-        if (!ws || ws.locked) return;
-
-        const {r,c} = ws.cells[activeCellIndex];
-        if (boardMap[r][c].value){
-          setCellValue(r,c,'');
-          setStatus('Deleted.');
-          highlightWord(activeWordId, {r,c});
-          updateHud();
-          return;
-        }
-
-        for (let i = activeCellIndex - 1; i >= 0; i--){
-          const pos = ws.cells[i];
-          if (boardMap[pos.r][pos.c].value){
-            activeCellIndex = i;
-            setCellValue(pos.r,pos.c,'');
-            highlightWord(activeWordId, ws.cells[activeCellIndex]);
-            setStatus('Deleted.');
-            updateHud();
-            return;
-          }
-        }
-
-        setStatus('Nothing to delete.');
-      }
-
-      function hintOneLetter(){
-        if (!activeWordId) return;
-        const ws = wordStates[activeWordId];
-        if (!ws || ws.locked) return;
-
-        let idx = activeCellIndex;
-        const cur = ws.cells[idx];
-        if (boardMap[cur.r][cur.c].value){
-          idx = firstEmptyInWord(activeWordId);
-        }
-        if (idx < 0){
-          setStatus('That word is already filled!');
-          return;
-        }
-
-        activeCellIndex = idx;
-        const {r,c} = ws.cells[activeCellIndex];
-        const want = boardMap[r][c].solution;
-
-        setCellValue(r,c,want);
-        setStatus('Hint used! ⭐');
-
-        if (isWordSolved(activeWordId)){
-          lockWord(activeWordId);
-        } else {
-          advanceWithinActiveWord();
-        }
-        updateHud();
-      }
-
-      function buildPad(){
-        padEl.innerHTML = '';
-        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-
-        letters.forEach(ch => {
-          const b = document.createElement('button');
-          b.type = 'button';
-          b.className = 'cw-key';
-          b.textContent = ch;
-          b.addEventListener('click', () => inputLetter(ch));
-          padEl.appendChild(b);
-        });
-
-        const del = document.createElement('button');
-        del.type = 'button';
-        del.className = 'cw-key cw-key--action';
-        del.textContent = '⌫';
-        del.addEventListener('click', backspace);
-
-        const clearWord = document.createElement('button');
-        clearWord.type = 'button';
-        clearWord.className = 'cw-key cw-key--action';
-        clearWord.textContent = 'Clear';
-        clearWord.addEventListener('click', () => {
-          if (!activeWordId) return;
-          const ws = wordStates[activeWordId];
-          if (!ws || ws.locked) return;
-
-          ws.cells.forEach(({r,c}) => setCellValue(r,c,''));
-          const fe = firstEmptyInWord(activeWordId);
-          activeCellIndex = fe >= 0 ? fe : 0;
-          highlightWord(activeWordId, ws.cells[activeCellIndex]);
-          setStatus('Cleared this word.');
-          updateHud();
-        });
-
-        padEl.appendChild(del);
-        padEl.appendChild(clearWord);
-      }
-
-      function attachKeyboardSupport(){
-        window.addEventListener('keydown', (e) => {
-          const k = e.key;
-          if (/^[a-zA-Z]$/.test(k)){
-            inputLetter(k.toUpperCase());
-          } else if (k === 'Backspace'){
-            backspace();
-          }
-        });
-      }
-
-      function buildNewCrossword(){
-        const theme = themeSelect.value;
-        const target = Number(difficultySelect.value || '7');
-
-        let bank = [];
-        if (theme === 'creation') bank = BANK_CREATION;
-        else if (theme === 'characters') bank = BANK_CHARACTERS;
-        else bank = BANK_CREATION.concat(BANK_CHARACTERS);
-
-        const gen = generatePuzzle(bank, target);
-        if (!gen){
-          setStatus('Could not generate a puzzle. Try again 🙂');
-          return;
-        }
-
-        // Add missing fields expected by our UI
-        gen.words = gen.words.map((w, idx) => ({
-          ...w,
-          id: w.id || `w_${idx}_${w.answer}`,
-          answer: w.answer,
-          clue: w.clue,
-          icon: w.icon || '❓'
-        }));
-
-        // Reset state
-        selectedCell = null;
-        currentDirection = 'across';
-        dirEl.textContent = 'ACROSS';
-
-        buildBoardFromPuzzle(gen);
-        renderGrid();
-        renderClues();
-        buildPad();
-        attachKeyboardSupport();
-
-        setStatus('Tap a clue (or a square) to begin!');
-        updateHud();
-
-        const first = nextUnlockedWord();
-        if (first) setActiveWord(first);
-      }
-
-      newBtn.addEventListener('click', buildNewCrossword);
-      hintBtn.addEventListener('click', hintOneLetter);
-
-      // Start on load
-      buildNewCrossword();
-    });
-  </script>
-</body>
-</html>
+      // ----------------------------
+      // Puzzle data (2 test puzzles)
+      // ----------------------------
+      const PUZZLES = {
+        creation: {
+          title: 'Creation Crossword',
+          wordBank: [
+            { answer: 'LIGHT', clue: '💡 First thing God said to exist' },
+            { answer: 'EARTH', clue: '🌍 Our home planet' },
+            { answer: 'ADAM', clue: '👨 First man' },
+            { answer: 'EVE', clue: '👩 First woman' },
+            { answer: 'GARD
