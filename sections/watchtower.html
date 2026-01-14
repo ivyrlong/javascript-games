@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Watchtower Study – Faithful Companion</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="../styles.css" />
+
+  <style>
+    .fc-body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--dove-white, #FAF8F6);
+      color: var(--scripture-slate, #3C3F4A);
+    }
+    .fc-app-shell{ min-height:100vh; display:flex; flex-direction:column; }
+
+    .sec-header{
+      padding:14px 16px 10px;
+      background: radial-gradient(circle at top left,
+        rgba(117,207,240,.22),
+        rgba(172,148,244,.14),
+        rgba(255,213,183,.20)
+      );
+      border-bottom:1px solid rgba(60,63,74,.10);
+    }
+    .sec-header-inner{
+      max-width:980px;
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .sec-titlewrap{ display:flex; gap:12px; align-items:center; }
+    .sec-icon{
+      width:44px; height:44px; border-radius:14px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.45rem;
+      background: radial-gradient(circle at top left,
+        rgba(117,207,240,.22),
+        rgba(172,148,244,.14),
+        rgba(255,213,183,.22)
+      );
+      border:1px solid rgba(60,63,74,.10);
+      box-shadow:0 6px 18px rgba(60,63,74,.12);
+      flex:0 0 auto;
+    }
+    .sec-title{ margin:0; font-size:1.2rem; line-height:1.1; font-weight:950; }
+    .sec-sub{ margin:4px 0 0; font-size:.95rem; color:rgba(60,63,74,.72); font-weight:650; }
+
+    .sec-main{
+      max-width:980px;
+      width:100%;
+      margin:0 auto;
+      padding:14px 16px 88px;
+      flex:1;
+    }
+
+    .wh-weekbar{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:10px;
+      margin:8px 0 14px;
+    }
+    .wh-navbtn{
+      width:42px; height:36px;
+      border-radius:999px;
+      border:1px solid rgba(60,63,74,.14);
+      background:#fff;
+      box-shadow:0 3px 10px rgba(60,63,74,.10);
+      cursor:pointer;
+      font-weight:900;
+      color:rgba(60,63,74,.75);
+      touch-action:manipulation;
+    }
+    .wh-weekpill{
+      flex:1;
+      max-width:520px;
+      background:#fff;
+      border-radius:999px;
+      border:1px solid rgba(60,63,74,.12);
+      padding:10px 14px;
+      box-shadow:0 3px 10px rgba(60,63,74,.08);
+      text-align:center;
+      font-weight:900;
+      color:rgba(60,63,74,.8);
+    }
+    .wh-weekrange{
+      margin-top:2px;
+      font-size:.85rem;
+      font-weight:700;
+      color:rgba(60,63,74,.62);
+    }
+
+    .wh-list{ display:flex; flex-direction:column; gap:12px; }
+    .wh-row{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      background:#fff;
+      border:1px solid rgba(60,63,74,.12);
+      border-radius:18px;
+      padding:12px 12px;
+      box-shadow:0 6px 18px rgba(60,63,74,.08);
+      text-decoration:none;
+      color:inherit;
+      touch-action:manipulation;
+      transition: transform 120ms ease, box-shadow 120ms ease;
+      position:relative;
+    }
+    .wh-row:active{ transform:scale(.99); }
+
+    .wh-thumb{
+      width:54px; height:54px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex:0 0 auto;
+      border:1px solid rgba(60,63,74,.10);
+      box-shadow:0 6px 14px rgba(60,63,74,.10);
+      background: radial-gradient(circle at top left,
+        rgba(117,207,240,.22),
+        rgba(172,148,244,.14),
+        rgba(255,213,183,.22)
+      );
+      font-size:1.55rem;
+    }
+    .wh-row-main{ flex:1; min-width:0; }
+    .wh-row-title{ margin:0; font-weight:950; font-size:1.05rem; }
+    .wh-row-sub{
+      margin:4px 0 0;
+      font-size:.92rem;
+      color:rgba(60,63,74,.72);
+      font-weight:650;
+      line-height:1.2;
+    }
+    .wh-chevron{
+      font-size:1.6rem;
+      color:rgba(60,63,74,.40);
+      font-weight:900;
+      padding:0 4px;
+    }
+
+    .wh-done-dot{
+      position:absolute;
+      right:44px;
+      top:16px;
+      width:10px; height:10px;
+      border-radius:999px;
+      background: rgba(60,63,74,.18);
+    }
+    .wh-done-dot--on{
+      background: var(--cheerful-coral,#FF8269);
+      box-shadow:0 0 0 3px rgba(255,130,105,.18);
+    }
+
+    .fc-footer{
+      position:fixed; left:0; right:0; bottom:0;
+      background:#fff;
+      border-top:1px solid rgba(60,63,74,.10);
+      padding:10px 12px;
+      display:flex;
+      justify-content:center;
+      gap:12px;
+      z-index:999;
+    }
+    .fc-footer-btn{
+      border:none;
+      background:transparent;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-weight:900;
+      color: rgba(60,63,74,.72);
+      padding:8px 14px;
+      border-radius:999px;
+      text-decoration:none;
+      touch-action:manipulation;
+    }
+    .fc-footer-dot{
+      width:10px; height:10px; border-radius:999px;
+      background: rgba(60,63,74,.22);
+    }
+    .fc-footer-dot--active{ background: var(--cheerful-coral,#FF8269); }
+  </style>
+</head>
+
+<body class="fc-body">
+  <div class="fc-app-shell">
+    <header class="sec-header">
+      <div class="sec-header-inner">
+        <div class="sec-titlewrap">
+          <div class="sec-icon">📰</div>
+          <div>
+            <h1 class="sec-title">Watchtower Study</h1>
+            <p class="sec-sub">Open this week’s activities (progress tracked automatically).</p>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="sec-main">
+      <div class="wh-weekbar" aria-label="Week navigation">
+        <button class="wh-navbtn" id="prevBtn" type="button" aria-label="Previous week">«</button>
+        <div class="wh-weekpill">
+          <div id="weekLabel">This Week</div>
+          <div class="wh-weekrange" id="weekRange">Loading…</div>
+        </div>
+        <button class="wh-navbtn" id="nextBtn" type="button" aria-label="Next week">»</button>
+      </div>
+
+      <section class="wh-list" aria-label="Watchtower activities">
+        <a class="wh-row" href="../games/crossword.html" data-activity="cw">
+          <div class="wh-thumb">✍️🗺️</div>
+          <div class="wh-row-main">
+            <h2 class="wh-row-title">Crossword</h2>
+            <p class="wh-row-sub">Tap clues, fill words, and celebrate!</p>
+          </div>
+          <span class="wh-done-dot" data-dot="cw" aria-hidden="true"></span>
+          <div class="wh-chevron">›</div>
+        </a>
+
+        <a class="wh-row" href="../games/cryptogram.html" data-activity="cg">
+          <div class="wh-thumb">🔎🧩</div>
+          <div class="wh-row-main">
+            <h2 class="wh-row-title">Cryptogram</h2>
+            <p class="wh-row-sub">Match icons to letters to reveal a message.</p>
+          </div>
+          <span class="wh-done-dot" data-dot="cg" aria-hidden="true"></span>
+          <div class="wh-chevron">›</div>
+        </a>
+
+        <a class="wh-row" href="../games/hangman.html" data-activity="hm">
+          <div class="wh-thumb">🧍‍♂️🔤</div>
+          <div class="wh-row-main">
+            <h2 class="wh-row-title">Hangman</h2>
+            <p class="wh-row-sub">Guess the word before you run out of tries.</p>
+          </div>
+          <span class="wh-done-dot" data-dot="hm" aria-hidden="true"></span>
+          <div class="wh-chevron">›</div>
+        </a>
+      </section>
+    </main>
+
+    <nav class="fc-footer" aria-label="Bottom navigation">
+      <a class="fc-footer-btn" href="../index.html">
+        <span class="fc-footer-dot"></span>
+        <span>Games</span>
+      </a>
+      <a class="fc-footer-btn" href="../weekly/index.html">
+        <span class="fc-footer-dot fc-footer-dot--active"></span>
+        <span>Weekly Hub</span>
+      </a>
+      <a class="fc-footer-btn" href="../special/index.html" aria-current="page">
+        <span class="fc-footer-dot"></span>
+        <span>Special</span>
+      </a>
+    </nav>
+  </div>
+
+  <script type="module">
+    const STORE_WEEK = "fc_selected_week_start";
+    const STORE_DONE = "fc_done_wt"; // per-week automatic tracking
+
+    const weekRangeEl = document.getElementById("weekRange");
+    const weekLabelEl = document.getElementById("weekLabel");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+
+    function pad(n){ return String(n).padStart(2,"0"); }
+    function ymd(d){ return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+
+    function mondayOfWeek(date){
+      const d = new Date(date);
+      const day = d.getDay() || 7;
+      d.setDate(d.getDate() - (day - 1));
+      d.setHours(0,0,0,0);
+      return d;
+    }
+    function addDays(date, days){
+      const d = new Date(date);
+      d.setDate(d.getDate() + days);
+      return d;
+    }
+    function formatRange(start){
+      const end = addDays(start, 6);
+      const opts = { month:"long", day:"numeric", year:"numeric" };
+      return `${start.toLocaleDateString(undefined, opts)} – ${end.toLocaleDateString(undefined, opts)}`;
+    }
+
+    function getInitialWeekStart(){
+      const saved = localStorage.getItem(STORE_WEEK);
+      if (saved){
+        const d = new Date(saved);
+        if (!isNaN(d.getTime())) return mondayOfWeek(d);
+      }
+      return mondayOfWeek(new Date());
+    }
+
+    function getDoneData(){
+      return JSON.parse(localStorage.getItem(STORE_DONE) || "{}");
+    }
+    function setDoneData(data){
+      localStorage.setItem(STORE_DONE, JSON.stringify(data));
+    }
+    function markDone(weekKey, activityKey){
+      const data = getDoneData();
+      if (!data[weekKey]) data[weekKey] = {};
+      data[weekKey][activityKey] = true;
+      setDoneData(data);
+    }
+    function isDone(weekKey, activityKey){
+      const data = getDoneData();
+      return !!(data[weekKey] && data[weekKey][activityKey]);
+    }
+
+    let selectedWeekStart = getInitialWeekStart();
+
+    function renderDots(){
+      const weekKey = ymd(selectedWeekStart);
+      document.querySelectorAll("[data-dot]").forEach(dot => {
+        const key = dot.getAttribute("data-dot");
+        dot.classList.toggle("wh-done-dot--on", isDone(weekKey, key));
+      });
+    }
+
+    function renderHeader(){
+      weekRangeEl.textContent = formatRange(selectedWeekStart);
+      const currentStart = mondayOfWeek(new Date());
+      weekLabelEl.textContent = (ymd(selectedWeekStart) === ymd(currentStart)) ? "This Week" : "Selected Week";
+    }
+
+    function setWeekStart(date){
+      selectedWeekStart = mondayOfWeek(date);
+      localStorage.setItem(STORE_WEEK, selectedWeekStart.toISOString());
+      renderHeader();
+      renderDots();
+    }
+
+    document.querySelectorAll("[data-activity]").forEach(link => {
+      link.addEventListener("click", () => {
+        const weekKey = ymd(selectedWeekStart);
+        const act = link.getAttribute("data-activity");
+        markDone(weekKey, act);
+        renderDots();
+      });
+    });
+
+    prevBtn.addEventListener("click", () => setWeekStart(addDays(selectedWeekStart, -7)));
+    nextBtn.addEventListener("click", () => setWeekStart(addDays(selectedWeekStart,  7)));
+
+    renderHeader();
+    renderDots();
+  </script>
+</body>
+</html>

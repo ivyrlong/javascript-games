@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hidden Objects – Bible Village</title>
+<link rel="stylesheet" href="../styles.css" />
+
+<style>
+  .fc-game-screen{
+    min-height:100vh;
+    background:var(--dove-white);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:16px;
+  }
+  .fc-game-box{
+    margin-top:12px;
+    width:100%;
+    max-width:980px;
+    border-radius:20px;
+    background:#fff;
+    box-shadow:0 4px 10px rgba(60,63,74,.15);
+    padding:16px;
+  }
+  .fc-game-heading{
+    margin:0 0 6px;
+    font-size:1.4rem;
+    color:var(--scripture-slate);
+    text-align:center;
+  }
+  .fc-game-instructions{
+    margin:0 0 12px;
+    font-size:.95rem;
+    color:rgba(60,63,74,.85);
+    text-align:center;
+  }
+
+  .ho-controls{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    margin-bottom:12px;
+  }
+  .ho-btn{
+    padding:9px 14px;
+    border-radius:999px;
+    border:none;
+    cursor:pointer;
+    font-weight:900;
+    font-size:.95rem;
+    box-shadow:0 3px 8px rgba(60,63,74,.2);
+  }
+  .ho-btn--primary{ background:var(--cheerful-coral); color:#fff; }
+  .ho-btn--secondary{ background:rgba(172,148,244,.16); color:var(--scripture-slate); }
+
+  .ho-layout{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:12px;
+  }
+  @media (min-width:900px){
+    .ho-layout{ grid-template-columns: 1.2fr .8fr; }
+  }
+
+  .ho-panel{
+    border-radius:18px;
+    padding:12px;
+    background:radial-gradient(circle at top left,
+      rgba(117,207,240,.14),
+      rgba(172,148,244,.10)
+    );
+    box-shadow:0 3px 8px rgba(60,63,74,.12);
+  }
+
+  /* Scene */
+  .ho-scene-wrap{
+    position:relative;
+    width:100%;
+    max-width:520px;
+    margin:0 auto;
+    border-radius:16px;
+    overflow:hidden;
+    background:#fff;
+    box-shadow:0 4px 12px rgba(60,63,74,.16);
+  }
+  .ho-scene-wrap img{
+    width:100%;
+    display:block;
+  }
+
+  /* Hotspots */
+  .ho-hotspot{
+    position:absolute;
+    opacity:0;
+    border-radius:18px;
+  }
+
+  .ho-hotspot.found{
+    opacity:1;
+    background:rgba(103,197,135,.14);
+    border:2px solid rgba(103,197,135,.65);
+    box-shadow:0 0 0 4px rgba(103,197,135,.15),
+               0 0 18px rgba(103,197,135,.35);
+  }
+
+  .ho-hotspot.hinting{
+    opacity:1;
+    background:rgba(117,207,240,.12);
+    border:2px solid rgba(117,207,240,.75);
+    box-shadow:0 0 0 6px rgba(117,207,240,.18),
+               0 0 22px rgba(117,207,240,.45);
+    animation:pulse 800ms ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%{ transform:scale(1); }
+    50%{ transform:scale(1.05); }
+    100%{ transform:scale(1); }
+  }
+
+  .ho-list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .ho-item{
+    padding:10px 12px;
+    border-radius:16px;
+    background:#fff;
+    border:1px solid rgba(60,63,74,.12);
+    box-shadow:0 3px 10px rgba(60,63,74,.10);
+    font-weight:900;
+    cursor:pointer;
+  }
+  .ho-item.found{
+    opacity:.6;
+    text-decoration:line-through;
+  }
+
+  .ho-status{
+    margin-top:10px;
+    text-align:center;
+    font-weight:900;
+    min-height:1.3em;
+  }
+
+  /* 🎉 CONFETTI */
+  .ho-confetti{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:9999;
+  }
+  .ho-confetti-piece{
+    position:absolute;
+    width:8px;
+    height:12px;
+    border-radius:3px;
+    opacity:.95;
+    animation: fall linear forwards;
+  }
+  @keyframes fall{
+    to{ transform:translateY(110vh) rotate(720deg); }
+  }
+</style>
+</head>
+
+<body>
+<div class="fc-game-screen">
+  <a class="fc-back-link" href="../index.html">Back to games</a>
+
+  <div class="fc-game-box">
+    <h1 class="fc-game-heading">Hidden Objects</h1>
+    <p class="fc-game-instructions">Find the items in the picture. Tap when you see one!</p>
+
+    <div class="ho-controls">
+      <button class="ho-btn ho-btn--secondary" id="hintBtn">🔍 Hint</button>
+      <button class="ho-btn ho-btn--primary" id="resetBtn">Restart</button>
+    </div>
+
+    <div class="ho-layout">
+      <div class="ho-panel">
+        <div class="ho-scene-wrap">
+          <img src="../assets/hidden_objects/bible_village_scene.jpg" alt="Bible village scene">
+
+          <!-- Hotspots -->
+          <div class="ho-hotspot" data-name="Bible"
+            style="top:72%; left:10%; width:14%; height:10%;"></div>
+
+          <div class="ho-hotspot" data-name="Scroll"
+            style="top:62%; left:44%; width:12%; height:8%;"></div>
+
+          <div class="ho-hotspot" data-name="Sheep"
+            style="top:56%; left:68%; width:14%; height:14%; border-radius:50%;"></div>
+
+          <div class="ho-hotspot" data-name="Basket"
+            style="top:72%; left:62%; width:16%; height:12%; border-radius:20%;"></div>
+
+          <div class="ho-hotspot" data-name="Water Jar"
+            style="top:54%; left:16%; width:10%; height:18%; border-radius:18%;"></div>
+        </div>
+
+        <div class="ho-status" id="status">Find all the items!</div>
+      </div>
+
+      <div class="ho-panel">
+        <div class="ho-list">
+          <div class="ho-item" data-name="Bible">📖 Bible</div>
+          <div class="ho-item" data-name="Scroll">📜 Scroll</div>
+          <div class="ho-item" data-name="Sheep">🐑 Sheep</div>
+          <div class="ho-item" data-name="Basket">🧺 Basket</div>
+          <div class="ho-item" data-name="Water Jar">🏺 Water Jar</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="ho-confetti" id="confetti"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{
+  const hotspots=[...document.querySelectorAll('.ho-hotspot')];
+  const items=[...document.querySelectorAll('.ho-item')];
+  const status=document.getElementById('status');
+  const hintBtn=document.getElementById('hintBtn');
+  const resetBtn=document.getElementById('resetBtn');
+  const confettiLayer=document.getElementById('confetti');
+
+  function confettiBurst(count=30){
+    const colors=['#75CFF0','#FFD5B7','#F3B840','#AC94F4','#FF8269'];
+    for(let i=0;i<count;i++){
+      const p=document.createElement('div');
+      p.className='ho-confetti-piece';
+      p.style.background=colors[Math.floor(Math.random()*colors.length)];
+      p.style.left=Math.random()*100+'vw';
+      p.style.top='-20px';
+      p.style.animationDuration=(1000+Math.random()*800)+'ms';
+      confettiLayer.appendChild(p);
+      setTimeout(()=>p.remove(),2000);
+    }
+  }
+
+  function markFound(name){
+    const h=hotspots.find(x=>x.dataset.name===name);
+    if(!h||h.classList.contains('found'))return;
+
+    h.classList.add('found');
+    items.find(i=>i.dataset.name===name)?.classList.add('found');
+
+    confettiBurst(24);
+    status.textContent="Great find! 🎉";
+
+    if(hotspots.every(x=>x.classList.contains('found'))){
+      status.textContent="You found everything! AMAZING! 🌟";
+      confettiBurst(90);
+      setTimeout(()=>confettiBurst(90),300);
+    }
+  }
+
+  hotspots.forEach(h=>h.addEventListener('click',()=>markFound(h.dataset.name)));
+
+  items.forEach(i=>i.addEventListener('click',()=>{
+    const h=hotspots.find(x=>x.dataset.name===i.dataset.name);
+    if(h&&!h.classList.contains('found')){
+      h.classList.add('hinting');
+      setTimeout(()=>h.classList.remove('hinting'),1400);
+    }
+  }));
+
+  hintBtn.onclick=()=>{
+    const remaining=hotspots.filter(x=>!x.classList.contains('found'));
+    if(!remaining.length)return;
+    const h=remaining[Math.floor(Math.random()*remaining.length)];
+    h.classList.add('hinting');
+    setTimeout(()=>h.classList.remove('hinting'),1400);
+  };
+
+  resetBtn.onclick=()=>{
+    hotspots.forEach(h=>h.classList.remove('found','hinting'));
+    items.forEach(i=>i.classList.remove('found'));
+    status.textContent="Find all the items!";
+  };
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Bible Bingo – Faithful Companion Games</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="../styles.css" />
+
+  <style>
+    :root{
+      --bg: var(--dove-white, #FAF8F6);
+      --ink: var(--scripture-slate, #3C3F4A);
+      --sky: var(--spiritual-sky, #75CFF0);
+      --violet: var(--faithful-violet, #AC94F4);
+      --peach: var(--joyful-peach, #FFD5B7);
+      --gold: var(--golden-promise, #F3B840);
+      --coral: var(--cheerful-coral, #FF8269);
+      --card: #fff;
+      --line: rgba(60,63,74,.12);
+
+      /* responsive cell sizing set by JS */
+      --cell: 64px;
+      --font: 0.92rem;
+      --emoji: 1.25rem;
+    }
+
+    body{
+      margin:0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      overflow-x:hidden;
+    }
+
+    .fc-game-screen{
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      padding:16px;
+      box-sizing:border-box;
+    }
+
+    .fc-back-link{
+      align-self:flex-start;
+      text-decoration:none;
+      font-weight:900;
+      color: rgba(255,130,105,.88);
+      padding:8px 10px;
+      border-radius:999px;
+      background: rgba(255,213,183,.35);
+      border: 1px solid rgba(60,63,74,.10);
+    }
+
+    .fc-game-box{
+      width:100%;
+      max-width:980px;
+      margin-top:12px;
+      border-radius:22px;
+      background: var(--card);
+      border:1px solid var(--line);
+      box-shadow: 0 6px 18px rgba(60,63,74,.10);
+      padding:16px;
+      box-sizing:border-box;
+    }
+
+    .fc-game-heading{
+      margin: 6px 0 4px;
+      font-size: 1.55rem;
+      font-weight: 1000;
+      text-align:center;
+    }
+    .fc-game-instructions{
+      margin:0 0 14px;
+      text-align:center;
+      color: rgba(60,63,74,.78);
+      font-weight:650;
+      line-height:1.25;
+    }
+
+    .bb-controls{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      justify-content:center;
+      align-items:center;
+      margin:12px 0 12px;
+      padding:12px;
+      border-radius:18px;
+      background: radial-gradient(circle at left,
+        rgba(117,207,240,.18),
+        rgba(172,148,244,.12),
+        rgba(255,213,183,.22)
+      );
+      border: 1px solid rgba(60,63,74,.08);
+    }
+
+    .bb-select, .bb-toggle{
+      border-radius:999px;
+      border:1px solid rgba(60,63,74,.18);
+      background: rgba(250,248,246,.85);
+      color: var(--ink);
+      font-weight:900;
+      font-size:.95rem;
+      padding:10px 12px;
+    }
+
+    .bb-toggle{
+      display:inline-flex;
+      gap:10px;
+      align-items:center;
+      user-select:none;
+      -webkit-user-select:none;
+    }
+
+    .bb-toggle input{
+      width:18px;
+      height:18px;
+      accent-color: var(--sky);
+    }
+
+    .bb-btn{
+      padding:10px 16px;
+      border-radius:999px;
+      border:none;
+      cursor:pointer;
+      font-weight:1000;
+      font-size:.98rem;
+      box-shadow:0 6px 16px rgba(60,63,74,.14);
+      touch-action:manipulation;
+    }
+    .bb-btn:active{ transform: scale(.98); }
+    .bb-btn--primary{ background: var(--coral); color:#fff; }
+    .bb-btn--secondary{ background: rgba(172,148,244,.18); color: var(--ink); }
+    .bb-btn--ghost{ background: rgba(117,207,240,.16); color: var(--ink); }
+
+    .bb-hud{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      justify-content:center;
+      align-items:center;
+      margin: 10px 0 12px;
+    }
+    .bb-chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:9px 12px;
+      border-radius:999px;
+      background: rgba(255,213,183,.45);
+      border: 1px solid rgba(60,63,74,.10);
+      font-weight: 1000;
+      color: rgba(60,63,74,.85);
+      font-size:.92rem;
+      white-space:nowrap;
+    }
+
+    .bb-board-card{
+      border-radius:22px;
+      background: radial-gradient(circle at top left,
+        rgba(117,207,240,.16),
+        rgba(172,148,244,.10)
+      );
+      padding:14px;
+      border:1px solid rgba(60,63,74,.08);
+      box-shadow: 0 10px 24px rgba(60,63,74,.08);
+    }
+
+    .bb-board-wrap{
+      width:100%;
+      display:flex;
+      justify-content:center;
+      overflow:hidden; /* ✅ no bleed */
+    }
+
+    .bb-board{
+      display:grid;
+      gap:8px;
+      padding:8px;
+      border-radius:18px;
+      background: rgba(255,255,255,.72);
+      border:1px solid rgba(60,63,74,.08);
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,.45);
+      max-width: 100%;
+      box-sizing:border-box;
+    }
+
+    .bb-cell{
+      width: var(--cell);
+      height: var(--cell);
+      border-radius:16px;
+      border:1px solid rgba(60,63,74,.12);
+      background:#fff;
+      box-shadow: 0 8px 16px rgba(60,63,74,.10);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:8px;
+      text-align:center;
+      box-sizing:border-box;
+      position:relative;
+      overflow:hidden;
+      cursor:pointer;
+      user-select:none;
+      -webkit-user-select:none;
+      touch-action:manipulation;
+    }
+    .bb-cell:active{ transform: scale(.99); }
+
+    /* content */
+    .bb-text{
+      font-size: var(--font);
+      font-weight: 1000;
+      line-height: 1.05;
+      color: rgba(60,63,74,.92);
+      word-break: break-word;
+    }
+    .bb-icon{
+      font-size: var(--emoji);
+      line-height: 1;
+      filter: saturate(1.05);
+    }
+
+    /* marker (circle) */
+    .bb-cell--marked::after{
+      content:"";
+      position:absolute;
+      inset: 8px;
+      border-radius: 999px;
+      border: 6px solid rgba(255,130,105,.95);
+      box-shadow: 0 0 0 4px rgba(255,130,105,.14);
+      pointer-events:none;
+    }
+
+    /* winning highlight */
+    .bb-cell--win{
+      outline: 4px solid rgba(103,197,135,.85);
+      outline-offset: -3px;
+      box-shadow: 0 0 0 5px rgba(103,197,135,.14) inset, 0 8px 16px rgba(60,63,74,.08);
+    }
+
+    .bb-status{
+      margin-top:10px;
+      text-align:center;
+      font-weight: 950;
+      color: rgba(60,63,74,.78);
+      min-height: 1.2em;
+    }
+
+    /* confetti */
+    .bb-confetti{
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 2000;
+    }
+    .bb-confetti-piece{
+      position:absolute;
+      width:10px;
+      height:14px;
+      border-radius:3px;
+      opacity:.95;
+      transform: translateY(-20px) rotate(0deg);
+      animation: bbFall linear forwards;
+    }
+    @keyframes bbFall { to { transform: translateY(calc(100vh + 40px)) rotate(720deg); } }
+
+    /* small screens: reduce spacing a bit */
+    @media (max-width: 380px){
+      .bb-board{ gap:6px; padding:6px; }
+      .bb-cell{ border-radius:14px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="fc-game-screen">
+    <a class="fc-back-link" href="../index.html">← Back to games</a>
+
+    <div class="fc-game-box">
+      <h1 class="fc-game-heading">Bible Bingo</h1>
+      <p class="fc-game-instructions">
+        Tap a square to mark it with a circle. Get 5 in a row to win! 🎉
+      </p>
+
+      <div class="bb-controls">
+        <label style="font-weight:1000;">Word Bank:</label>
+        <select class="bb-select" id="bbBank">
+          <option value="creation">Creation</option>
+          <option value="bibleBasics" selected>Bible Basics</option>
+          <option value="characters">Bible Characters</option>
+          <option value="watchtowerSample">Watchtower Sample</option>
+          <option value="mixed">Mixed (Fun)</option>
+        </select>
+
+        <label style="font-weight:1000;">Size:</label>
+        <select class="bb-select" id="bbSize">
+          <option value="3">3×3</option>
+          <option value="4">4×4</option>
+          <option value="5" selected>5×5</option>
+        </select>
+
+        <label class="bb-toggle" for="bbFreeToggle">
+          <input id="bbFreeToggle" type="checkbox" checked />
+          Center FREE space
+        </label>
+
+        <button class="bb-btn bb-btn--primary" id="bbNew" type="button">New Card</button>
+        <button class="bb-btn bb-btn--secondary" id="bbClearMarks" type="button">Clear Marks</button>
+        <button class="bb-btn bb-btn--ghost" id="bbResetAll" type="button">Reset</button>
+      </div>
+
+      <div class="bb-hud">
+        <div class="bb-chip">✅ Marked: <strong id="bbMarked">0</strong></div>
+        <div class="bb-chip">🏁 Status: <strong id="bbWinText">Keep playing</strong></div>
+      </div>
+
+      <div class="bb-board-card">
+        <div class="bb-board-wrap">
+          <div class="bb-board" id="bbBoard" aria-label="Bingo board"></div>
+        </div>
+        <div class="bb-status" id="bbStatus"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bb-confetti" id="bbConfetti"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // -------------------------------
+      // Built-in word banks (you can replace with weekly JSON later)
+      // type: "text" or "icon"
+      // -------------------------------
+      const BANKS = {
+        creation: [
+          {type:'text', value:'Genesis'}, {type:'text', value:'Day One'}, {type:'text', value:'Light'},
+          {type:'text', value:'Sky'}, {type:'text', value:'Land'}, {type:'text', value:'Sea'},
+          {type:'text', value:'Plants'}, {type:'text', value:'Animals'}, {type:'text', value:'People'},
+          {type:'icon', value:'🌿'}, {type:'icon', value:'🌞'}, {type:'icon', value:'🌙'},
+          {type:'icon', value:'⭐'}, {type:'icon', value:'🌊'}, {type:'icon', value:'🕊️'},
+          {type:'icon', value:'🐑'}, {type:'icon', value:'🦁'}, {type:'icon', value:'🐟'},
+          {type:'text', value:'Good'}, {type:'text', value:'Rest'}, {type:'icon', value:'🏞️'},
+        ],
+        bibleBasics: [
+          {type:'text', value:'Bible'}, {type:'text', value:'Prayer'}, {type:'text', value:'Faith'},
+          {type:'text', value:'Hope'}, {type:'text', value:'Love'}, {type:'text', value:'Kindness'},
+          {type:'text', value:'Obey'}, {type:'text', value:'Forgive'}, {type:'text', value:'Truth'},
+          {type:'text', value:'Jehovah'}, {type:'text', value:'Jesus'}, {type:'text', value:'Kingdom'},
+          {type:'text', value:'Meeting'}, {type:'text', value:'Family'}, {type:'text', value:'Friends'},
+          {type:'icon', value:'📖'}, {type:'icon', value:'🙏'}, {type:'icon', value:'💛'},
+          {type:'icon', value:'🕊️'}, {type:'icon', value:'⭐'}, {type:'icon', value:'👑'},
+          {type:'icon', value:'🛡️'}, {type:'icon', value:'🧺'}, {type:'icon', value:'📜'},
+          {type:'icon', value:'🏠'}, {type:'icon', value:'👂'}, {type:'icon', value:'✨'}
+        ],
+        characters: [
+          {type:'text', value:'Adam'}, {type:'text', value:'Eve'}, {type:'text', value:'Noah'},
+          {type:'text', value:'Abraham'}, {type:'text', value:'Sarah'}, {type:'text', value:'Isaac'},
+          {type:'text', value:'Jacob'}, {type:'text', value:'Joseph'}, {type:'text', value:'Moses'},
+          {type:'text', value:'Ruth'}, {type:'text', value:'Samuel'}, {type:'text', value:'David'},
+          {type:'text', value:'Esther'}, {type:'text', value:'Daniel'}, {type:'text', value:'Jonah'},
+          {type:'text', value:'Mary'}, {type:'text', value:'Peter'}, {type:'text', value:'John'},
+          {type:'text', value:'Martha'}, {type:'text', value:'Paul'}, {type:'icon', value:'🧔'},
+          {type:'icon', value:'👑'}, {type:'icon', value:'🐑'}, {type:'icon', value:'🦁'},
+          {type:'icon', value:'⛵'}, {type:'icon', value:'🌊'}, {type:'icon', value:'📜'}
+        ],
+        watchtowerSample: [
+          {type:'text', value:'Listen'}, {type:'text', value:'Learn'}, {type:'text', value:'Apply'},
+          {type:'text', value:'Courage'}, {type:'text', value:'Endure'}, {type:'text', value:'Loyal'},
+          {type:'text', value:'Respect'}, {type:'text', value:'Gentle'}, {type:'text', value:'Humble'},
+          {type:'text', value:'Thankful'}, {type:'text', value:'Peace'}, {type:'text', value:'Joy'},
+          {type:'text', value:'Self-Control'}, {type:'text', value:'Patience'}, {type:'text', value:'Mildness'},
+          {type:'icon', value:'👂'}, {type:'icon', value:'🧠'}, {type:'icon', value:'🧩'},
+          {type:'icon', value:'🕊️'}, {type:'icon', value:'💛'}, {type:'icon', value:'✨'},
+          {type:'icon', value:'🛡️'}, {type:'icon', value:'📖'}, {type:'icon', value:'👑'}
+        ],
+        mixed: [
+          {type:'icon', value:'📖'},{type:'icon', value:'🙏'},{type:'icon', value:'👑'},
+          {type:'icon', value:'🌿'},{type:'icon', value:'🐑'},{type:'icon', value:'⭐'},
+          {type:'text', value:'Be Kind'},{type:'text', value:'Tell Truth'},{type:'text', value:'Pray'},
+          {type:'text', value:'Obey'},{type:'text', value:'Share'},{type:'text', value:'Listen'},
+          {type:'text', value:'Jehovah'},{type:'text', value:'Jesus'},{type:'text', value:'Bible'},
+          {type:'text', value:'Meeting'},{type:'text', value:'Family'},{type:'text', value:'Friends'},
+          {type:'icon', value:'🧺'},{type:'icon', value:'📜'},{type:'icon', value:'🕊️'},
+          {type:'icon', value:'⛵'},{type:'icon', value:'🛡️'},{type:'icon', value:'🍇'}
+        ]
+      };
+
+      // -------------------------------
+      // UI refs
+      // -------------------------------
+      const bankSel = document.getElementById('bbBank');
+      const sizeSel = document.getElementById('bbSize');
+      const freeToggle = document.getElementById('bbFreeToggle');
+      const boardEl = document.getElementById('bbBoard');
+      const markedEl = document.getElementById('bbMarked');
+      const winTextEl = document.getElementById('bbWinText');
+      const statusEl = document.getElementById('bbStatus');
+
+      const newBtn = document.getElementById('bbNew');
+      const clearMarksBtn = document.getElementById('bbClearMarks');
+      const resetAllBtn = document.getElementById('bbResetAll');
+
+      const confettiLayer = document.getElementById('bbConfetti');
+
+      // -------------------------------
+      // storage
+      // -------------------------------
+      const STORAGE_KEY = 'fc_bingo_state_v1';
+
+      // -------------------------------
+      // state
+      // -------------------------------
+      let size = Number(sizeSel.value || '5');
+      let bankKey = bankSel.value || 'bibleBasics';
+      let useFree = !!freeToggle.checked;
+
+      // card: array of length size*size of {type,value}
+      let card = [];
+      // marks: boolean array size*size
+      let marks = [];
+      let hasWon = false;
+      let winLine = []; // indices of winning line
+
+      function setStatus(t){ statusEl.textContent = t || ''; }
+
+      function shuffle(arr){
+        const a = arr.slice();
+        for (let i = a.length - 1; i > 0; i--){
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+      }
+
+      function confettiBurst(big=false){
+        const pieceCount = big ? 140 : 70;
+        const durationMin = big ? 1200 : 900;
+        const durationMax = big ? 2200 : 1600;
+
+        const colors = ['#75CFF0','#FFD5B7','#F3B840','#AC94F4','#FF8269','#FAF8F6'];
+        for (let i = 0; i < pieceCount; i++){
+          const p = document.createElement('div');
+          p.className = 'bb-confetti-piece';
+          p.style.background = colors[Math.floor(Math.random() * colors.length)];
+
+          const x = Math.random() * window.innerWidth;
+          const delay = Math.random() * 140;
+          const duration = durationMin + Math.random() * (durationMax - durationMin);
+
+          p.style.left = x + 'px';
+          p.style.top = (-20 - Math.random() * 60) + 'px';
+          p.style.animationDuration = duration + 'ms';
+          p.style.animationDelay = delay + 'ms';
+
+          const w = 8 + Math.random() * 8;
+          const h = 10 + Math.random() * 10;
+          p.style.width = w + 'px';
+          p.style.height = h + 'px';
+
+          confettiLayer.appendChild(p);
+          setTimeout(() => p.remove(), duration + delay + 120);
+        }
+      }
+
+      function centerIndex(){
+        if (size % 2 === 0) return -1; // no center on even grids
+        const mid = Math.floor(size / 2);
+        return mid * size + mid;
+      }
+
+      // Responsive sizing to guarantee no horizontal bleed
+      function applyResponsiveSize(){
+        const maxW = Math.min(boardEl.parentElement.getBoundingClientRect().width, window.innerWidth) - 24;
+        const gaps = 8 * (size - 1) + 16; // approx: grid gaps + padding
+        const target = Math.floor((maxW - gaps) / size);
+        const cell = Math.max(44, Math.min(76, target));
+
+        // font scales with cell
+        const font = (cell <= 50) ? 0.72 : (cell <= 58) ? 0.82 : 0.92;
+        const emoji = (cell <= 50) ? 1.05 : (cell <= 58) ? 1.15 : 1.25;
+
+        document.documentElement.style.setProperty('--cell', cell + 'px');
+        document.documentElement.style.setProperty('--font', font + 'rem');
+        document.documentElement.style.setProperty('--emoji', emoji + 'rem');
+      }
+
+      function pickCardItems(){
+        const pool = BANKS[bankKey] ? BANKS[bankKey].slice() : BANKS.bibleBasics.slice();
+        const needed = size * size;
+
+        // ensure enough items by repeating shuffled pool if needed
+        let items = [];
+        while (items.length < needed){
+          items = items.concat(shuffle(pool));
+        }
+        items = items.slice(0, needed);
+
+        // apply FREE if enabled and odd size
+        const cIdx = centerIndex();
+        if (useFree && cIdx !== -1){
+          items[cIdx] = { type: 'text', value: 'FREE' };
+        }
+        return items;
+      }
+
+      function buildNewCard(){
+        hasWon = false;
+        winLine = [];
+        size = Number(sizeSel.value || '5');
+        bankKey = bankSel.value || 'bibleBasics';
+        useFree = !!freeToggle.checked;
+
+        card = pickCardItems();
+        marks = new Array(size * size).fill(false);
+
+        // mark center if FREE is on
+        const cIdx = centerIndex();
+        if (useFree && cIdx !== -1){
+          marks[cIdx] = true;
+        }
+
+        setStatus('Tap squares to mark them.');
+        saveState();
+        render();
+      }
+
+      function clearMarks(){
+        hasWon = false;
+        winLine = [];
+        marks = new Array(size * size).fill(false);
+
+        const cIdx = centerIndex();
+        if (useFree && cIdx !== -1){
+          marks[cIdx] = true;
+        }
+
+        setStatus('Cleared marks. Keep playing!');
+        saveState();
+        render();
+      }
+
+      function resetAll(){
+        try { localStorage.removeItem(STORAGE_KEY); } catch(e){}
+        // reset UI defaults (you can change these defaults)
+        bankSel.value = 'bibleBasics';
+        sizeSel.value = '5';
+        freeToggle.checked = true;
+        buildNewCard();
+      }
+
+      function checkBingo(){
+        const lines = [];
+
+        // rows
+        for (let r = 0; r < size; r++){
+          const idxs = [];
+          for (let c = 0; c < size; c++) idxs.push(r * size + c);
+          lines.push(idxs);
+        }
+
+        // cols
+        for (let c = 0; c < size; c++){
+          const idxs = [];
+          for (let r = 0; r < size; r++) idxs.push(r * size + c);
+          lines.push(idxs);
+        }
+
+        // diagonals (only meaningful on square boards; we always are)
+        const d1 = [];
+        const d2 = [];
+        for (let i = 0; i < size; i++){
+          d1.push(i * size + i);
+          d2.push(i * size + (size - 1 - i));
+        }
+        lines.push(d1, d2);
+
+        // find first winning line
+        for (const idxs of lines){
+          if (idxs.every(i => marks[i])){
+            return idxs;
+          }
+        }
+        return null;
+      }
+
+      function updateHud(){
+        const count = marks.filter(Boolean).length;
+        markedEl.textContent = String(count);
+
+        if (hasWon){
+          winTextEl.textContent = 'BINGO!';
+        } else {
+          winTextEl.textContent = 'Keep playing';
+        }
+      }
+
+      function render(){
+        applyResponsiveSize();
+
+        // grid
+        boardEl.style.gridTemplateColumns = `repeat(${size}, var(--cell))`;
+
+        boardEl.innerHTML = '';
+        for (let i = 0; i < size * size; i++){
+          const cell = document.createElement('button');
+          cell.type = 'button';
+          cell.className = 'bb-cell';
+          cell.dataset.idx = String(i);
+
+          const item = card[i] || {type:'text', value:''};
+
+          if (item.type === 'icon'){
+            const el = document.createElement('div');
+            el.className = 'bb-icon';
+            el.textContent = item.value;
+            cell.appendChild(el);
+          } else {
+            const el = document.createElement('div');
+            el.className = 'bb-text';
+            el.textContent = item.value;
+            cell.appendChild(el);
+          }
+
+          if (marks[i]) cell.classList.add('bb-cell--marked');
+          if (hasWon && winLine.includes(i)) cell.classList.add('bb-cell--win');
+
+          cell.addEventListener('click', () => onTap(i));
+          boardEl.appendChild(cell);
+        }
+
+        updateHud();
+      }
+
+      function onTap(i){
+        // FREE stays locked if enabled
+        const cIdx = centerIndex();
+        if (useFree && cIdx !== -1 && i === cIdx){
+          setStatus('That is the FREE space 🙂');
+          return;
+        }
+
+        // toggle mark
+        marks[i] = !marks[i];
+        setStatus(marks[i] ? 'Marked!' : 'Unmarked.');
+
+        // check win
+        const line = checkBingo();
+        if (line && !hasWon){
+          hasWon = true;
+          winLine = line.slice();
+          setStatus('BINGO!! 🎉 Tap New Card to play again.');
+          confettiBurst(true);
+        } else if (!line) {
+          hasWon = false;
+          winLine = [];
+        }
+
+        saveState();
+        render();
+      }
+
+      function saveState(){
+        try{
+          const data = {
+            size,
+            bankKey,
+            useFree,
+            card,
+            marks,
+            hasWon,
+            winLine
+          };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }catch(e){}
+      }
+
+      function loadState(){
+        try{
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return false;
+          const data = JSON.parse(raw);
+
+          if (!data || !Array.isArray(data.card) || !Array.isArray(data.marks)) return false;
+
+          size = Number(data.size || 5);
+          bankKey = String(data.bankKey || 'bibleBasics');
+          useFree = !!data.useFree;
+
+          // apply to UI
+          sizeSel.value = String(size);
+          bankSel.value = bankKey;
+          freeToggle.checked = useFree;
+
+          card = data.card;
+          marks = data.marks;
+          hasWon = !!data.hasWon;
+          winLine = Array.isArray(data.winLine) ? data.winLine : [];
+
+          // if FREE toggle is on now but state missing it, enforce it
+          const cIdx = centerIndex();
+          if (useFree && cIdx !== -1){
+            marks[cIdx] = true;
+            if (!card[cIdx] || (card[cIdx].value !== 'FREE')) {
+              card[cIdx] = { type:'text', value:'FREE' };
+            }
+          }
+
+          return true;
+        }catch(e){
+          return false;
+        }
+      }
+
+      // UI events
+      newBtn.addEventListener('click', buildNewCard);
+      clearMarksBtn.addEventListener('click', clearMarks);
+      resetAllBtn.addEventListener('click', resetAll);
+
+      // If they change settings, create a new card (simple + kid-friendly)
+      bankSel.addEventListener('change', () => buildNewCard());
+      sizeSel.addEventListener('change', () => buildNewCard());
+      freeToggle.addEventListener('change', () => buildNewCard());
+
+      window.addEventListener('resize', () => render());
+
+      // init
+      if (!loadState()){
+        buildNewCard();
+      } else {
+        render();
+        setStatus(hasWon ? 'BINGO!! 🎉 Tap New Card to play again.' : 'Tap squares to mark them.');
+      }
+    });
+  </script>
+</body>
+</html>
